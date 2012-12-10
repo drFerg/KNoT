@@ -6,27 +6,7 @@
 #include "contiki-lib.h"
 #include "../udp-header.h"
 
-#define CONNECT 1
-#define CACK 2
-#define QUERY 3
-#define QACK 4
-#define RESPONSE 5
-#define RACK 6
-#define DISCONNECT 7
-#define DACK 8
-#define FRAGMENT 9
-#define FACK 10
-#define PING 11
-#define PACK 12
-#define SEQNO 13
-#define SACK 14
-#define CMD_LOW CONNECT
-#define CMD_HIGH SACK		/* change this if commands added */
 
-static const char *cmdnames[] = {"", "CONNECT", "CACK", "QUERY", "QACK",
-                                 "RESPONSE", "RACK", "DISCONNECT", "DACK",
-                                 "FRAGMENT", "FACK", "PING", "PACK", "SEQNO",
-                                 "SACK"};
 
 #define STATE_IDLE   0
 #define STATE_POLLED 1
@@ -47,85 +27,91 @@ UIP_HTONS(UIP_IP_BUF->destport),
 struct channel_state{
 	u8_t state;
 	struct uip_udp_conn *udp_conn;
-	uip_ipaddr_t src_addr;
-    uint16_t src_port;
+	uip_ipaddr_t remote_addr;
+    uint16_t remote_port;
 
 };
 
 
 
 int init(struct channel_state * st){
-	
 	if (st != NULL){
 		st->state = STATE_IDLE;
 	} else return -1;
 	st->udp_conn = udp_broadcast_new(UIP_HTONS(LOCAL_PORT), st);
 	if (st->udp_conn != NULL){
-		printf("%d.%d.%d.%d:%d\n", uip_ipaddr_to_quad(&(st->udp_conn->ripaddr)),uip_htons(st->udp_conn->rport));
 		udp_bind(st->udp_conn,UIP_HTONS(LOCAL_PORT));
 		printf("SET UP NETWORK\n");
 	} else return 0;
-	printf("%d.%d.%d.%d:%d\n", uip_ipaddr_to_quad(&(st->udp_conn->ripaddr)),uip_htons(st->udp_conn->rport));
-	uip_udp_packet_send(st->udp_conn, "hello",5);
-
 	return 1;
 }
 
 void reply_to_sender(struct channel_state *state){
 	uip_udp_packet_sendto(state->udp_conn, "HELLO", 5,
-                          &state->src_addr,state->src_port);
-	printf("Sent message back to ipaddr=%d.%d.%d.%d:%u\n", uip_ipaddr_to_quad(&(state->src_addr)),uip_htons(state->src_port));
+                          &state->remote_addr,state->remote_port);
+	printf("Sent message back to ipaddr=%d.%d.%d.%d:%u\n", uip_ipaddr_to_quad(&(state->remote_addr)),uip_htons(state->remote_port));
 }
 
-void send(struct channel_state *st, uint8_t cmd){
-	DataPayload * dp;
-	int dplen;
-	dp = (DataPayload*)malloc(sizeof(DataPayload));
-	dp->hdr.subport = UIP_HTONS(10);
-	dp->hdr.seqno   = UIP_HTONS(1);
-	dp->hdr.cmd     = cmd;          // only a byte so no reordering :)
-	dp->dhdr.tlen   = UIP_HTONS(0);
-	//dp->data        = NULL;
-	dplen = sizeof(PayloadHeader) + sizeof(DataHeader) +
-                       dp->dhdr.tlen;
-    uip_ipaddr_t ipaddr;
-    uip_ipaddr(&ipaddr, 255,255,255,255);
-   // struct uip_udp_conn *udp_conn = udp_broadcast_new(UIP_HTONS(5001), state);
-    //udp_bind(udp_conn,UIP_HTONS(LOCAL_PORT));
-    printf("Sending to : %d.%d.%d.%d:%d\n", uip_ipaddr_to_quad(&(st->udp_conn->ripaddr)),uip_htons(st->udp_conn->rport));
-	uip_udp_packet_send(st->udp_conn, dp,dplen);//, &ipaddr, UIP_HTONS(LOCAL_PORT));
-	printf("data is %d long\n",dplen);
-	free(dp);
-	printf("Packet sent\n");
+
+void send(struct channel_state *state, DataPayload *dp){
+	int dplen = sizeof(PayloadHeader) + sizeof(DataHeader) + dp->dhdr.tlen;
+	uip_udp_packet_send(state->udp_conn, (char*)dp, dplen);
+	printf("Sent %s to ipaddr=%d.%d.%d.%d:%u\n", 
+		cmdnames[dp->hdr.cmd], 
+		uip_ipaddr_to_quad(&(state->udp_conn->ripaddr)),
+		uip_htons(state->udp_conn->rport));
 }
 void broadcast(uint8_t cmd){
 
 }
 
-void incoming_data_event(ev, data){
+void timer_handler(struct channel_state* state){
+	DataPayload *new_dp = (DataPayload*)malloc(sizeof(DataPayload));
+	//dp_complete(new_dp,10,QACK,1);
+	(new_dp)->hdr.subport = uip_htons(10); 
+    (new_dp)->hdr.cmd = QUERY; 
+    (new_dp)->hdr.seqno = uip_htonl(1);
+    (new_dp)->dhdr.tlen = 0;
+	send(state,new_dp);
+	free(new_dp);
+}
+
+
+void network_handler(ev, data){
 	DataPayload *dp;
 	char buf[UIP_BUFSIZE];
 	unsigned short cmd;
-	((char *)uip_appdata)[uip_datalen()] = '\0';
-	//printf("Received: %s\n",(char *)uip_appdata);
-	dp = (DataPayload *)uip_appdata;
-	cmd = uip_ntohs(dp->hdr.cmd);
-	printf("%s\n",cmdnames[cmd]);
-	struct channel_state *st = (struct channel_state*)data;
-    uip_ipaddr_copy(&st->src_addr , &(UDP_HDR->srcipaddr));
-  	st->src_port = UDP_HDR->srcport;
-  	printf("ipaddr=%d.%d.%d.%d:%u\n", uip_ipaddr_to_quad(&(st->src_addr)),uip_htons(st->src_port));
+	uint16_t len = uip_datalen();
 
-	if (st->state == STATE_IDLE){
-		printf("IDLE->POLLED\n");
-		st->state = STATE_POLLED;
+	printf("Data is %d bytes long\n",len);
+	memcpy(buf, uip_appdata, len);
+	buf[len] = '\0';
+
+	dp = (DataPayload *)buf;
+	cmd = dp->hdr.cmd;        // only a byte so no reordering :)
+	printf("Received a %s command.\n", cmdnames[cmd]);
+	printf("%d\n", cmd);
+
+	struct channel_state *state = (struct channel_state*) data;
+    uip_ipaddr_copy(&(state->remote_addr) , &(UDP_HDR->srcipaddr));
+  	state->remote_port = UDP_HDR->srcport;
+  	printf("ipaddr=%d.%d.%d.%d:%u\n", uip_ipaddr_to_quad(&(state->remote_addr)),uip_htons(state->remote_port));
+	
+
+	if (cmd == QUERY) printf("Poof\n");
+	else if (cmd == CONNECT) printf("Funny\n");
+	else if(cmd ==QACK) printf("QACK QACK\n");
+
+
+	if (state->state == STATE_IDLE){
+		//printf("IDLE->POLLED\n");
+		state->state = STATE_POLLED;
 	}
-	else if (st->state == STATE_POLLED){
-		printf("POLLED->IDLE\n");
-		st->state = STATE_IDLE;
+	else if (state->state == STATE_POLLED){
+		//printf("POLLED->IDLE\n");
+		state->state = STATE_IDLE;
 	}
-	printf("twiddling thumbs : %d.%d.%d.%d:%d\n", uip_ipaddr_to_quad(&(st->udp_conn->ripaddr)),uip_htons(st->udp_conn->rport));
-	reply_to_sender(st);
+
 
 }
 
@@ -144,8 +130,10 @@ PROCESS_THREAD(udp_controller, ev, data)
 	while (1){
 		etimer_set(&et, CLOCK_CONF_SECOND*3);
     	// wait until the timer has expired
-    	PROCESS_WAIT_EVENT_UNTIL(ev == PROCESS_EVENT_TIMER);
-		send(state, QUERY);
+    	PROCESS_WAIT_EVENT();
+		if (ev == tcpip_event && uip_newdata()) network_handler(data);
+		else if (ev == PROCESS_EVENT_TIMER) timer_handler(state);
+		
 	}
 
 	PROCESS_END();
