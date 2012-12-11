@@ -1,5 +1,12 @@
-#ifndef UDP_HEADER
-#define UDP_HEADER
+#ifndef KNOT_NETWORK
+#define KNOT_NETWORK
+
+
+#include "contiki.h"
+#include "contiki-net.h"
+#include "contiki-lib.h"
+#include "uip.h"
+#include <stdio.h>
 
 #define QUERY    1
 #define QACK     2
@@ -16,10 +23,17 @@
 #define CMD_LOW CONNECT
 #define CMD_HIGH SACK		/* change this if commands added */
 
-const char *cmdnames[] = {"", "QUERY", "QACK","CONNECT", "CACK", 
-                                 "RESPONSE", "RACK", "DISCONNECT", "DACK",
-                                 "ERROR", "ERROR", "PING", "PACK", "SEQNO",
-                                 "SACK"};
+#define UDP_DATA_LEN 120
+#define UDP_HDR ((struct uip_udpip_hdr *)&uip_buf[UIP_LLH_LEN])
+
+extern char *cmdnames[15];
+
+typedef struct channel_state{
+   u8_t state;
+   struct uip_udp_conn *udp_conn;
+   uip_ipaddr_t remote_addr; //Holds address of remote device
+    uint16_t remote_port;
+}ChannelState;
 
 typedef struct ph {
    uint32_t subport;	/* 3rd piece of identifier triple */
@@ -38,4 +52,11 @@ typedef struct dp {		/* template for data payload */
    unsigned char data[1];	/* data is address of `len' bytes */
 } DataPayload;
 
-#endif /*UDP_HEADER*/
+
+void send(ChannelState *state, DataPayload *dp);
+
+void send_on_channel(ChannelState *state, DataPayload *dp);
+
+
+
+#endif /*KNOT_NETWORK*/

@@ -4,7 +4,7 @@
 #include "contiki.h"
 #include "contiki-net.h"
 #include "contiki-lib.h"
-#include "../udp-header.h"
+#include "../knot-network.h"
 
 
 
@@ -14,27 +14,9 @@
 
 #define LOCAL_PORT 5001
 
-#define UDP_DATA_LEN 120
-#define UDP_HDR ((struct uip_udpip_hdr *)&uip_buf[UIP_LLH_LEN])
-static struct channel_state *state;
+static ChannelState *state;
 
-/*
-&(UIP_IP_BUF->srcipaddr),
-UIP_HTONS(UIP_IP_BUF->srcport),
-&(UIP_IP_BUF->destipaddr)
-UIP_HTONS(UIP_IP_BUF->destport),
-*/
-struct channel_state{
-	u8_t state;
-	struct uip_udp_conn *udp_conn;
-	uip_ipaddr_t remote_addr;
-    uint16_t remote_port;
-
-};
-
-
-
-int init(struct channel_state * st){
+int init(ChannelState * st){
 	if (st != NULL){
 		st->state = STATE_IDLE;
 	} else return -1;
@@ -46,26 +28,19 @@ int init(struct channel_state * st){
 	return 1;
 }
 
-void reply_to_sender(struct channel_state *state){
+void reply_to_sender(ChannelState *state){
 	uip_udp_packet_sendto(state->udp_conn, "HELLO", 5,
                           &state->remote_addr,state->remote_port);
 	printf("Sent message back to ipaddr=%d.%d.%d.%d:%u\n", uip_ipaddr_to_quad(&(state->remote_addr)),uip_htons(state->remote_port));
 }
 
 
-void send(struct channel_state *state, DataPayload *dp){
-	int dplen = sizeof(PayloadHeader) + sizeof(DataHeader) + dp->dhdr.tlen;
-	uip_udp_packet_send(state->udp_conn, (char*)dp, dplen);
-	printf("Sent %s to ipaddr=%d.%d.%d.%d:%u\n", 
-		cmdnames[dp->hdr.cmd], 
-		uip_ipaddr_to_quad(&(state->udp_conn->ripaddr)),
-		uip_htons(state->udp_conn->rport));
-}
+
 void broadcast(uint8_t cmd){
 
 }
 
-void timer_handler(struct channel_state* state){
+void timer_handler(ChannelState* state){
 	DataPayload *new_dp = (DataPayload*)malloc(sizeof(DataPayload));
 	//dp_complete(new_dp,10,QACK,1);
 	(new_dp)->hdr.subport = uip_htons(10); 
@@ -92,7 +67,7 @@ void network_handler(ev, data){
 	printf("Received a %s command.\n", cmdnames[cmd]);
 	printf("%d\n", cmd);
 
-	struct channel_state *state = (struct channel_state*) data;
+	ChannelState *state = (ChannelState*) data;
     uip_ipaddr_copy(&(state->remote_addr) , &(UDP_HDR->srcipaddr));
   	state->remote_port = UDP_HDR->srcport;
   	printf("ipaddr=%d.%d.%d.%d:%u\n", uip_ipaddr_to_quad(&(state->remote_addr)),uip_htons(state->remote_port));
@@ -124,7 +99,7 @@ PROCESS_THREAD(udp_controller, ev, data)
     
 	PROCESS_BEGIN();
 	/** malloc here because breaks inside init**/
-	state = (struct channel_state*)malloc(sizeof(struct channel_state));
+	state = (ChannelState*)malloc(sizeof(ChannelState));
 	init(state);
 
 	while (1){
