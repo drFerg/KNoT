@@ -7,6 +7,12 @@
 #include "contiki-lib.h"
 #include "uip.h"
 #include <stdio.h>
+//Sensor type
+
+#define TEMP   1
+#define HUM    2
+#define SWITCH 3
+
 
 #define QUERY    1
 #define QACK     2
@@ -22,7 +28,7 @@
 #define SACK    14
 #define CMD_LOW CONNECT
 #define CMD_HIGH SACK		/* change this if commands added */
-
+#define P_SIZE 1024
 #define UDP_DATA_LEN 120
 #define UDP_HDR ((struct uip_udpip_hdr *)&uip_buf[UIP_LLH_LEN])
 
@@ -32,7 +38,7 @@ typedef struct channel_state{
    u8_t state;
    struct uip_udp_conn *udp_conn;
    uip_ipaddr_t remote_addr; //Holds address of remote device
-    uint16_t remote_port;
+   uint16_t remote_port;
 }ChannelState;
 
 typedef struct ph {
@@ -51,6 +57,13 @@ typedef struct dp {		/* template for data payload */
    DataHeader dhdr;
    unsigned char data[1];	/* data is address of `len' bytes */
 } DataPayload;
+
+typedef struct query_response{
+   uint8_t type;
+   uint16_t freq;
+}QueryResponse;
+
+
 
 
 void send(ChannelState *state, DataPayload *dp);
