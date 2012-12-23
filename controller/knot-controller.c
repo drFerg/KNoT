@@ -38,6 +38,8 @@ void reply_to_sender(ChannelState *state){
 
 
 void qack_handler(DataPayload *dp){
+	QueryResponse *qr = &dp->data;
+	printf("Sensor type:%d\n",((QueryResponse *)dp->data)->type);
 
 
 }
@@ -49,9 +51,6 @@ void timer_handler(ChannelState* state){
     (new_dp)->hdr.cmd = QUERY; 
     (new_dp)->hdr.seqno = uip_htonl(1);
     (new_dp)->dhdr.tlen = 0;
-
-    //uip_ipaddr(&state->remote_addr,172,16,2,0);
-    //state->remote_port = UIP_HTONS(5001);
 	send(state,new_dp);
 	free(new_dp);
 }
@@ -64,8 +63,6 @@ void network_handler(ev, data){
 	uint16_t len = uip_datalen();
 	uip_ipaddr_t addr;
 	uip_ipaddr_copy(&addr,&UDP_HDR->srcipaddr);
-	printf("ipaddr=%d.%d.%d.%d\n", uip_ipaddr_to_quad(&addr));
-	printf("ipaddr=%d.%d.%d.%d\n", uip_ipaddr_to_quad(&UDP_HDR->srcipaddr));
 	printf("Data is %d bytes long\n",len);
 	memcpy(buf, uip_appdata, len);
 	buf[len] = '\0';
@@ -73,16 +70,16 @@ void network_handler(ev, data){
 	dp = (DataPayload *)buf;
 	cmd = dp->hdr.cmd;        // only a byte so no reordering :)
 	printf("Received a %s command.\n", cmdnames[cmd]);
-	printf("%d\n", cmd);
-
+	//printf("%d\n", cmd);
+	printf("Sensor type:%d\n",((QueryResponse *)dp->data)->type);
 	ChannelState *state = mystate;// (ChannelState*) data;
   	state->remote_port = UDP_HDR->srcport;
   	uip_ipaddr_copy(&state->remote_addr , &UDP_HDR->srcipaddr);
-  	printf("ipaddr=%d.%d.%d.%d:%u\n", uip_ipaddr_to_quad(&state->remote_addr),uip_htons(state->remote_port));
+  	printf("from ipaddr=%d.%d.%d.%d:%u\n", uip_ipaddr_to_quad(&state->remote_addr),uip_htons(state->remote_port));
 	
 
-	if (cmd == QUERY) printf("Poof\n");
-	else if (cmd == CONNECT) printf("Funny\n");
+	if (cmd == QUERY) printf("I'm a controller, Ignoring QUERY\n");
+	else if (cmd == CONNECT) printf("I'm a controller, Ignoring CONNECT\n");
 	else if(cmd == QACK) qack_handler(dp);
 
 

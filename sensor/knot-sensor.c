@@ -46,12 +46,17 @@ void broadcast(uint8_t cmd){
 }
 
 void query_handler(ChannelState *state,DataPayload *dp){	
-	DataPayload *new_dp = (DataPayload*)malloc(sizeof(PayloadHeader) + sizeof(DataHeader) + P_SIZE;);
+	DataPayload *new_dp = (DataPayload*)malloc( sizeof(PayloadHeader) + sizeof(DataHeader) + sizeof(QueryResponse));
+	QueryResponse qr;
+	qr.type = 1;
+	qr.freq = uip_htons(5);
 	//dp_complete(new_dp,10,QACK,1);
 	(new_dp)->hdr.subport=uip_htons(10); 
     (new_dp)->hdr.cmd = QACK; 
     (new_dp)->hdr.seqno=uip_htonl(1);
-    (new_dp)->dhdr.tlen = 0;
+    (new_dp)->dhdr.tlen = sizeof(QueryResponse);
+    memcpy(new_dp->data,&qr,sizeof(QueryResponse));
+    printf("Sensor type:%d\n",((QueryResponse *)new_dp->data)->type);
 	send_on_channel(state,new_dp);
 	free(new_dp);
 
@@ -68,7 +73,7 @@ void network_handler(ev, data){
 	unsigned short cmd;
 	uint16_t len = uip_datalen();
 	printf("ipaddr=%d.%d.%d.%d\n", uip_ipaddr_to_quad(&(UDP_HDR->srcipaddr)));
-	printf("Data is %d bytes long\n",len);
+	//printf("Data is %d bytes long\n",len);
 	memcpy(buf, uip_appdata, len);
 	buf[len] = '\0';
 
@@ -79,7 +84,7 @@ void network_handler(ev, data){
 	ChannelState *state = (ChannelState*) data;
     uip_ipaddr_copy(&(state->remote_addr) , &(UDP_HDR->srcipaddr));
   	state->remote_port = UDP_HDR->srcport;
-  	printf("ipaddr=%d.%d.%d.%d:%u\n", uip_ipaddr_to_quad(&(state->remote_addr)),uip_htons(state->remote_port));
+  	//printf("ipaddr=%d.%d.%d.%d:%u\n", uip_ipaddr_to_quad(&(state->remote_addr)),uip_htons(state->remote_port));
 	
 
 	if (cmd == QUERY) query_handler(state,dp);
