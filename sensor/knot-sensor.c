@@ -14,7 +14,10 @@
 
 #define LOCAL_PORT 5001
 
-
+#define dp_complete(cp,sp,cmd,sn) {(cp)->hdr.subport=(sp); \
+                                          (cp)->hdr.cmd=(cmd); \
+                                          (cp)->hdr.seqno=uip_htonl(sn); \
+                                          }
 
 
  
@@ -41,31 +44,44 @@ int init(ChannelState *state){
 	return 1;
 }
 
-void broadcast(uint8_t cmd){
-
-}
 
 void query_handler(ChannelState *state,DataPayload *dp){	
 	DataPayload *new_dp = (DataPayload*)malloc( sizeof(PayloadHeader) + sizeof(DataHeader) + sizeof(QueryResponse));
 	QueryResponse qr;
-	qr.type = 1;
+	qr.type = TEMP;
 	qr.freq = uip_htons(5);
-	//dp_complete(new_dp,10,QACK,1);
-	(new_dp)->hdr.subport=uip_htons(10); 
-    (new_dp)->hdr.cmd = QACK; 
-    (new_dp)->hdr.seqno=uip_htonl(1);
-    (new_dp)->dhdr.tlen = sizeof(QueryResponse);
+	//dp_complete(new_dp,uip_htons(10),1,(1));
+	new_dp->hdr.subport=uip_htons(10); 
+    new_dp->hdr.cmd = QACK; 
+    new_dp->hdr.seqno=uip_htonl(1);
+    new_dp->dhdr.tlen = sizeof(QueryResponse);
     memcpy(new_dp->data,&qr,sizeof(QueryResponse));
-    printf("Sensor type:%d\n",((QueryResponse *)new_dp->data)->type);
+
 	send_on_channel(state,new_dp);
 	free(new_dp);
 
 }
 
 void connect_handler(ChannelState *state,DataPayload *dp){
-	printf("COMMAND: %d %s\n",dp->hdr.cmd,cmdnames[dp->hdr.cmd]);
+	DataPayload *new_dp = (DataPayload*)malloc(sizeof(DataPayload));
+	//dp_complete(new_dp,10,QACK,1);
+	(new_dp)->hdr.subport = uip_htons(10); 
+    (new_dp)->hdr.cmd = CACK; 
+    (new_dp)->hdr.seqno = uip_htonl(1);
+    (new_dp)->dhdr.tlen = 0;
+	send_on_channel(state,new_dp);
+	free(new_dp);
+	state->state = STATE_CONNECT;
 }
 
+void cack_handler(ChannelState *state, DataPayload *dp){
+	if (state->state != STATE_CONNECT){
+		printf("Not in Connecting state\n");
+		return;
+	}
+	printf("CONNECTION FULLY ESTABLISHED\n");
+	state->state = STATE_CONNECTED;
+}
 
 void network_handler(ev, data){
 	DataPayload *dp;
@@ -87,30 +103,18 @@ void network_handler(ev, data){
   	//printf("ipaddr=%d.%d.%d.%d:%u\n", uip_ipaddr_to_quad(&(state->remote_addr)),uip_htons(state->remote_port));
 	
 
-	if (cmd == QUERY) query_handler(state,dp);
+	if      (cmd == QUERY)   query_handler(state,dp);
 	else if (cmd == CONNECT) connect_handler(state,dp);
-
-
-	if (state->state == STATE_IDLE){
-		//printf("IDLE->POLLED\n");
-		state->state = STATE_POLLED;
-	}
-	else if (state->state == STATE_POLLED){
-		//printf("POLLED->IDLE\n");
-		state->state = STATE_IDLE;
-	}
+	else if (cmd == CACK)    cack_handler(state, dp);
 }
 
 void timer_handler(ChannelState* state){
 	DataPayload *new_dp = (DataPayload*)malloc(sizeof(DataPayload));
 	//dp_complete(new_dp,10,QACK,1);
 	(new_dp)->hdr.subport = uip_htons(10); 
-    (new_dp)->hdr.cmd = QUERY; 
+    (new_dp)->hdr.cmd = RESPONSE; 
     (new_dp)->hdr.seqno = uip_htonl(1);
     (new_dp)->dhdr.tlen = 0;
-
-    uip_ipaddr(&state->remote_addr,172,16,202,239);
-    state->remote_port = UIP_HTONS(5001);
 	send_on_channel(state,new_dp);
 	free(new_dp);
 }
@@ -125,10 +129,6 @@ PROCESS_THREAD(knot_sensor, ev, data)
 	static ChannelState *state;
 
     
-    // wait until the timer has expired
-    // PROCESS_WAIT_EVENT_UNTIL(ev == PROCESS_EVENT_TIMER);
-    
-
 	PROCESS_BEGIN();
     state = (ChannelState*) malloc(sizeof(ChannelState));
 
@@ -136,11 +136,14 @@ PROCESS_THREAD(knot_sensor, ev, data)
 		printf("OH NOES\n");
 	}
 	while (1){
-		etimer_set(&et, CLOCK_CONF_SECOND*3);
+		//etimer_set(&et, CLOCK_CONF_SECOND*3);
     	// wait until the timer has expired
+    	if (state->state == STATE_CONNECTED){
+    		etimer_set(&et, CLOCK_CONF_SECOND*3);
+    	}
     	PROCESS_WAIT_EVENT();
 		if (ev == tcpip_event && uip_newdata()) network_handler(ev,data);
-		//else if (ev == PROCESS_EVENT_TIMER) timer_handler(state);
+		else if (ev == PROCESS_EVENT_TIMER) timer_handler(state);
 		
 	}
 

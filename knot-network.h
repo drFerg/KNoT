@@ -7,12 +7,18 @@
 #include "contiki-lib.h"
 #include "uip.h"
 #include <stdio.h>
-//Sensor type
 
+//Sensor type
 #define TEMP   1
 #define HUM    2
 #define SWITCH 3
 
+#define STATE_IDLE       0
+#define STATE_QUERY      1
+#define STATE_QACKED     2
+#define STATE_CONNECT    3
+#define STATE_CONNECTED  4
+#define STATE_DCONNECTED 5
 
 #define QUERY    1
 #define QACK     2
@@ -26,8 +32,10 @@
 #define PACK    12
 #define SEQNO   13
 #define SACK    14
+
 #define CMD_LOW CONNECT
 #define CMD_HIGH SACK		/* change this if commands added */
+
 #define P_SIZE 1024
 #define UDP_DATA_LEN 120
 #define UDP_HDR ((struct uip_udpip_hdr *)&uip_buf[UIP_LLH_LEN])
@@ -63,11 +71,21 @@ typedef struct query_response{
    uint16_t freq;
 }QueryResponse;
 
+typedef struct connect_message{
+   uint8_t accept;
+   char name[10];
+}ConnectMsg;
 
 
-
+/*
+ * sends datapayload to the connections default address
+ * (good for broadcast)
+ */
 void send(ChannelState *state, DataPayload *dp);
 
+/*
+ * sends datapayload to the address specified in the channel state
+ */
 void send_on_channel(ChannelState *state, DataPayload *dp);
 
 
