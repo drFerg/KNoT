@@ -14,13 +14,13 @@ void init_table();
  * create a new channel if space available
  * return 1 if successful, 0 otherwise
  */
-int new_channel(ChannelState *state);
+ChannelState * new_channel();
 
 /* 
  * get the channel state for the given channel number
  * return 1 if successful, 0 otherwise
  */
-int get_channel_state(int channel, ChannelState *state);
+ChannelState * get_channel_state(int channel);
 
 /*
  * remove specified channel state from table

@@ -40,17 +40,21 @@
 #define UDP_DATA_LEN 120
 #define UDP_HDR ((struct uip_udpip_hdr *)&uip_buf[UIP_LLH_LEN])
 
+struct uip_udp_conn *udp_conn;
+
 extern char *cmdnames[15];
 
 typedef struct channel_state{
    u8_t state;
-   struct uip_udp_conn *udp_conn;
+   uint32_t seqno;
    uip_ipaddr_t remote_addr; //Holds address of remote device
    uint16_t remote_port;
+   int chan_num;
 }ChannelState;
 
 typedef struct ph {
-   uint32_t subport;	/* 3rd piece of identifier triple */
+   uint8_t dst_chan_num;
+   uint8_t src_chan_num;
    uint32_t seqno;	/* sequence number */
    uint8_t cmd;	/* message type */
 } PayloadHeader;
@@ -66,6 +70,9 @@ typedef struct dp {		/* template for data payload */
    unsigned char data[1];	/* data is address of `len' bytes */
 } DataPayload;
 
+
+/* Message Payloads */
+
 typedef struct query_response{
    uint8_t type;
    uint16_t freq;
@@ -76,6 +83,15 @@ typedef struct connect_message{
    char name[10];
 }ConnectMsg;
 
+typedef struct cack{
+   uint8_t accept;
+   char name[10];
+      uint8_t dst_chan_num;
+}CACKMesg;
+
+typedef struct response{
+   uint16_t temp;
+}ResponseMsg;
 
 /*
  * sends datapayload to the connections default address

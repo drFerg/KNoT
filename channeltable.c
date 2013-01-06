@@ -3,7 +3,6 @@
 typedef struct knot_channel{
 	ChannelState state;
 	struct knot_channel *nextChannel;
-	int number;
 }Channel;
 
 static Channel channelTable[CHANNEL_NUM];
@@ -13,12 +12,15 @@ int size;
  * initialise the channel table 
  */
 void init_table(){
+	printf("Initialising table\n");
 	int i;
 	size = 0;
 	nextFree = channelTable;
 	for (i = 0; i < CHANNEL_NUM; i++){
-		channelTable[i].nextChannel = (struct knot_channel *)&channelTable[(i+1) % CHANNEL_NUM];
-		channelTable[i].number = i+1;
+		channelTable[i].nextChannel = (struct knot_channel *)&(channelTable[(i+1) % CHANNEL_NUM]);
+		channelTable[i].state.chan_num = i+1;
+		channelTable[i].state.remote_port = 10;
+		printf("Port: %d\n",channelTable[i].state.remote_port);
 	}
 	channelTable[CHANNEL_NUM-1].nextChannel = NULL;
 }
@@ -27,22 +29,22 @@ void init_table(){
  * create a new channel if space available
  * return channel num if successful, 0 otherwise
  */
-int new_channel(ChannelState *state){
-	if (size >= CHANNEL_NUM) return 0;
+ChannelState * new_channel(){
+	if (size >= CHANNEL_NUM) return NULL;
 	Channel *temp = nextFree;
-	state = &temp->state;
 	nextFree = temp->nextChannel;
 	temp->nextChannel = NULL;
 	size++;
-	return temp->number;
+	printf("New channel created\n");
+	return &temp->state;
 }
 
 /* 
  * get the channel state for the given channel number
  * return 1 if successful, 0 otherwise
  */
-int get_channel_state(int channel, ChannelState *state){
-	state = &channelTable[channel-1].state;
+ChannelState * get_channel_state(int channel){
+	return &(channelTable[channel-1].state);
 }
 
 /*
