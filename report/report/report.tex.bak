@@ -1,0 +1,186 @@
+\pdfoutput=1
+
+\documentclass{l4proj}
+
+%
+% put any packages here
+%
+
+
+\begin{document}
+\title{Designing a lightweight protocol for constrained devices for use in the Internet of Things paradigm}
+\author{Fergus Leahy}
+\date{\today}
+\maketitle
+
+\begin{abstract}
+\textbf{PLACEHOLDER}
+A level 4 project which explores the current use of protocols for the internet of things devices.
+\end{abstract}
+
+\educationalconsent
+%
+%NOTE: if you include the educationalconsent (above) and your project is graded an A then
+%      it may be entered in the CS Hall of Fame
+%
+\tableofcontents
+%==============================================================================
+
+\chapter{Introduction}
+\pagenumbering{arabic}
+
+The ``Internet of Things'' paradigm along with the ``Smart'' prefix has recently seen a huge increase in interest and popularity with manufacturers, hobbyists and end-users. Everything from your set-top box to your washing machine\cite{LG} can now be ``Smart''\cite{SmartCraze} and connect to the internet to tell you if your favourite TV show has downloaded or that your wash cycle has complete. Some hobbyists have gone so far to make plants send a text or tweet when it needs watering\cite{TweetPlant}.
+
+This uptake in interest and development can be largely attributed to the advent of lower power, smaller and most importantly cheaper devices. Large companies such as the mobile phone chipset manufacturer, Qualcomm, recently declared their support at CES 2012 with the announcement of a dedicated development platform for the ``Internet of Things''\cite{Qualcomm}.
+
+Similarly there has also been much enthusiasm from the small companies and start ups trying to create the next hit consumer device. Social funding platform, Kickstarter\cite{Kickstarter}, has seen many attempts at creating the perfect ``Thing'' for the internet\cite{SmartThings}\cite{Twine}.
+
+Whilst all of these devices from manufacturers, start ups and hobbyists may very well be great ``Things'' by themselves, there exists a problem. How do you connect all these heterogeneous platforms and devices together to create a true ``Internet of Things''?
+
+This project focuses on just that and endeavours to create a communication protocol that is not only platform agnostic but also lightweight enough to be run on the most brain-dead constrained devices, such as the TelosB Sky Motes(8MHz,10K ram)\cite{TelosB}. Another design focus is that the protocol must be able to scale well as the network dramatically increases and decreases in size.
+
+%==============================================================================
+
+\chapter{Background and Related Work} % (fold)
+\label{cha:background}
+
+\section{Internet of Things paradigm} % (fold)
+\label{sec:internet_of_things_paradigm}
+
+% section internet_of_things_paradigm (end)
+
+\section{Open source constrained devices} % (fold)
+\label{sec:open_source_constrained_devices}
+\subsection{Arduino} % (fold)
+\label{sub:arduino}
+
+% subsection arduino (end)
+
+\subsection{Raspberry Pi} % (fold)
+\label{sub:raspberry_pi}
+
+% subsection raspberry_pi (end)
+% section open_source_constrained_devices (end)
+\section{Wireless Sensor Networks} % (fold)
+\label{sec:wireless_sensor_networks}
+
+% section wireless_sensor_networks (end)
+
+\section{Existing systems/protocols} % (fold)
+\label{sec:existing_systems_protocols}
+
+\subsection{Java JMS} % (fold)
+\label{sub:java_jms}
+
+% subsection java_jms (end)
+
+\subsection{xAP} % (fold)
+\label{sub:xap}
+\cite{xAP}
+% subsection xap (end)
+
+\subsection{Developing systems} % (fold)
+\label{sub:developing_systems}
+
+\subsubsection{Smart things} % (fold)
+\label{ssub:smart_things}
+
+% subsubsection smart_things (end)
+
+\subsubsection{Qualcomm} % (fold)
+\label{ssub:qualcomm}
+
+% subsubsection qualcomm (end)
+% subsection developing_systems (end)
+% section existing_systems_protocols (end)
+
+
+
+% chapter background (end)
+%==============================================================================
+
+
+%==============================================================================
+
+\chapter{Requirments gathering} % (fold)
+\label{cha:requirments_gathering}
+
+% chapter requirments_gathering (end)
+%==============================================================================
+
+
+%==============================================================================
+
+
+\chapter{Design} % (fold)
+\label{cha:design}
+
+% chapter design (end)
+%==============================================================================
+
+
+%==============================================================================
+
+
+\chapter{Implementation} % (fold)
+\label{cha:implementation}
+
+% chapter implementation (end)
+%==============================================================================
+
+
+%==============================================================================
+
+
+\chapter{Evaluation} % (fold)
+\label{cha:evaluation}
+
+% chapter evaluation (end)
+
+%==============================================================================
+
+
+%==============================================================================
+
+
+\chapter{Conclusion} % (fold)
+\label{cha:conclusion}
+
+
+% chapter conclusion (end)
+%==============================================================================
+
+
+%%%%%%%%%%%%%%%%
+%              %
+%  APPENDICES  %
+%              %
+%%%%%%%%%%%%%%%%
+\begin{appendices}
+
+\chapter{Running the Programs}
+An example of running from the command line is as follows:
+\begin{verbatim}
+      > java MaxClique BBMC1 brock200_1.clq 14400
+\end{verbatim}
+This will apply $BBMC$ with $style = 1$ to the first brock200 DIMACS instance allowing 14400 seconds of cpu time.
+
+\chapter{Generating Random Graphs}
+\label{sec:randomGraph}
+We generate Erd\'{o}s-R\"{e}nyi random graphs $G(n,p)$ where $n$ is the number of vertices and
+each edge is included in the graph with probability $p$ independent from every other edge. It produces
+a random graph in DIMACS format with vertices numbered 1 to $n$ inclusive. It can be run from the command line as follows to produce 
+a clq file
+\begin{verbatim}
+      > java RandomGraph 100 0.9 > 100-90-00.clq
+\end{verbatim}
+\end{appendices}
+
+%%%%%%%%%%%%%%%%%%%%
+%   BIBLIOGRAPHY   %
+%%%%%%%%%%%%%%%%%%%%
+
+\bibliographystyle{plain}
+\bibliography{bib}
+
+\end{document}
