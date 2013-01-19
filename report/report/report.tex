@@ -8,14 +8,14 @@
 
 
 \begin{document}
-\title{Level 4 Project: \\
-		Designing a lightweight protocol for constrained devices for use in the Internet of Things paradigm}
+\title{Designing a lightweight protocol for constrained devices for use in the Internet of Things paradigm}
 \author{Fergus Leahy}
-\date{}
+\date{\today}
 \maketitle
 
 \begin{abstract}
-A level 4 project which explores the current use of protocols for the internet of things devices.
+\textbf{PLACEHOLDER}
+A level 4 project which explores the current use of protocols for the Internet of things devices.
 \end{abstract}
 
 \educationalconsent
@@ -29,21 +29,19 @@ A level 4 project which explores the current use of protocols for the internet o
 \chapter{Introduction}
 \pagenumbering{arabic}
 
-\subsection{Prospect} % (fold)
-\label{sub:prospect}
+The ``Internet of Things'' paradigm along with the ``Smart'' prefix has recently seen a huge increase in interest and popularity with manufacturers, hobbyists and end-users. Everything from your set-top box to your washing machine\cite{LG} can now be ``Smart''\cite{SmartCraze} and connect to the Internet to tell you if your favourite TV show has downloaded or that your wash cycle has complete. Some hobbyists have gone so far to make plants send a text or tweet when it needs watering\cite{TweetPlant}.
 
-% subsection prospect (end)
+This uptake in interest and development can be largely attributed to the advent of lower power, smaller and most importantly cheaper devices. Large companies such as the mobile phone chip-set manufacturer, Qualcomm, recently declared their support at CES 2012 with the announcement of a dedicated development platform for the ``Internet of Things''\cite{Qualcomm}.
 
-\subsection{Aim} % (fold)
-\label{sub:aim}
+Similarly there has also been much enthusiasm from the small companies and start ups trying to create the next hit consumer device. Social funding platform, Kickstarter\cite{Kickstarter}, has seen many attempts at creating the perfect ``Thing'' for the Internets\cite{SmartThings}\cite{Twine}.
 
-% subsection aim (end)
-%==============================================================================
+Whilst all of these devices from manufacturers, start ups and hobbyists may very well be great ``Things'' by themselves, there exists a problem. How do you connect all these heterogeneous platforms and devices together to create a true ``Internet of Things''?
 
+This project focuses on just that and endeavours to create a communication protocol that is not only platform agnostic but also lightweight enough to be run on the most brain-dead constrained devices, such as the TelosB Sky Motes(8MHz,10K ram)\cite{TelosB}. Another design focus is that the protocol must be able to scale well as the network dramatically increases and decreases in size.
 
 %==============================================================================
 
-\chapter{Background} % (fold)
+\chapter{Background and Related Work} % (fold)
 \label{cha:background}
 
 \section{Internet of Things paradigm} % (fold)
@@ -160,22 +158,7 @@ A level 4 project which explores the current use of protocols for the internet o
 %%%%%%%%%%%%%%%%
 \begin{appendices}
 
-\chapter{Running the Programs}
-An example of running from the command line is as follows:
-\begin{verbatim}
-      > java MaxClique BBMC1 brock200_1.clq 14400
-\end{verbatim}
-This will apply $BBMC$ with $style = 1$ to the first brock200 DIMACS instance allowing 14400 seconds of cpu time.
 
-\chapter{Generating Random Graphs}
-\label{sec:randomGraph}
-We generate Erd\'{o}s-R\"{e}nyi random graphs $G(n,p)$ where $n$ is the number of vertices and
-each edge is included in the graph with probability $p$ independent from every other edge. It produces
-a random graph in DIMACS format with vertices numbered 1 to $n$ inclusive. It can be run from the command line as follows to produce 
-a clq file
-\begin{verbatim}
-      > java RandomGraph 100 0.9 > 100-90-00.clq
-\end{verbatim}
 \end{appendices}
 
 %%%%%%%%%%%%%%%%%%%%

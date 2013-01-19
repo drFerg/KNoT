@@ -42,6 +42,7 @@ void create_channel(ChannelState *state, DataPayload *dp){
 	send_on_channel(state,new_dp);
 	free(new_dp);
 	state->state = STATE_CONNECT;
+	state->ticks = 10;
 }
 
 void cack_handler(ChannelState *state, DataPayload *dp){
@@ -59,6 +60,7 @@ void cack_handler(ChannelState *state, DataPayload *dp){
 	send_on_channel(state,new_dp);
 	free(new_dp);
 	state->state = STATE_CONNECTED;
+	state->ticks == 100;
 
 }
 void qack_handler(ChannelState *state, DataPayload *dp){
@@ -83,10 +85,15 @@ void timer_handler(ChannelState* state){
 	send(state,new_dp);
 	free(new_dp);
 	state->state = STATE_QUERY;
+	state->ticks = 10;
 }
 
 void response_handler(ChannelState *state, DataPayload *dp){
 	printf("Received message\n");
+	if (state->state != STATE_CONNECTED){
+		printf("Not connected to device!\n");
+		return;
+	}
 	ResponseMsg *rmsg = (ResponseMsg *)dp->data;
 	printf("Temp %d\n", uip_ntohs(rmsg->temp));
 }
@@ -123,6 +130,27 @@ void network_handler(ev, data){
 	else if (cmd == QACK)     qack_handler(state, dp);
 	else if (cmd == CACK)     cack_handler(state, dp);
 	else if (cmd == RESPONSE) response_handler(state, dp);
+	else if (cmd == PING)     printf("Im here\n");
+
+}
+
+void cleaner(){
+	int i;
+	ChannelState *s;
+	for (i = 1; i < CHANNEL_NUM; i++){
+		s = get_channel_state(i);
+		if (s == NULL) continue; 
+		printf("%d\n", s->ticks);
+		if (s->state % 2 != 0){
+			if (s->ticks == 0){
+				printf("Retrying\n");
+				s->ticks = 11;
+			}
+		} else if (s->ticks == 0){
+			printf("PING\n");
+		}
+		s->ticks --;
+	}
 
 }
 
@@ -132,19 +160,28 @@ AUTOSTART_PROCESSES(&knot_controller);
 PROCESS_THREAD(knot_controller, ev, data)
 {
 	static struct etimer et; // temp timer for loop
+	static struct etimer clean;
 
 	PROCESS_BEGIN();
 	SENSORS_ACTIVATE(button_sensor);
 
 	init_table();
 	mystate = new_channel();
+	mystate->ticks = 10000;
 	init();
+	etimer_set(&clean,1000);
 	//etimer_set(&et, CLOCK_CONF_SECOND*3);
 	while (1){
     	// wait until the timer has expired
     	PROCESS_WAIT_EVENT();
 		if (ev == tcpip_event && uip_newdata()) network_handler(ev, data);
-		else if (ev == PROCESS_EVENT_TIMER) timer_handler(mystate);
+		else if ((ev == PROCESS_EVENT_TIMER)){
+			if (data == &et) timer_handler(mystate);
+			else if (data == &clean) {
+				cleaner();
+				etimer_set(&clean,1000);
+			}
+		} 
 		else if ((ev == sensors_event) && (data == &button_sensor)){
 			mystate = new_channel();
 			if (mystate == NULL) printf("No more free channels\n");

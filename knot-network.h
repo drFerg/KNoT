@@ -50,6 +50,7 @@ typedef struct channel_state{
    uip_ipaddr_t remote_addr; //Holds address of remote device
    uint16_t remote_port;
    int chan_num;
+   uint16_t ticks;
 }ChannelState;
 
 typedef struct ph {
