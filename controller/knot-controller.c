@@ -106,7 +106,7 @@ void response_handler(ChannelState *state, DataPayload *dp){
 	}
 	state->ticks = 100;
 	ResponseMsg *rmsg = (ResponseMsg *)dp->data;
-	printf("Temp %d\n", uip_ntohs(rmsg->temp));
+	printf("%s %d\n", rmsg->name, uip_ntohs(rmsg->data));
 }
 
 

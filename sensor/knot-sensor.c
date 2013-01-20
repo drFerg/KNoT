@@ -48,7 +48,7 @@ int init(ChannelState *state){
 
 
 void query_handler(ChannelState *state,DataPayload *dp){	
-	DataPayload *new_dp = (DataPayload*)malloc(sizeof(PayloadHeader) + sizeof(DataHeader) + sizeof(QueryResponse));
+	DataPayload *new_dp = &(state->packet);
 	QueryResponse qr;
 	qr.type = TEMP;
 	qr.freq = uip_htons(5);
@@ -59,7 +59,6 @@ void query_handler(ChannelState *state,DataPayload *dp){
     new_dp->dhdr.tlen = sizeof(QueryResponse);
     memcpy(new_dp->data,&qr,sizeof(QueryResponse));
 	send_on_channel(state,new_dp);
-	free(new_dp);
 
 }
 
@@ -67,7 +66,7 @@ void connect_handler(ChannelState *state,DataPayload *dp){
 	ConnectMsg *cm = (ConnectMsg*)dp->data;
 	printf("%s wants to connect on channel %d\n",cm->name,dp->hdr.src_chan_num);
 	state->chan_num = dp->hdr.src_chan_num;
-	DataPayload *new_dp = (DataPayload*)malloc(sizeof(PayloadHeader) + sizeof(DataHeader) + sizeof(CACK));
+	DataPayload *new_dp = &(state->packet);
 	CACKMesg ck;
 	memcpy(ck.name,SENSORNAME,10);
 	new_dp->hdr.src_chan_num = state->chan_num;
@@ -78,7 +77,6 @@ void connect_handler(ChannelState *state,DataPayload *dp){
     (new_dp)->dhdr.tlen = sizeof(CACKMesg);
     memcpy(&(new_dp->data),&ck,sizeof(CACKMesg));
 	send_on_channel(state,new_dp);
-	free(new_dp);
 	state->state = STATE_CONNECT;
 }
 
@@ -119,26 +117,19 @@ void network_handler(ev, data){
 
 void timer_handler(ChannelState* state){
 	printf("Building a packet\n");
-	DataPayload *new_dp = (DataPayload*)malloc(sizeof(PayloadHeader) + sizeof(DataHeader));// + sizeof(ResponseMsg));
-	if (new_dp == NULL) {
-		printf("NOT Allocated\n");
-	}
+    DataPayload *new_dp = &(state->packet);
 	ResponseMsg rmsg;
-	//memcpy(rmsg.name,"Temp",4);
-	printf("Copied name\n");
+	memcpy(rmsg.name,"Temp\0",5);
 	new_dp->hdr.src_chan_num = state->chan_num;
 	new_dp->hdr.dst_chan_num = state->chan_num;
-	rmsg.temp = uip_htons(10);
-	printf("Built\n");
+	rmsg.data = uip_htons(10);
 	//dp_complete(new_dp,10,QACK,1); 
     (new_dp)->hdr.cmd = RESPONSE; 
     (new_dp)->hdr.seqno = uip_htonl(1);
     (new_dp)->dhdr.tlen = sizeof(ResponseMsg);
-    printf("almost done\n");
     memcpy(&(new_dp->data),&rmsg,sizeof(ResponseMsg));
     send_on_channel(state,new_dp);
-    printf("Sent\n");
-	free(new_dp);
+	printf("Sent data\n");
 
 }
 

@@ -85,7 +85,8 @@ typedef struct cack{
 }CACKMesg;
 
 typedef struct response{
-   uint16_t temp;
+   char name[10];
+   uint16_t data;
 }ResponseMsg;
 
 typedef struct channel_state{
@@ -95,7 +96,6 @@ typedef struct channel_state{
    uint32_t remote_port;
    int chan_num;
    uint16_t ticks;
-   DataPayload *lastPacket;
    DataPayload packet;
 }ChannelState;
 
