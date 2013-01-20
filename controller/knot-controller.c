@@ -29,7 +29,9 @@ int init(){
 }
 
 void create_channel(ChannelState *state, DataPayload *dp){
-    DataPayload *new_dp = (DataPayload*)malloc(sizeof(PayloadHeader) + sizeof(DataHeader) + sizeof(ConnectMsg));	//dp_complete(new_dp,10,QACK,1);
+    //DataPayload *new_dp = (DataPayload*)malloc(sizeof(PayloadHeader) + sizeof(DataHeader) + sizeof(ConnectMsg));	//dp_complete(new_dp,10,QACK,1);
+	DataPayload *new_dp = &(state->packet);
+	memset(new_dp, '\0', sizeof(DataPayload));
 	ConnectMsg cm;
 	memcpy(cm.name,"Controller",10);
 	new_dp->hdr.dst_chan_num = state->chan_num;
@@ -39,7 +41,6 @@ void create_channel(ChannelState *state, DataPayload *dp){
     (new_dp)->hdr.seqno = uip_htonl(1);
     (new_dp)->dhdr.tlen = sizeof(ConnectMsg);
     memcpy(&(new_dp->data),&cm,sizeof(ConnectMsg));
-    state->lastPacket = new_dp;
 	send_on_channel(state,new_dp);
 	state->state = STATE_CONNECT;
 	state->ticks = 10;
@@ -52,7 +53,10 @@ void cack_handler(ChannelState *state, DataPayload *dp){
 	}
 	CACKMesg *ck = (CACKMesg*)dp->data;
 	printf("%s accepts connection request on channel %d\n",ck->name,ck->dst_chan_num);
-	DataPayload *new_dp = (DataPayload*)malloc(sizeof(DataPayload));
+	
+	DataPayload *new_dp = &(state->packet);
+	memset(new_dp, '\0', sizeof(DataPayload));
+
 	//dp_complete(new_dp,10,QACK,1);
     (new_dp)->hdr.cmd = CACK; 
     (new_dp)->hdr.seqno = uip_htonl(1);
@@ -71,8 +75,6 @@ void qack_handler(ChannelState *state, DataPayload *dp){
 		return;
 	}
 
-	if (state->lastPacket != NULL) 
-		free(state->lastPacket);
 
 	QueryResponse *qr = (QueryResponse *)&dp->data;
 	printf("Sensor type:%d\n", qr->type);
@@ -82,20 +84,18 @@ void qack_handler(ChannelState *state, DataPayload *dp){
 }
 
 void service_search(ChannelState* state){
-	if (state->lastPacket != NULL) 
-		free(state->lastPacket);
 
-	DataPayload *new_dp = (DataPayload*)malloc(sizeof(DataPayload));
+	DataPayload *new_dp = &(state->packet);
+	memset(new_dp, '\0', sizeof(DataPayload));
 	//dp_complete(new_dp,10,QACK,1);
 	new_dp->hdr.src_chan_num = state->chan_num;
 	new_dp->hdr.dst_chan_num = 1;
     (new_dp)->hdr.cmd = QUERY; 
-    (new_dp)->hdr.seqno = uip_htonl(1);
+    (new_dp)->hdr.seqno = uip_htons(1);
     (new_dp)->dhdr.tlen = 0;
 	send(state,new_dp);
 	state->state = STATE_QUERY;
 	state->ticks = 10;
-	state->lastPacket = new_dp;
 }
 
 void response_handler(ChannelState *state, DataPayload *dp){
@@ -147,7 +147,7 @@ void network_handler(ev, data){
 
 void resend(ChannelState *s){
 	printf("Sending last packet\n");
-	send_on_channel(s, s->lastPacket);
+	send_on_channel(s, &(s->packet));
 }
 void cleaner(){
 	int i;

@@ -95,7 +95,8 @@ typedef struct channel_state{
    uint32_t remote_port;
    int chan_num;
    uint16_t ticks;
-   DataPayload * lastPacket;
+   DataPayload *lastPacket;
+   DataPayload packet;
 }ChannelState;
 
 /*
