@@ -99,7 +99,6 @@ void service_search(ChannelState* state){
 }
 
 void response_handler(ChannelState *state, DataPayload *dp){
-	printf("Received message\n");
 	if (state->state != STATE_CONNECTED){
 		printf("Not connected to device!\n");
 		return;
@@ -119,8 +118,9 @@ void network_handler(ev, data){
 	memcpy(buf, uip_appdata, len);
 	buf[len] = '\0';
 
-	printf("Data is %d bytes long\n",len);
 	dp = (DataPayload *)buf;
+	printf("Packet is %d bytes long\n",len);
+	printf("Data is   %d bytes long\n",dp->dhdr.tlen);
 
 	printf("Message for channel %d\n",dp->hdr.dst_chan_num);
 	state = get_channel_state(dp->hdr.dst_chan_num);

@@ -95,11 +95,13 @@ void network_handler(ev, data){
 	unsigned short cmd;
 	uint16_t len = uip_datalen();
 	printf("ipaddr=%d.%d.%d.%d\n", uip_ipaddr_to_quad(&(UDP_HDR->srcipaddr)));
-	//printf("Data is %d bytes long\n",len);
+	printf("Packet is %d bytes long\n",len);
+
 	memcpy(buf, uip_appdata, len);
 	buf[len] = '\0';
 
 	dp = (DataPayload *)buf;
+	printf("Data is   %d bytes long\n",dp->dhdr.tlen);
 	printf("Message for channel %d\n",dp->hdr.dst_chan_num);
 	cmd = dp->hdr.cmd;        // only a byte so no reordering :)
 	printf("Received a %s command.\n", cmdnames[cmd]);

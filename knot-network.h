@@ -37,6 +37,7 @@
 #define CMD_HIGH SACK		/* change this if commands added */
 
 #define LOCAL_PORT 5001
+#define MAX_DATA_SIZE 32
 
 #define P_SIZE 1024
 #define UDP_DATA_LEN 120
@@ -61,7 +62,7 @@ typedef struct dh {
 typedef struct dp {		/* template for data payload */
    PayloadHeader hdr;
    DataHeader dhdr;
-   unsigned char data[];	/* data is address of `len' bytes */
+   unsigned char data[MAX_DATA_SIZE];	/* data is address of `len' bytes */
 } DataPayload;
 
 
