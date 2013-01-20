@@ -10,11 +10,14 @@ typedef struct knot_channel{
 static Channel channelTable[CHANNEL_NUM];
 static Channel *nextFree;
 int size;
+uip_ipaddr_t broad;
+
 /* 
  * initialise the channel table 
  */
 void init_table(){
 	printf("Initialising table\n");
+	uip_ipaddr(&broad,255,255,255,255);
 	int i;
 	size = 0;
 	nextFree = channelTable;
@@ -22,8 +25,9 @@ void init_table(){
 		channelTable[i].active = 0;
 		channelTable[i].nextChannel = (struct knot_channel *)&(channelTable[(i+1) % CHANNEL_NUM]);
 		channelTable[i].state.chan_num = i+1;
-		channelTable[i].state.remote_port = 10;
-		printf("Port: %d\n",channelTable[i].state.remote_port);
+		channelTable[i].state.remote_port = UIP_HTONL(LOCAL_PORT);
+		uip_ipaddr_copy(&(channelTable[i].state.remote_addr) , &broad);
+		printf("Port: %d\n",uip_ntohl(channelTable[i].state.remote_port));
 	}
 	channelTable[CHANNEL_NUM-1].nextChannel = NULL;
 }
@@ -58,6 +62,7 @@ ChannelState * get_channel_state(int channel){
  */
 void remove_channel(int channel){
 	channelTable[channel-1].nextChannel = nextFree;
+	uip_ipaddr_copy(&channelTable[channel-1].state.remote_addr , &broad);
 	channelTable[channel-1].active = 0;
 	nextFree = &channelTable[channel-1];
 	size--;

@@ -9,7 +9,7 @@
 #include "contiki-lib.h"
 #include "../knot-network.h"
 #include "../channeltable.h"
-#define LOCAL_PORT 5001
+
 
 char *state_names[6] = {"IDLE","QUERY","QACKED","CONNECTing","CONNECTED","DisCONNECTED"};
 
@@ -39,8 +39,8 @@ void create_channel(ChannelState *state, DataPayload *dp){
     (new_dp)->hdr.seqno = uip_htonl(1);
     (new_dp)->dhdr.tlen = sizeof(ConnectMsg);
     memcpy(&(new_dp->data),&cm,sizeof(ConnectMsg));
+    state->lastPacket = new_dp;
 	send_on_channel(state,new_dp);
-	free(new_dp);
 	state->state = STATE_CONNECT;
 	state->ticks = 10;
 }
@@ -60,21 +60,31 @@ void cack_handler(ChannelState *state, DataPayload *dp){
 	send_on_channel(state,new_dp);
 	free(new_dp);
 	state->state = STATE_CONNECTED;
-	state->ticks == 100;
-
+	state->ticks = 100;
+	
 }
 void qack_handler(ChannelState *state, DataPayload *dp){
+	
+
 	if (state->state != STATE_QUERY) {
 		printf("Not in Query state\n");
 		return;
 	}
+
+	if (state->lastPacket != NULL) 
+		free(state->lastPacket);
+
 	QueryResponse *qr = (QueryResponse *)&dp->data;
 	printf("Sensor type:%d\n", qr->type);
 	state->state = STATE_IDLE;
+	
 	create_channel(state, dp);
 }
 
-void timer_handler(ChannelState* state){
+void service_search(ChannelState* state){
+	if (state->lastPacket != NULL) 
+		free(state->lastPacket);
+
 	DataPayload *new_dp = (DataPayload*)malloc(sizeof(DataPayload));
 	//dp_complete(new_dp,10,QACK,1);
 	new_dp->hdr.src_chan_num = state->chan_num;
@@ -83,9 +93,9 @@ void timer_handler(ChannelState* state){
     (new_dp)->hdr.seqno = uip_htonl(1);
     (new_dp)->dhdr.tlen = 0;
 	send(state,new_dp);
-	free(new_dp);
 	state->state = STATE_QUERY;
 	state->ticks = 10;
+	state->lastPacket = new_dp;
 }
 
 void response_handler(ChannelState *state, DataPayload *dp){
@@ -94,6 +104,7 @@ void response_handler(ChannelState *state, DataPayload *dp){
 		printf("Not connected to device!\n");
 		return;
 	}
+	state->ticks = 100;
 	ResponseMsg *rmsg = (ResponseMsg *)dp->data;
 	printf("Temp %d\n", uip_ntohs(rmsg->temp));
 }
@@ -134,6 +145,10 @@ void network_handler(ev, data){
 
 }
 
+void resend(ChannelState *s){
+	printf("Sending last packet\n");
+	send_on_channel(s, s->lastPacket);
+}
 void cleaner(){
 	int i;
 	ChannelState *s;
@@ -144,10 +159,12 @@ void cleaner(){
 		if (s->state % 2 != 0){
 			if (s->ticks == 0){
 				printf("Retrying\n");
+				resend(s);
 				s->ticks = 11;
 			}
 		} else if (s->ticks == 0){
 			printf("PING\n");
+			s->ticks = 101;
 		}
 		s->ticks --;
 	}
@@ -169,23 +186,23 @@ PROCESS_THREAD(knot_controller, ev, data)
 	mystate = new_channel();
 	mystate->ticks = 10000;
 	init();
-	etimer_set(&clean,1000);
+	etimer_set(&clean,100);
 	//etimer_set(&et, CLOCK_CONF_SECOND*3);
 	while (1){
     	// wait until the timer has expired
     	PROCESS_WAIT_EVENT();
 		if (ev == tcpip_event && uip_newdata()) network_handler(ev, data);
 		else if ((ev == PROCESS_EVENT_TIMER)){
-			if (data == &et) timer_handler(mystate);
+			if (data == &et) service_search(mystate);
 			else if (data == &clean) {
 				cleaner();
-				etimer_set(&clean,1000);
+				etimer_set(&clean,10);
 			}
 		} 
 		else if ((ev == sensors_event) && (data == &button_sensor)){
 			mystate = new_channel();
 			if (mystate == NULL) printf("No more free channels\n");
-			else timer_handler(mystate);
+			else service_search(mystate);
 		} 
 		printf("Current state: %s\n",state_names[mystate->state]);
 		

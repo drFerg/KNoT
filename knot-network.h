@@ -36,6 +36,8 @@
 #define CMD_LOW CONNECT
 #define CMD_HIGH SACK		/* change this if commands added */
 
+#define LOCAL_PORT 5001
+
 #define P_SIZE 1024
 #define UDP_DATA_LEN 120
 #define UDP_HDR ((struct uip_udpip_hdr *)&uip_buf[UIP_LLH_LEN])
@@ -43,15 +45,6 @@
 struct uip_udp_conn *udp_conn;
 
 extern char *cmdnames[15];
-
-typedef struct channel_state{
-   u8_t state;
-   uint32_t seqno;
-   uip_ipaddr_t remote_addr; //Holds address of remote device
-   uint16_t remote_port;
-   int chan_num;
-   uint16_t ticks;
-}ChannelState;
 
 typedef struct ph {
    uint8_t dst_chan_num;
@@ -68,8 +61,9 @@ typedef struct dh {
 typedef struct dp {		/* template for data payload */
    PayloadHeader hdr;
    DataHeader dhdr;
-   unsigned char data[1];	/* data is address of `len' bytes */
+   unsigned char data[];	/* data is address of `len' bytes */
 } DataPayload;
+
 
 
 /* Message Payloads */
@@ -93,6 +87,16 @@ typedef struct cack{
 typedef struct response{
    uint16_t temp;
 }ResponseMsg;
+
+typedef struct channel_state{
+   u8_t state;
+   uint32_t seqno;
+   uip_ipaddr_t remote_addr; //Holds address of remote device
+   uint32_t remote_port;
+   int chan_num;
+   uint16_t ticks;
+   DataPayload * lastPacket;
+}ChannelState;
 
 /*
  * sends datapayload to the connections default address

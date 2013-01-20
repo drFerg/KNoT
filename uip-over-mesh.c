@@ -251,7 +251,7 @@ uip_over_mesh_init(uint16_t channels)
 	 uip_hostaddr.u8[2], uip_hostaddr.u8[3],channels);
 
   unicast_open(&dataconn, channels, &data_callbacks);
-  broadcast_open(&broadcast_dataconn,channels+1,&broadcast_call);
+  broadcast_open(&broadcast_dataconn,channels+2,&broadcast_call);
   route_discovery_open(&route_discovery, ROUTE_DISCOVERY_INTERVAL,
 		       channels + 1, &rdc);
   trickle_open(&gateway_announce_conn, ROUTE_TRICKLE_INTERVAL, channels + 3,
