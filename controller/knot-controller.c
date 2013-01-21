@@ -11,7 +11,8 @@
 #include "../channeltable.h"
 
 
-char *state_names[6] = {"IDLE","QUERY","QACKED","CONNECTing","CONNECTED","DisCONNECTED"};
+char *state_names[7] = {"IDLE","QUERY","QACKED","CONNECTing",
+						"CONNECTED","DisCONNECTED", "PING"};
 
 static ChannelState *mystate;
 
@@ -62,19 +63,17 @@ void cack_handler(ChannelState *state, DataPayload *dp){
     (new_dp)->hdr.seqno = uip_htonl(1);
     (new_dp)->dhdr.tlen = 0;
 	send_on_channel(state,new_dp);
-	free(new_dp);
 	state->state = STATE_CONNECTED;
 	state->ticks = 100;
 	
 }
-void qack_handler(ChannelState *state, DataPayload *dp){
-	
 
+
+void qack_handler(ChannelState *state, DataPayload *dp){
 	if (state->state != STATE_QUERY) {
 		printf("Not in Query state\n");
 		return;
 	}
-
 
 	QueryResponse *qr = (QueryResponse *)&dp->data;
 	printf("Sensor type:%d\n", qr->type);
@@ -142,7 +141,7 @@ void network_handler(ev, data){
 	else if (cmd == CACK)     cack_handler(state, dp);
 	else if (cmd == RESPONSE) response_handler(state, dp);
 	else if (cmd == PING)     printf("Im here\n");
-
+	else if (cmd == PACK)     pack_handler(state, dp);
 }
 
 void resend(ChannelState *s){
@@ -164,6 +163,7 @@ void cleaner(){
 			}
 		} else if (s->ticks == 0){
 			printf("PING\n");
+			ping(s);
 			s->ticks = 101;
 		}
 		s->ticks --;
@@ -183,26 +183,27 @@ PROCESS_THREAD(knot_controller, ev, data)
 	SENSORS_ACTIVATE(button_sensor);
 
 	init_table();
-	mystate = new_channel();
-	mystate->ticks = 10000;
+	//mystate = new_channel();
+	//mystate->ticks = 10000;
 	init();
 	etimer_set(&clean,100);
 	//etimer_set(&et, CLOCK_CONF_SECOND*3);
 	while (1){
     	// wait until the timer has expired
     	PROCESS_WAIT_EVENT();
-		if (ev == tcpip_event && uip_newdata()) network_handler(ev, data);
-		else if ((ev == PROCESS_EVENT_TIMER)){
-			if (data == &et) service_search(mystate);
-			else if (data == &clean) {
+		if (ev == tcpip_event && uip_newdata()) {
+			network_handler(ev, data);
+		} else if ((ev == PROCESS_EVENT_TIMER)){
+			if (data == &clean) {
 				cleaner();
 				etimer_set(&clean,10);
 			}
-		} 
-		else if ((ev == sensors_event) && (data == &button_sensor)){
+		} else if ((ev == sensors_event) && (data == &button_sensor)){
 			mystate = new_channel();
-			if (mystate == NULL) printf("No more free channels\n");
-			else service_search(mystate);
+			if (mystate == NULL) 
+				printf("No more free channels\n");
+			else 
+				service_search(mystate);
 		} 
 		printf("Current state: %s\n",state_names[mystate->state]);
 		

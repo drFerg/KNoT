@@ -7,19 +7,24 @@
 #include "contiki-lib.h"
 #include "uip.h"
 #include <stdio.h>
+#include <string.h>
 
 //Sensor type
 #define TEMP   1
 #define HUM    2
 #define SWITCH 3
 
+/* Connection states */
 #define STATE_IDLE       0
 #define STATE_QUERY      1
 #define STATE_QACKED     2
 #define STATE_CONNECT    3
 #define STATE_CONNECTED  4
 #define STATE_DCONNECTED 5
+#define STATE_PING       7
+/* ===================*/
 
+/* Packet command types */
 #define QUERY    1
 #define QACK     2
 #define CONNECT  3
@@ -35,6 +40,7 @@
 
 #define CMD_LOW CONNECT
 #define CMD_HIGH SACK		/* change this if commands added */
+/* =======================*/
 
 #define LOCAL_PORT 5001
 #define MAX_DATA_SIZE 32
@@ -111,6 +117,10 @@ void send(ChannelState *state, DataPayload *dp);
  */
 void send_on_channel(ChannelState *state, DataPayload *dp);
 
+
+void ping(ChannelState *state);
+void pack_handler(ChannelState *state, DataPayload *dp);
+void ping_handler(ChannelState *state, DataPayload *dp);
 
 
 #endif /*KNOT_NETWORK*/

@@ -115,9 +115,10 @@ void network_handler(ev, data){
 	if      (cmd == QUERY)   query_handler(state,dp);
 	else if (cmd == CONNECT) connect_handler(state,dp);
 	else if (cmd == CACK)    cack_handler(state, dp);
+	else if (cmd == PING)    ping_handler(state, dp);
 }
 
-void timer_handler(ChannelState* state){
+void send_handler(ChannelState* state){
 	printf("Building a packet\n");
     DataPayload *new_dp = &(state->packet);
 	ResponseMsg rmsg;
@@ -154,7 +155,7 @@ PROCESS_THREAD(knot_sensor, ev, data)
     	}
     	PROCESS_WAIT_EVENT();
 		if (ev == tcpip_event && uip_newdata()) network_handler(ev,data);
-		else if (ev == PROCESS_EVENT_TIMER) timer_handler(&mystate);
+		else if (ev == PROCESS_EVENT_TIMER) send_handler(&mystate);
 		
 	}
 
