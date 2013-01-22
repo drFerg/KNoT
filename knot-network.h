@@ -88,7 +88,6 @@ typedef struct connect_message{
 typedef struct cack{
    uint8_t accept;
    char name[10];
-      uint8_t dst_chan_num;
 }CACKMesg;
 
 typedef struct response{

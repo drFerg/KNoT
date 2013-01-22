@@ -52,7 +52,7 @@ void cack_handler(ChannelState *state, DataPayload *dp){
 		return;
 	}
 	CACKMesg *ck = (CACKMesg*)dp->data;
-	printf("%s accepts connection request on channel %d\n",ck->name,ck->dst_chan_num);
+	printf("%s accepts connection request on channel %d\n",ck->name,dp->hdr.src_chan_num);
 	
 	DataPayload *new_dp = &(state->packet);
 	memset(new_dp, '\0', sizeof(DataPayload));
@@ -124,12 +124,13 @@ void network_handler(ev, data){
 		printf("Channel %d doesn't exist\n", dp->hdr.dst_chan_num);
 	}
 	if (state->seqno > uip_ntohl(dp->hdr.seqno)){
-		printf("Oh no, out of sequence\n");
-		printf("State: %d SeqNo %d\n",state->seqno, uip_ntohl(dp->hdr.seqno));
+		printf("--Out of sequence--\n");
+		printf("--State: %d SeqNo %d--\n--Dropping packet--\n",state->seqno, uip_ntohl(dp->hdr.seqno));
+		return;
 	}
 	else {
 		state->seqno = uip_ntohl(dp->hdr.seqno);
-		printf("SeqNo %d\n", uip_ntohl(dp->hdr.seqno));
+		printf("--SeqNo %d--\n", uip_ntohl(dp->hdr.seqno));
 	}
 	cmd = dp->hdr.cmd;        // only a byte so no reordering :)
 	printf("Received a %s command.\n", cmdnames[cmd]);

@@ -71,6 +71,7 @@ void connect_handler(ChannelState *state,DataPayload *dp){
 	memcpy(ck.name,SENSORNAME,10);
 	new_dp->hdr.src_chan_num = state->chan_num;
 	new_dp->hdr.dst_chan_num = dp->hdr.src_chan_num;
+	printf("chan num %d\n", new_dp->hdr.src_chan_num);
 	//dp_complete(new_dp,10,QACK,1);
     (new_dp)->hdr.cmd = CACK; 
     
@@ -111,12 +112,13 @@ void network_handler(ev, data){
   	state->remote_port = UDP_HDR->srcport;
   	//printf("ipaddr=%d.%d.%d.%d:%u\n", uip_ipaddr_to_quad(&(state->remote_addr)),uip_htons(state->remote_port));
 	if (state->seqno > uip_ntohl(dp->hdr.seqno)){
-		printf("Oh no, out of sequence\n");
-		printf("State: %d SeqNo %d\n",state->seqno, uip_ntohl(dp->hdr.seqno));
+		printf("--Out of sequence--\n");
+		printf("--State: %d SeqNo %d--\n--Dropping packet--\n",state->seqno, uip_ntohl(dp->hdr.seqno));
+		return;
 	}
 	else {
 		state->seqno = uip_ntohl(dp->hdr.seqno);
-		printf("SeqNo %d\n", uip_ntohl(dp->hdr.seqno));
+		printf("--SeqNo %d--\n", uip_ntohl(dp->hdr.seqno));
 	}
 
 	if      (cmd == QUERY)   query_handler(state,dp);
