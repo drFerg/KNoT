@@ -25,6 +25,7 @@ void init_table(){
 		channelTable[i].active = 0;
 		channelTable[i].nextChannel = (struct knot_channel *)&(channelTable[(i+1) % CHANNEL_NUM]);
 		channelTable[i].state.chan_num = i+1;
+		channelTable[i].state.seqno = 0;
 		channelTable[i].state.remote_port = UIP_HTONS(LOCAL_PORT);
 		uip_ipaddr_copy(&(channelTable[i].state.remote_addr) , &broad);
 		printf("Port: %d\n",uip_ntohs(channelTable[i].state.remote_port));

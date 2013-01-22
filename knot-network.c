@@ -7,6 +7,8 @@ char *cmdnames[15] = {"", "QUERY", "QACK","CONNECT", "CACK",
 /**Send a message to the connection in state **/
 void send_on_channel(ChannelState *state, DataPayload *dp){
    int dplen = sizeof(PayloadHeader) + sizeof(DataHeader) + dp->dhdr.tlen;
+   state->seqno++;
+   dp->hdr.seqno = uip_htonl(state->seqno);
    uip_udp_packet_sendto(udp_conn, (char*)dp, dplen,
                           &state->remote_addr,state->remote_port);
    printf("Sent %s to ipaddr=%d.%d.%d.%d:%u\n", 

@@ -97,11 +97,11 @@ typedef struct response{
 }ResponseMsg;
 
 typedef struct channel_state{
-   u8_t state;
+   uint8_t state;
    uint32_t seqno;
    uip_ipaddr_t remote_addr; //Holds address of remote device
    uint32_t remote_port;
-   int chan_num;
+   uint8_t chan_num;
    uint16_t ticks;
    DataPayload packet;
 }ChannelState;

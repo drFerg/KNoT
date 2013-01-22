@@ -36,6 +36,7 @@ int init(ChannelState *state){
 
 	if (state != NULL){
 		state->state = STATE_IDLE;
+		state->seqno = 0;
 	} else return 0;
 	udp_conn = udp_new(NULL,UIP_HTONS(LOCAL_PORT), state);
 	if (udp_conn != NULL){
@@ -55,7 +56,6 @@ void query_handler(ChannelState *state,DataPayload *dp){
 	//dp_complete(new_dp,uip_htons(10),1,(1));
 	new_dp->hdr.dst_chan_num = dp->hdr.src_chan_num; 
     new_dp->hdr.cmd = QACK; 
-    new_dp->hdr.seqno=uip_htonl(1);
     new_dp->dhdr.tlen = sizeof(QueryResponse);
     memcpy(new_dp->data,&qr,sizeof(QueryResponse));
 	send_on_channel(state,new_dp);
@@ -73,7 +73,7 @@ void connect_handler(ChannelState *state,DataPayload *dp){
 	new_dp->hdr.dst_chan_num = dp->hdr.src_chan_num;
 	//dp_complete(new_dp,10,QACK,1);
     (new_dp)->hdr.cmd = CACK; 
-    (new_dp)->hdr.seqno = uip_htonl(1);
+    
     (new_dp)->dhdr.tlen = sizeof(CACKMesg);
     memcpy(&(new_dp->data),&ck,sizeof(CACKMesg));
 	send_on_channel(state,new_dp);
@@ -110,7 +110,14 @@ void network_handler(ev, data){
     uip_ipaddr_copy(&(state->remote_addr) , &(UDP_HDR->srcipaddr));
   	state->remote_port = UDP_HDR->srcport;
   	//printf("ipaddr=%d.%d.%d.%d:%u\n", uip_ipaddr_to_quad(&(state->remote_addr)),uip_htons(state->remote_port));
-	
+	if (state->seqno > uip_ntohl(dp->hdr.seqno)){
+		printf("Oh no, out of sequence\n");
+		printf("State: %d SeqNo %d\n",state->seqno, uip_ntohl(dp->hdr.seqno));
+	}
+	else {
+		state->seqno = uip_ntohl(dp->hdr.seqno);
+		printf("SeqNo %d\n", uip_ntohl(dp->hdr.seqno));
+	}
 
 	if      (cmd == QUERY)   query_handler(state,dp);
 	else if (cmd == CONNECT) connect_handler(state,dp);
@@ -128,7 +135,6 @@ void send_handler(ChannelState* state){
 	rmsg.data = uip_htons(10);
 	//dp_complete(new_dp,10,QACK,1); 
     (new_dp)->hdr.cmd = RESPONSE; 
-    (new_dp)->hdr.seqno = uip_htonl(1);
     (new_dp)->dhdr.tlen = sizeof(ResponseMsg);
     memcpy(&(new_dp->data),&rmsg,sizeof(ResponseMsg));
     send_on_channel(state,new_dp);

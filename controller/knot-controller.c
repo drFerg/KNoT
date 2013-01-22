@@ -39,7 +39,6 @@ void create_channel(ChannelState *state, DataPayload *dp){
 	new_dp->hdr.src_chan_num = state->chan_num;
 
     (new_dp)->hdr.cmd = CONNECT; 
-    (new_dp)->hdr.seqno = uip_htonl(1);
     (new_dp)->dhdr.tlen = sizeof(ConnectMsg);
     memcpy(&(new_dp->data),&cm,sizeof(ConnectMsg));
 	send_on_channel(state,new_dp);
@@ -60,7 +59,6 @@ void cack_handler(ChannelState *state, DataPayload *dp){
 
 	//dp_complete(new_dp,10,QACK,1);
     (new_dp)->hdr.cmd = CACK; 
-    (new_dp)->hdr.seqno = uip_htonl(1);
     (new_dp)->dhdr.tlen = 0;
 	send_on_channel(state,new_dp);
 	state->state = STATE_CONNECTED;
@@ -90,7 +88,6 @@ void service_search(ChannelState* state){
 	new_dp->hdr.src_chan_num = state->chan_num;
 	new_dp->hdr.dst_chan_num = 1;
     (new_dp)->hdr.cmd = QUERY; 
-    (new_dp)->hdr.seqno = uip_htons(1);
     (new_dp)->dhdr.tlen = 0;
 	send(state,new_dp);
 	state->state = STATE_QUERY;
@@ -126,6 +123,14 @@ void network_handler(ev, data){
 	if (state == NULL){
 		printf("Channel %d doesn't exist\n", dp->hdr.dst_chan_num);
 	}
+	if (state->seqno > uip_ntohl(dp->hdr.seqno)){
+		printf("Oh no, out of sequence\n");
+		printf("State: %d SeqNo %d\n",state->seqno, uip_ntohl(dp->hdr.seqno));
+	}
+	else {
+		state->seqno = uip_ntohl(dp->hdr.seqno);
+		printf("SeqNo %d\n", uip_ntohl(dp->hdr.seqno));
+	}
 	cmd = dp->hdr.cmd;        // only a byte so no reordering :)
 	printf("Received a %s command.\n", cmdnames[cmd]);
 	
@@ -154,7 +159,7 @@ void cleaner(){
 	for (i = 1; i < CHANNEL_NUM; i++){
 		s = get_channel_state(i);
 		if (s == NULL) continue; 
-		printf("%d\n", s->ticks);
+		//printf("%d\n", s->ticks);
 		if (s->state % 2 != 0){
 			if (s->ticks == 0){
 				printf("Retrying\n");
@@ -205,7 +210,7 @@ PROCESS_THREAD(knot_controller, ev, data)
 			else 
 				service_search(mystate);
 		} 
-		printf("Current state: %s\n",state_names[mystate->state]);
+		//printf("Current state: %s\n",state_names[mystate->state]);
 		
 	}
 
