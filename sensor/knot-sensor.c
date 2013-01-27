@@ -125,6 +125,7 @@ void network_handler(ev, data){
 	else if (cmd == CONNECT) connect_handler(state,dp);
 	else if (cmd == CACK)    cack_handler(state, dp);
 	else if (cmd == PING)    ping_handler(state, dp);
+	else if (cmd == PACK)    pack_handler(state, dp);
 }
 
 void send_handler(ChannelState* state){

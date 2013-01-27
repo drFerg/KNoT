@@ -44,6 +44,7 @@
 
 #define LOCAL_PORT 5001
 #define MAX_DATA_SIZE 32
+#define NAME_SIZE     16
 
 #define P_SIZE 1024
 #define UDP_DATA_LEN 120
@@ -54,9 +55,9 @@ struct uip_udp_conn *udp_conn;
 extern char *cmdnames[15];
 
 typedef struct ph {
-   uint8_t dst_chan_num;
+   uint32_t seqno;   /* sequence number */
    uint8_t src_chan_num;
-   uint32_t seqno;	/* sequence number */
+   uint8_t dst_chan_num;
    uint8_t cmd;	/* message type */
 } PayloadHeader;
 
@@ -75,23 +76,31 @@ typedef struct dp {		/* template for data payload */
 
 /* Message Payloads */
 
+typedef struct query{
+   uint8_t type;
+   char name[NAME_SIZE];
+}Query;
+
 typedef struct query_response{
+   uint8_t src_chan_num;
    uint8_t type;
    uint16_t freq;
 }QueryResponse;
 
 typedef struct connect_message{
+   uint8_t src_chan_num;
    uint8_t accept;
-   char name[10];
+   char name[NAME_SIZE];
 }ConnectMsg;
 
 typedef struct cack{
+   uint8_t src_chan_num;
    uint8_t accept;
-   char name[10];
+   char name[NAME_SIZE];
 }CACKMesg;
 
 typedef struct response{
-   char name[10];
+   char name[NAME_SIZE];
    uint16_t data;
 }ResponseMsg;
 

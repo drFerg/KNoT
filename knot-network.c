@@ -31,7 +31,6 @@ void ping(ChannelState *state){
    DataPayload *new_dp = &(state->packet);
    memset(new_dp, '\0', sizeof(DataPayload));
    new_dp->hdr.dst_chan_num = state->chan_num;
-   new_dp->hdr.src_chan_num = state->chan_num;
 
    (new_dp)->hdr.cmd = PING; 
    (new_dp)->hdr.seqno = uip_htonl(1);
@@ -60,7 +59,6 @@ void ping_handler(ChannelState *state,DataPayload *dp){
    DataPayload *new_dp = &(state->packet);
    memset(new_dp, '\0', sizeof(DataPayload));
    new_dp->hdr.dst_chan_num = state->chan_num;
-   new_dp->hdr.src_chan_num = state->chan_num;
    
    (new_dp)->hdr.cmd = PACK; 
    (new_dp)->hdr.seqno = uip_htonl(1);

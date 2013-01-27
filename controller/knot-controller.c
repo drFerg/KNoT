@@ -34,10 +34,9 @@ void create_channel(ChannelState *state, DataPayload *dp){
 	DataPayload *new_dp = &(state->packet);
 	memset(new_dp, '\0', sizeof(DataPayload));
 	ConnectMsg cm;
-	memcpy(cm.name,"Controller",10);
-	new_dp->hdr.dst_chan_num = state->chan_num;
+	strcpy(cm.name,"Controller");
+	new_dp->hdr.dst_chan_num = 0;
 	new_dp->hdr.src_chan_num = state->chan_num;
-
     (new_dp)->hdr.cmd = CONNECT; 
     (new_dp)->dhdr.tlen = sizeof(ConnectMsg);
     memcpy(&(new_dp->data),&cm,sizeof(ConnectMsg));
@@ -86,9 +85,13 @@ void service_search(ChannelState* state){
 	memset(new_dp, '\0', sizeof(DataPayload));
 	//dp_complete(new_dp,10,QACK,1);
 	new_dp->hdr.src_chan_num = state->chan_num;
-	new_dp->hdr.dst_chan_num = 1;
+	new_dp->hdr.dst_chan_num = 0;
     (new_dp)->hdr.cmd = QUERY; 
-    (new_dp)->dhdr.tlen = 0;
+    (new_dp)->dhdr.tlen = sizeof(Query);
+    Query *q = (Query *) new_dp->data;
+   
+    q->type = TEMP;
+    strcpy(q->name,"Controller");
 	send(state,new_dp);
 	state->state = STATE_QUERY;
 	state->ticks = 10;
@@ -146,7 +149,7 @@ void network_handler(ev, data){
 	else if (cmd == QACK)     qack_handler(state, dp);
 	else if (cmd == CACK)     cack_handler(state, dp);
 	else if (cmd == RESPONSE) response_handler(state, dp);
-	else if (cmd == PING)     printf("Im here\n");
+	else if (cmd == PING)     ping_handler(state, dp);
 	else if (cmd == PACK)     pack_handler(state, dp);
 }
 
