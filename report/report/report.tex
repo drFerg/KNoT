@@ -1,7 +1,7 @@
 \pdfoutput=1
 
 \documentclass{l4proj}
-
+\usepackage{comment}
 %
 % put any packages here
 %
@@ -29,7 +29,7 @@ A level 4 project which explores the current use of protocols for the Internet o
 \chapter{Introduction}
 \pagenumbering{arabic}
 
-The ``Internet of Things'' paradigm along with the ``Smart'' prefix has recently seen a significant rise in interest and popularity with manufacturers, hobbyists and end-users. Everything from your set-top box to your washing machine\cite{LG} can now be ``Smart''\cite{SmartCraze} and connect to the Internet to tell you if your favourite TV show has downloaded or that your wash cycle has complete. Some hobbyists have gone so far to make plants send a text or tweet when it needs watering\cite{TweetPlant}.
+The ``Internet of Things'' paradigm along with the ``Smart'' prefix has recently seen a significant rise in interest and popularity with manufacturers, hobbyists and end-users. Everything from your set-top box to your washing machine\cite{LG} can now be ``Smart''\cite{SmartCraze} and connect to the Internet to tell you if your favourite TV show has downloaded or that your wash cycle has complete. Some hobbyists have gone so far to make plants send a text or tweet when it needs watering\cite{Botanicalls}\cite{TweetPlant}.
 
 This uptake in interest and development can be largely attributed to the advent of lower power, smaller and most importantly cheaper devices. Large companies such as the mobile phone chip-set manufacturer, Qualcomm, recently declared their support at CES 2012 with the announcement of a dedicated development platform for the ``Internet of Things''\cite{Qualcomm}.
 
@@ -77,12 +77,22 @@ Fast forward to 2013 and the ``Year of the Internet of Things'' as declared by t
 
 
 % section internet_of_things_paradigm (end)
-
+\newpage
 \section{Open source constrained devices} % (fold)
 \label{sec:open_source_constrained_devices}
 
 \subsection{Arduino} % (fold)
 \label{sub:arduino}
+In the past decade there have been many attempts at creating an affordable, low power and approachable electronics platform such as Arduino, Netduino, BeagleBone, Teensy and MSP430 Launchpad. All of which have taken very different approaches, some opting for absolute low cost (MSP430 Launchpad), whilst others for aimed to be fully featured and powerful devices (BeagleBone). Whilst the Arduino is by far not the cheapest or the most powerful of the bunch, it excelled in areas others lacked and created a sweet spot in the middle.
+
+The Arduino was born in 2005 at an Italian university, Interaction Design Institute Ivrea, out of the necessity of creating a cheap and approachable electronics platform which could enable design students to create interaction design projects without the need of an electronics background.
+The main device which was created and remained much the same since is based on an Amtel ATmega328 8bit microcontroller running at 16MHz with 2KB of RAM and 32KB of storage. The board itself maps out the microcontroller's mix of 20 digital and analog input/output pins and supports several standardised protocols for communicating with other devices such as I2C and UART. These pins  
+
+But the key to the Arduino Platform is not just the microcontroller but instead the design, software and support provided by the creators and other developers
+Since then the Arduino platform has created a range of Arduino named devices and gained a following of over 300,000 users\cite{ArduinoNumbers}. 
+
+\begin{comment}
+OPEN SOURCE
 Microcontroller, cheap, easy, pic chips were difficult, lowered barrier of entry, provided large support and huge following
 italian made, several iterations on size and power
 Good starting point for development as there are many in existance
@@ -91,22 +101,25 @@ Based on C/C++ with a few tweaks, offers shields for expandability i.e. ethernet
 very good at sensing and doing things
 16mhz
 no threading
-
+\end{comment}
 % subsection arduino (end)
 
 \subsection{Raspberry Pi} % (fold)
 \label{sub:raspberry_pi}
+\begin{comment}
 new, more powerful open device. runs a real operating system with gpio options
 perhaps upper limit of power for this protocol
 most languages possible, threading etc
+\end{comment}
 % subsection raspberry_pi (end)
 
 \subsection{Telos B Motes} % (fold)
 \label{sub:telos_b_motes}
+\begin{comment}
 popular academic tool, many os's, very low power like arduino, with radio and sensors
 some gpio, but limited
 contiki c like, event and thread driven
-
+\end{comment}
 % subsection telos_b_motes (end)
 % section open_source_constrained_devices (end)
 \section{Wireless Sensor Networks} % (fold)
