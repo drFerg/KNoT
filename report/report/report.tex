@@ -86,32 +86,47 @@ Fast forward to 2013 and the ``Year of the Internet of Things'' as declared by t
 In the past decade there have been many attempts at creating an affordable, low power and approachable electronics platform such as Arduino, Netduino, BeagleBone, Teensy and MSP430 Launchpad. All of which have taken very different approaches, some opting for absolute low cost (MSP430 Launchpad), whilst others for aimed to be fully featured and powerful devices (BeagleBone). Whilst the Arduino is by far not the cheapest or the most powerful of the bunch, it excelled in areas others lacked and created a sweet spot in the middle.
 
 The Arduino was born in 2005 at an Italian university, Interaction Design Institute Ivrea, out of the necessity of creating a cheap and approachable electronics platform which could enable design students to create interaction design projects without the need of an electronics background.
-The main device which was created and remained much the same since is based on an Amtel ATmega328 8bit microcontroller running at 16MHz with 2KB of RAM and 32KB of storage. The board itself maps out the microcontroller's mix of 20 digital and analog input/output pins and supports several standardised protocols for communicating with other devices such as I2C and UART. 
+The main device which was created and remained much the same since is based on an Amtel ATmega328 8bit micro-controller running at 16MHz with 2KB of RAM and 32KB of storage for programmes written in a variation on C/C++. The board itself maps out the micro-controller's mix of 20 digital and analog input/output pins and supports several standardised protocols for communicating with other devices such as I\textsuperscript{2}C\footnote{I\textsuperscript{2}C - Inter-Intergrated Circuit} and UART\footnote{UART - Universal Asynchronous Reciever/Transmitter}. 
 
-But the key to the Arduino Platform is not the microcontroller itself but instead the design, software and support provided by the creators and other developers. The other major factor to its success is that the device along with the documentation and support are all open source, thus allowing anyone to learn from, replicate and expand upon the platform in any way they wish.
+But the key to the Arduino Platform is not the micro-controller itself but instead the design, software and support provided by the creators and other developers. The other major factor to its success is that the device along with the documentation and support are all open source, thus allowing anyone to learn from, replicate and expand upon the platform in any way they wish.
 
-An example of how these factors have had a hugely positive effect is something which Arduino calls ``Shields''. These shields plug in on top of the arduino board and contain standard components which can add additional features such as wifi, ethernet, sound, motor control etc. Rather than users being required to find, purchase and solder the required components to add such features, these prebuilt shields provide it in simple and readily available package made by a variety of manufacturers.
+An example of how these factors have had a hugely positive effect is something which Arduino calls ``Shields''. These shields plug in on top of the Arduino board and contain standard components which can add additional features such as WI-FI, Ethernet, sound, motor control etc. Rather than users being required to find, purchase and solder the required components to add such features, these pre-built shields provide it in simple and readily available package made by a variety of manufacturers.
 
-Since its creation the Arduino platform has created a range of Arduino named devices and shields resulting in a following of over 300,000 users\cite{ArduinoNumbers} and support from many manufacturers and distributers worldwide. 
+Since its creation the Arduino platform has created a range of Arduino named devices and shields resulting in a following of over 300,000 users\cite{ArduinoNumbers} and support from many manufacturers and distributors worldwide. 
 
-Due to Arduino's open policy many new start-ups have been able to quickly design prototypes and products using the Arduino platform which have been taken to market in various refined forms. Often the same micro-controller which powers the Arduino is kept and the board miniturised to fit the product's needs. Products such as the Internet ``Thing'' Twine\cite{Twine} and the Smart Things ``Internet of Things'' eco system have taken this approach\cite{SmartThings}.
+Due to Arduino's open policy many new start-ups have been able to quickly design prototypes and products using the Arduino platform which have been taken to market in various refined forms. Often the same micro-controller which powers the Arduino is kept and the board miniaturised to fit the product's needs. Products such as the Internet ``Thing'' Twine\cite{Twine} and the Smart Things ``Internet of Things'' eco-system have taken this approach\cite{SmartThings}.
 
-However whilst there is an abundance of Arduino devices in the wild with many being used as an Internet ``Thing'' there is yet to be created an open and compatable method to easily network a group of such devices together to form a connected ``Internet of Things'' network.
+However, whilst there is an abundance of Arduino devices in the wild with many being used as an Internet ``Thing'' there is yet to be created an open and compatible method to easily network a group of such devices together to form a connected ``Internet of Things'' network.
+
 \begin{comment}
 OPEN SOURCE
-Microcontroller, cheap, easy, pic chips were difficult, lowered barrier of entry, provided large support and huge following
-italian made, several iterations on size and power
-Good starting point for development as there are many in existance
+Micro-controller, cheap, easy, PIC chips were difficult, lowered barrier of entry, provided large support and huge following
+Italian made, several iterations on size and power
+Good starting point for development as there are many in existence
 Well adopted
-Based on C/C++ with a few tweaks, offers shields for expandability i.e. ethernet, wifi
+Based on C/C++ with a few tweaks, offers shields for expandability i.e. Ethernet, WI-FI
 very good at sensing and doing things
-16mhz
+16MHz
 no threading
 \end{comment}
-% subsection arduino (end)
+% subsection Arduino (end)
 
+\newpage
 \subsection{Raspberry Pi} % (fold)
 \label{sub:raspberry_pi}
+Launched in 2012 the Raspberry Pi, a \$35 credit card sized computer, was eagerly anticipated to change the computing landscape. The charity behind it, the Raspberry Pi foundation, had one main goal; to refresh and promote the teaching of computer science in schools.
+
+Similar to the Arduino Platform most of the hardware and software for the device is open source with the aim of letting adults and children alike get their hands dirty learning about computing without the worry of breaking an expensive computer.
+
+The Raspberry Pi itself is a moderately well powered single board computer capable of running a wide variety of Linux based operating systems. It's host to a 700MHz ARM CPU, 512MB RAM and a variety of inputs/outputs including an Ethernet port. These features along with some additional GPIO\footnote{General Purpose Input Output} pins, just like the Arduino, allow it to sense and control the world around it, thus making it a perfect ``Thing''.
+
+Because of extremely low price point for such hardware the Raspberry Pi was a huge success selling over 500,000 units in the first 8 months only limited by their production speed.\cite{RaspberryPiSold}
+
+Even before it's release the community support and ideas were non-stop, everything from home-media centres\cite{Raspbmc} to lego super computers\footnote{Even within the School of Computing, UoG}\cite{LegoSuperComputer} were designed and created from Raspberry Pis.
+
+Whilst the support for utilising the GPIO pins is not as well developed as the Arduino Platform nor does it have the ``Shields'', the power of the device combined with its low price point and connectivity means that it can be very easily incorporated into a ``Internet of Things'' network with little additional hardware.
+
+
 \begin{comment}
 new, more powerful open device. runs a real operating system with gpio options
 perhaps upper limit of power for this protocol
@@ -122,9 +137,9 @@ most languages possible, threading etc
 \subsection{Telos B Motes} % (fold)
 \label{sub:telos_b_motes}
 \begin{comment}
-popular academic tool, many os's, very low power like arduino, with radio and sensors
+popular academic tool, many OS's, very low power like Arduino, with radio and sensors
 some gpio, but limited
-contiki c like, event and thread driven
+Contiki c like, event and thread driven
 \end{comment}
 % subsection telos_b_motes (end)
 % section open_source_constrained_devices (end)

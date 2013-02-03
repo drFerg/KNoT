@@ -1,7 +1,7 @@
 \pdfoutput=1
 
 \documentclass{l4proj}
-
+\usepackage{comment}
 %
 % put any packages here
 %
@@ -29,13 +29,13 @@ A level 4 project which explores the current use of protocols for the Internet o
 \chapter{Introduction}
 \pagenumbering{arabic}
 
-The ``Internet of Things'' paradigm along with the ``Smart'' prefix has recently seen a huge increase in interest and popularity with manufacturers, hobbyists and end-users. Everything from your set-top box to your washing machine\cite{LG} can now be ``Smart''\cite{SmartCraze} and connect to the Internet to tell you if your favourite TV show has downloaded or that your wash cycle has complete. Some hobbyists have gone so far to make plants send a text or tweet when it needs watering\cite{TweetPlant}.
+The ``Internet of Things'' paradigm along with the ``Smart'' prefix has recently seen a significant rise in interest and popularity with manufacturers, hobbyists and end-users. Everything from your set-top box to your washing machine\cite{LG} can now be ``Smart''\cite{SmartCraze} and connect to the Internet to tell you if your favourite TV show has downloaded or that your wash cycle has complete. Some hobbyists have gone so far to make plants send a text or tweet when it needs watering\cite{Botanicalls}\cite{TweetPlant}.
 
 This uptake in interest and development can be largely attributed to the advent of lower power, smaller and most importantly cheaper devices. Large companies such as the mobile phone chip-set manufacturer, Qualcomm, recently declared their support at CES 2012 with the announcement of a dedicated development platform for the ``Internet of Things''\cite{Qualcomm}.
 
-Similarly there has also been much enthusiasm from the small companies and start ups trying to create the next hit consumer device. Social funding platform, Kickstarter\cite{Kickstarter}, has seen many attempts at creating the perfect ``Thing'' for the Internets\cite{SmartThings}\cite{Twine}.
+Similarly there has also been much enthusiasm from small companies and start ups trying to create the next hit consumer device. Social funding platform, Kickstarter\cite{Kickstarter}, has seen many attempts at creating the perfect ``Thing'' for the Internet\cite{SmartThings}\cite{Twine}.
 
-Whilst all of these devices from manufacturers, start ups and hobbyists may very well be great ``Things'' by themselves, there exists a problem. How do you connect all these heterogeneous platforms and devices together to create a true ``Internet of Things''?
+Whilst all of these devices from manufacturers, start ups and hobbyists may very well be great ``Things'' by themselves, there exists a problem. How do you connect all of these heterogeneous platforms and devices together to create a true Internet of ``Things''?
 
 This project focuses on just that and endeavours to create a communication protocol that is not only platform agnostic but also lightweight enough to be run on the most brain-dead constrained devices, such as the TelosB Sky Motes(8MHz,10K ram)\cite{TelosB}. Another design focus is that the protocol must be able to scale well as the network dramatically increases and decreases in size.
 
@@ -51,14 +51,14 @@ This project focuses on just that and endeavours to create a communication proto
 The standard model of how we use computers and the Internet today revolves around the idea of an interconnected network of servers, routers and data centres around which users connect using their personal computers to access, input, manipulate and retrieve data. 
 
 This model heavily relies upon the users to provide the data which the Internet is powered by. Without this data the Internet would be a barren place, with nothing to search for, sell, buy, share, watch, listen to, play, analyse or learn from.
-Users from all around the world have contributed to make the Internet \textit{the} single biggest resource in the world by snapping photos, caturing videos, writing blogs, creating websites, commenting, discussing, reviewing, buying, selling and inputing data. So much data in fact that the estimated size of the Internet in 2009 was 500bn Gigabytes, of which 70\% was contributed to by users.\cite{Size}   
+Users from all around the world have contributed to make the Internet \textit{the} single biggest resource in the world by snapping photos, capturing videos, writing blogs, creating websites, commenting, discussing, reviewing, buying, selling and inputing data. So much data in fact that the estimated size of the Internet in 2009 was 500bn gigabytes, of which 70\% was contributed to by users.\cite{Size}   
 
 % INSERT DIAGRAM HERE
 Within this model there exists two significant problems posed by users; time and accuracy. In terms of time, users only have so many hours in a day to input data; which can only be so accurate as all users are prone to error through one means or another.
-The two problems make it difficult to observe our world and represent it in an accurate and reliable digital form.
+These two problems make it difficult to observe our world and represent it in an accurate and reliable digital form.
 
-The idea of taking this responsiblity of inputing data away from the user and giving it to the machine is where the ``Internet of Things'' term initially came from. The term itself was thought to have first been coined by Kevin Ashton\cite{K.Ashton} in 1999, who at the time was interested in linking up a company's supply chain to the Internet using RFID technology to allow for autonomous monitoring its state.
-Sadly at that time the idea progressed little and didn't really take off.
+The idea of taking this responsibility of inputing data away from the user and giving it to the machine is where the ``Internet of Things'' term initially came from. The term itself was thought to have first been coined by Kevin Ashton\cite{K.Ashton} in 1999, who at the time was interested in linking up a company's supply chain to the Internet using RFID technology to allow for autonomous monitoring its state.
+Sadly at that time the idea progressed little and didn't garner much support.
 
 Fast forward to 2013 and the ``Year of the Internet of Things'' as declared by the MIT Technology Review\cite{2013IoT} and observed in the Consumer Electronics Show 2013 (CES).
 
@@ -77,18 +77,56 @@ Fast forward to 2013 and the ``Year of the Internet of Things'' as declared by t
 
 
 % section internet_of_things_paradigm (end)
-
+\newpage
 \section{Open source constrained devices} % (fold)
 \label{sec:open_source_constrained_devices}
+
 \subsection{Arduino} % (fold)
 \label{sub:arduino}
+In the past decade there have been many attempts at creating an affordable, low power and approachable electronics platform such as Arduino, Netduino, BeagleBone, Teensy and MSP430 Launchpad. All of which have taken very different approaches, some opting for absolute low cost (MSP430 Launchpad), whilst others for aimed to be fully featured and powerful devices (BeagleBone). Whilst the Arduino is by far not the cheapest or the most powerful of the bunch, it excelled in areas others lacked and created a sweet spot in the middle.
 
+The Arduino was born in 2005 at an Italian university, Interaction Design Institute Ivrea, out of the necessity of creating a cheap and approachable electronics platform which could enable design students to create interaction design projects without the need of an electronics background.
+The main device which was created and remained much the same since is based on an Amtel ATmega328 8bit microcontroller running at 16MHz with 2KB of RAM and 32KB of storage. The board itself maps out the microcontroller's mix of 20 digital and analog input/output pins and supports several standardised protocols for communicating with other devices such as I2C and UART. 
+
+But the key to the Arduino Platform is not the microcontroller itself but instead the design, software and support provided by the creators and other developers. The other major factor to its success is that the device along with the documentation and support are all open source, thus allowing anyone to learn from, replicate and expand upon the platform in any way they wish.
+
+An example of how these factors have had a hugely positive effect is something which Arduino calls ``Shields''. These shields plug in on top of the arduino board and contain standard components which can add additional features such as wifi, ethernet, sound, motor control etc. Rather than users being required to find, purchase and solder the required components to add such features, these prebuilt shields provide it in simple and readily available package made by a variety of manufacturers.
+
+Since its creation the Arduino platform has created a range of Arduino named devices and shields resulting in a following of over 300,000 users\cite{ArduinoNumbers} and support from many manufacturers and distributers worldwide. 
+
+Due to Arduino's open policy many new start-ups have been able to quickly design prototypes and products using the Arduino platform which have been taken to market in various refined forms. Often the same micro-controller which powers the Arduino is kept and the board miniturised to fit the product's needs. Products such as the Internet ``Thing'' Twine\cite{Twine} and the Smart Things ``Internet of Things'' eco system have taken this approach\cite{SmartThings}.
+
+However, whilst there is an abundance of Arduino devices in the wild with many being used as an Internet ``Thing'' there is yet to be created an open and compatible method to easily network a group of such devices together to form a connected ``Internet of Things'' network.
+\begin{comment}
+OPEN SOURCE
+Microcontroller, cheap, easy, pic chips were difficult, lowered barrier of entry, provided large support and huge following
+italian made, several iterations on size and power
+Good starting point for development as there are many in existance
+Well adopted
+Based on C/C++ with a few tweaks, offers shields for expandability i.e. ethernet, wifi
+very good at sensing and doing things
+16mhz
+no threading
+\end{comment}
 % subsection arduino (end)
 
 \subsection{Raspberry Pi} % (fold)
 \label{sub:raspberry_pi}
-
+\begin{comment}
+new, more powerful open device. runs a real operating system with gpio options
+perhaps upper limit of power for this protocol
+most languages possible, threading etc
+\end{comment}
 % subsection raspberry_pi (end)
+
+\subsection{Telos B Motes} % (fold)
+\label{sub:telos_b_motes}
+\begin{comment}
+popular academic tool, many os's, very low power like arduino, with radio and sensors
+some gpio, but limited
+contiki c like, event and thread driven
+\end{comment}
+% subsection telos_b_motes (end)
 % section open_source_constrained_devices (end)
 \section{Wireless Sensor Networks} % (fold)
 \label{sec:wireless_sensor_networks}
@@ -134,6 +172,9 @@ Fast forward to 2013 and the ``Year of the Internet of Things'' as declared by t
 \chapter{Requirments gathering} % (fold)
 \label{cha:requirments_gathering}
 
+% Requirements of the hardware independent design
+
+% section problems_encountered (end)
 % chapter requirments_gathering (end)
 %==============================================================================
 
@@ -144,6 +185,72 @@ Fast forward to 2013 and the ``Year of the Internet of Things'' as declared by t
 \chapter{Design} % (fold)
 \label{cha:design}
 
+% Design of system independent of hardware implementation.
+
+\section{Protocol Design} % (fold)
+\label{sec:protocol_design}
+
+
+\subsection{Protocol Data Unit} % (fold)
+\label{sub:protocol_data_unit}
+
+% subsection protocol_data_unit (end)
+
+\subsection{Payload Formats} % (fold)
+\label{sub:payload_formats}
+
+\subsubsection{Query} % (fold)
+\label{ssub:query}
+		
+% subsubsection query (end)
+
+\subsubsection{Query Response} % (fold)
+\label{ssub:query_response}
+
+% subsubsection query_response (end)
+
+\subsubsection{Connect} % (fold)
+\label{ssub:connect}
+
+% subsubsection connect (end)
+
+\subsubsection{Connect ACK} % (fold)
+\label{ssub:connect_ack}
+
+% subsubsection connect_ack (end)
+
+\subsubsection{Response} % (fold)
+\label{ssub:response}
+
+% subsubsection response (end)
+
+\subsubsection{Ping} % (fold)
+\label{ssub:ping}
+
+% subsubsection ping (end)
+
+\subsubsection{Ping ACK} % (fold)
+\label{ssub:ping_ack}
+
+% subsubsection ping_ack (end)
+
+\subsubsection{Disconnect} % (fold)
+\label{ssub:disconnect}
+
+% subsubsection disconnect (end)
+
+\subsubsection{Disconnect ACK} % (fold)
+\label{ssub:disconnect_ack}
+
+% subsubsection disconnect_ack (end)
+% subsection payload_formats (end)
+
+
+% section protocol_design (end)
+
+
+
+
 % chapter design (end)
 %==============================================================================
 
@@ -153,7 +260,18 @@ Fast forward to 2013 and the ``Year of the Internet of Things'' as declared by t
 
 \chapter{Implementation} % (fold)
 \label{cha:implementation}
+% Describe the problems encountered in the implementation of arduino and then contiki
 
+\section{Arduino} % (fold)
+\label{sec:arduino}
+
+% section arduino (end)
+
+
+\section{Contiki} % (fold)
+\label{sec:contiki}
+
+% section contiki (end)
 % chapter implementation (end)
 %==============================================================================
 
