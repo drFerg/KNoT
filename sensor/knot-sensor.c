@@ -50,14 +50,15 @@ int init(ChannelState *state){
 
 void query_handler(ChannelState *state,DataPayload *dp){	
 	DataPayload *new_dp = &(state->packet);
-	QueryResponse qr;
+	QueryResponseMsg qr;
+	/* PUT IN DYNAMIC TYPE TO BE CHECKED */
 	qr.type = TEMP;
 	qr.freq = uip_htons(5);
 	//dp_complete(new_dp,uip_htons(10),1,(1));
 	new_dp->hdr.dst_chan_num = dp->hdr.src_chan_num; 
     new_dp->hdr.cmd = QACK; 
-    new_dp->dhdr.tlen = sizeof(QueryResponse);
-    memcpy(new_dp->data,&qr,sizeof(QueryResponse));
+    new_dp->dhdr.tlen = sizeof(QueryResponseMsg);
+    memcpy(new_dp->data,&qr,sizeof(QueryResponseMsg));
 	send_on_channel(state,new_dp);
 
 }
@@ -67,16 +68,16 @@ void connect_handler(ChannelState *state,DataPayload *dp){
 	printf("%s wants to connect on channel %d\n",cm->name,dp->hdr.src_chan_num);
 	state->chan_num = dp->hdr.src_chan_num;
 	DataPayload *new_dp = &(state->packet);
-	CACKMesg ck;
+	ConnectACKMsg ck;
 	memcpy(ck.name,SENSORNAME,10);
 	new_dp->hdr.src_chan_num = state->chan_num;
-	new_dp->hdr.dst_chan_num = dp->hdr.src_chan_num;
+	new_dp->hdr.dst_chan_num = state->remote_chan_num;
 	printf("chan num %d\n", new_dp->hdr.src_chan_num);
 	//dp_complete(new_dp,10,QACK,1);
     (new_dp)->hdr.cmd = CACK; 
     
-    (new_dp)->dhdr.tlen = sizeof(CACKMesg);
-    memcpy(&(new_dp->data),&ck,sizeof(CACKMesg));
+    (new_dp)->dhdr.tlen = sizeof(ConnectACKMsg);
+    memcpy(&(new_dp->data),&ck,sizeof(ConnectACKMsg));
 	send_on_channel(state,new_dp);
 	state->state = STATE_CONNECT;
 }
@@ -120,7 +121,7 @@ void network_handler(ev, data){
 		state->seqno = uip_ntohl(dp->hdr.seqno);
 		printf("--SeqNo %d--\n", uip_ntohl(dp->hdr.seqno));
 	}
-
+	/* PUT IN QUERY CHECK FOR TYPE */
 	if      (cmd == QUERY)   query_handler(state,dp);
 	else if (cmd == CONNECT) connect_handler(state,dp);
 	else if (cmd == CACK)    cack_handler(state, dp);
@@ -134,7 +135,7 @@ void send_handler(ChannelState* state){
 	ResponseMsg rmsg;
 	memcpy(rmsg.name,"Temp\0",5);
 	new_dp->hdr.src_chan_num = state->chan_num;
-	new_dp->hdr.dst_chan_num = state->chan_num;
+	new_dp->hdr.dst_chan_num = state->remote_chan_num;
 	rmsg.data = uip_htons(10);
 	//dp_complete(new_dp,10,QACK,1); 
     (new_dp)->hdr.cmd = RESPONSE; 

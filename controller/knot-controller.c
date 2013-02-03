@@ -33,13 +33,14 @@ void create_channel(ChannelState *state, DataPayload *dp){
     //DataPayload *new_dp = (DataPayload*)malloc(sizeof(PayloadHeader) + sizeof(DataHeader) + sizeof(ConnectMsg));	//dp_complete(new_dp,10,QACK,1);
 	DataPayload *new_dp = &(state->packet);
 	memset(new_dp, '\0', sizeof(DataPayload));
-	ConnectMsg cm;
-	strcpy(cm.name,"Controller");
+
+	ConnectMsg *cm = (ConnectMsg *)new_dp->data;
+	strcpy(cm->name,"Controller");
 	new_dp->hdr.dst_chan_num = 0;
 	new_dp->hdr.src_chan_num = state->chan_num;
     (new_dp)->hdr.cmd = CONNECT; 
     (new_dp)->dhdr.tlen = sizeof(ConnectMsg);
-    memcpy(&(new_dp->data),&cm,sizeof(ConnectMsg));
+    //memcpy(&(new_dp->data),&cm,sizeof(ConnectMsg));
 	send_on_channel(state,new_dp);
 	state->state = STATE_CONNECT;
 	state->ticks = 10;
@@ -50,7 +51,7 @@ void cack_handler(ChannelState *state, DataPayload *dp){
 		printf("Not in Connecting state\n");
 		return;
 	}
-	CACKMesg *ck = (CACKMesg*)dp->data;
+	ConnectACKMsg *ck = (ConnectACKMsg*)dp->data;
 	printf("%s accepts connection request on channel %d\n",ck->name,dp->hdr.src_chan_num);
 	
 	DataPayload *new_dp = &(state->packet);
@@ -72,7 +73,7 @@ void qack_handler(ChannelState *state, DataPayload *dp){
 		return;
 	}
 
-	QueryResponse *qr = (QueryResponse *)&dp->data;
+	QueryResponseMsg *qr = (QueryResponseMsg *)&dp->data;
 	printf("Sensor type:%d\n", qr->type);
 	state->state = STATE_IDLE;
 	
@@ -87,8 +88,8 @@ void service_search(ChannelState* state){
 	new_dp->hdr.src_chan_num = state->chan_num;
 	new_dp->hdr.dst_chan_num = 0;
     (new_dp)->hdr.cmd = QUERY; 
-    (new_dp)->dhdr.tlen = sizeof(Query);
-    Query *q = (Query *) new_dp->data;
+    (new_dp)->dhdr.tlen = sizeof(QueryMsg);
+    QueryMsg *q = (QueryMsg *) new_dp->data;
    
     q->type = TEMP;
     strcpy(q->name,"Controller");

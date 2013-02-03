@@ -79,25 +79,22 @@ typedef struct dp {		/* template for data payload */
 typedef struct query{
    uint8_t type;
    char name[NAME_SIZE];
-}Query;
+}QueryMsg;
 
 typedef struct query_response{
-   uint8_t src_chan_num;
    uint8_t type;
    uint16_t freq;
-}QueryResponse;
+}QueryResponseMsg;
 
 typedef struct connect_message{
-   uint8_t src_chan_num;
    uint8_t accept;
    char name[NAME_SIZE];
 }ConnectMsg;
 
 typedef struct cack{
-   uint8_t src_chan_num;
    uint8_t accept;
    char name[NAME_SIZE];
-}CACKMesg;
+}ConnectACKMsg;
 
 typedef struct response{
    char name[NAME_SIZE];
@@ -110,6 +107,7 @@ typedef struct channel_state{
    uip_ipaddr_t remote_addr; //Holds address of remote device
    uint32_t remote_port;
    uint8_t chan_num;
+   uint8_t remote_chan_num;
    uint16_t ticks;
    DataPayload packet;
 }ChannelState;
