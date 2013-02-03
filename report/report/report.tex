@@ -86,11 +86,17 @@ Fast forward to 2013 and the ``Year of the Internet of Things'' as declared by t
 In the past decade there have been many attempts at creating an affordable, low power and approachable electronics platform such as Arduino, Netduino, BeagleBone, Teensy and MSP430 Launchpad. All of which have taken very different approaches, some opting for absolute low cost (MSP430 Launchpad), whilst others for aimed to be fully featured and powerful devices (BeagleBone). Whilst the Arduino is by far not the cheapest or the most powerful of the bunch, it excelled in areas others lacked and created a sweet spot in the middle.
 
 The Arduino was born in 2005 at an Italian university, Interaction Design Institute Ivrea, out of the necessity of creating a cheap and approachable electronics platform which could enable design students to create interaction design projects without the need of an electronics background.
-The main device which was created and remained much the same since is based on an Amtel ATmega328 8bit microcontroller running at 16MHz with 2KB of RAM and 32KB of storage. The board itself maps out the microcontroller's mix of 20 digital and analog input/output pins and supports several standardised protocols for communicating with other devices such as I2C and UART. These pins  
+The main device which was created and remained much the same since is based on an Amtel ATmega328 8bit microcontroller running at 16MHz with 2KB of RAM and 32KB of storage. The board itself maps out the microcontroller's mix of 20 digital and analog input/output pins and supports several standardised protocols for communicating with other devices such as I2C and UART. 
 
-But the key to the Arduino Platform is not just the microcontroller but instead the design, software and support provided by the creators and other developers
-Since then the Arduino platform has created a range of Arduino named devices and gained a following of over 300,000 users\cite{ArduinoNumbers}. 
+But the key to the Arduino Platform is not the microcontroller itself but instead the design, software and support provided by the creators and other developers. The other major factor to its success is that the device along with the documentation and support are all open source, thus allowing anyone to learn from, replicate and expand upon the platform in any way they wish.
 
+An example of how these factors have had a hugely positive effect is something which Arduino calls ``Shields''. These shields plug in on top of the arduino board and contain standard components which can add additional features such as wifi, ethernet, sound, motor control etc. Rather than users being required to find, purchase and solder the required components to add such features, these prebuilt shields provide it in simple and readily available package made by a variety of manufacturers.
+
+Since its creation the Arduino platform has created a range of Arduino named devices and shields resulting in a following of over 300,000 users\cite{ArduinoNumbers} and support from many manufacturers and distributers worldwide. 
+
+Due to Arduino's open policy many new start-ups have been able to quickly design prototypes and products using the Arduino platform which have been taken to market in various refined forms. Often the same micro-controller which powers the Arduino is kept and the board miniturised to fit the product's needs. Products such as the Internet ``Thing'' Twine\cite{Twine} and the Smart Things ``Internet of Things'' eco system have taken this approach\cite{SmartThings}.
+
+However whilst there is an abundance of Arduino devices in the wild with many being used as an Internet ``Thing'' there is yet to be created an open and compatable method to easily network a group of such devices together to form a connected ``Internet of Things'' network.
 \begin{comment}
 OPEN SOURCE
 Microcontroller, cheap, easy, pic chips were difficult, lowered barrier of entry, provided large support and huge following
