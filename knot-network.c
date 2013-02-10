@@ -1,14 +1,20 @@
 #include "knot-network.h"
 
+#define SEQNO_START 0
+#define SEQNO_LIMIT 255
+
 char *cmdnames[15] = {"", "QUERY", "QACK","CONNECT", "CACK", 
                                  "RESPONSE", "RACK", "DISCONNECT", "DACK",
                                  "ERROR", "ERROR", "PING", "PACK", "SEQNO",
                                  "SACK"};
 /**Send a message to the connection in state **/
 void send_on_channel(ChannelState *state, DataPayload *dp){
-   int dplen = sizeof(PayloadHeader) + sizeof(DataHeader) + dp->dhdr.tlen;
+   int dplen = sizeof(PayloadHeader) + sizeof(DataHeader) + uip_ntohs(dp->dhdr.tlen);
+   printf("DPLEN %d\n",dplen);
+   if (state->seqno >= SEQNO_LIMIT)
+      state->seqno = SEQNO_START;
    state->seqno++;
-   dp->hdr.seqno = uip_htonl(state->seqno);
+   dp->hdr.seqno = state->seqno;
    uip_udp_packet_sendto(udp_conn, (char*)dp, dplen,
                           &state->remote_addr,state->remote_port);
    printf("Sent %s to ipaddr=%d.%d.%d.%d:%u\n", 
@@ -19,7 +25,7 @@ void send_on_channel(ChannelState *state, DataPayload *dp){
 }
 
 void send(ChannelState *state, DataPayload *dp){
-   int dplen = sizeof(PayloadHeader) + sizeof(DataHeader) + dp->dhdr.tlen;
+   int dplen = sizeof(PayloadHeader) + sizeof(DataHeader) + uip_ntohs(dp->dhdr.tlen);
    uip_udp_packet_send(udp_conn, (char*)dp, dplen);
    printf("Sent %s to ipaddr=%d.%d.%d.%d:%u\n", 
       cmdnames[dp->hdr.cmd], 

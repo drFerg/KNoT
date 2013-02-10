@@ -10,6 +10,7 @@
 #include "../knot-network.h"
 #include "../channeltable.h"
 
+#define TIMER_INTERVAL 20
 
 char *state_names[7] = {"IDLE","QUERY","QACKED","CONNECTing",
 						"CONNECTED","DisCONNECTED", "PING"};
@@ -39,8 +40,7 @@ void create_channel(ChannelState *state, DataPayload *dp){
 	new_dp->hdr.dst_chan_num = 0;
 	new_dp->hdr.src_chan_num = state->chan_num;
     (new_dp)->hdr.cmd = CONNECT; 
-    (new_dp)->dhdr.tlen = sizeof(ConnectMsg);
-    //memcpy(&(new_dp->data),&cm,sizeof(ConnectMsg));
+    (new_dp)->dhdr.tlen = uip_htons(sizeof(ConnectMsg));
 	send_on_channel(state,new_dp);
 	state->state = STATE_CONNECT;
 	state->ticks = 10;
@@ -53,13 +53,15 @@ void cack_handler(ChannelState *state, DataPayload *dp){
 	}
 	ConnectACKMsg *ck = (ConnectACKMsg*)dp->data;
 	printf("%s accepts connection request on channel %d\n",ck->name,dp->hdr.src_chan_num);
+	state->remote_chan_num = dp->hdr.src_chan_num;
 	
 	DataPayload *new_dp = &(state->packet);
 	memset(new_dp, '\0', sizeof(DataPayload));
-
+	new_dp->hdr.src_chan_num = state->chan_num;
+	new_dp->hdr.dst_chan_num = state->remote_chan_num;
 	//dp_complete(new_dp,10,QACK,1);
     (new_dp)->hdr.cmd = CACK; 
-    (new_dp)->dhdr.tlen = 0;
+    (new_dp)->dhdr.tlen = UIP_HTONS(0);
 	send_on_channel(state,new_dp);
 	state->state = STATE_CONNECTED;
 	state->ticks = 100;
@@ -88,14 +90,15 @@ void service_search(ChannelState* state){
 	new_dp->hdr.src_chan_num = state->chan_num;
 	new_dp->hdr.dst_chan_num = 0;
     (new_dp)->hdr.cmd = QUERY; 
-    (new_dp)->dhdr.tlen = sizeof(QueryMsg);
+    (new_dp)->dhdr.tlen = uip_htons(sizeof(QueryMsg));
+    printf("%d\n", uip_ntohs((new_dp)->dhdr.tlen));
     QueryMsg *q = (QueryMsg *) new_dp->data;
    
     q->type = TEMP;
     strcpy(q->name,"Controller");
 	send(state,new_dp);
 	state->state = STATE_QUERY;
-	state->ticks = 10;
+	state->ticks = 100;
 }
 
 void response_handler(ChannelState *state, DataPayload *dp){
@@ -113,28 +116,31 @@ void network_handler(ev, data){
 	char buf[UIP_BUFSIZE]; // packet data buffer
 	unsigned short cmd;    // 
 	DataPayload *dp;
+
 	ChannelState *state = NULL;
 	uint16_t len = uip_datalen();
+	printf("ipaddr=%d.%d.%d.%d\n", uip_ipaddr_to_quad(&(UDP_HDR->srcipaddr)));
+	printf("Packet is %d bytes long\n",len);
+	printf("Data is   %d bytes long\n",dp->dhdr.tlen);
+
 	memcpy(buf, uip_appdata, len);
 	buf[len] = '\0';
 
 	dp = (DataPayload *)buf;
-	printf("Packet is %d bytes long\n",len);
-	printf("Data is   %d bytes long\n",dp->dhdr.tlen);
-
+	
 	printf("Message for channel %d\n",dp->hdr.dst_chan_num);
 	state = get_channel_state(dp->hdr.dst_chan_num);
 	if (state == NULL){
 		printf("Channel %d doesn't exist\n", dp->hdr.dst_chan_num);
 	}
-	if (state->seqno > uip_ntohl(dp->hdr.seqno)){
+	if (state->seqno > dp->hdr.seqno){
 		printf("--Out of sequence--\n");
-		printf("--State: %d SeqNo %d--\n--Dropping packet--\n",state->seqno, uip_ntohl(dp->hdr.seqno));
+		printf("--State: %d SeqNo %d--\n--Dropping packet--\n",state->seqno, dp->hdr.seqno);
 		return;
 	}
 	else {
-		state->seqno = uip_ntohl(dp->hdr.seqno);
-		printf("--SeqNo %d--\n", uip_ntohl(dp->hdr.seqno));
+		state->seqno = dp->hdr.seqno;
+		printf("--SeqNo %d--\n", dp->hdr.seqno);
 	}
 	cmd = dp->hdr.cmd;        // only a byte so no reordering :)
 	printf("Received a %s command.\n", cmdnames[cmd]);
@@ -164,7 +170,6 @@ void cleaner(){
 	for (i = 1; i < CHANNEL_NUM; i++){
 		s = get_channel_state(i);
 		if (s == NULL) continue; 
-		//printf("%d\n", s->ticks);
 		if (s->state % 2 != 0){
 			if (s->ticks == 0){
 				printf("Retrying\n");
@@ -196,8 +201,8 @@ PROCESS_THREAD(knot_controller, ev, data)
 	//mystate = new_channel();
 	//mystate->ticks = 10000;
 	init();
-	etimer_set(&clean,100);
-	//etimer_set(&et, CLOCK_CONF_SECOND*3);
+	etimer_set(&clean,TIMER_INTERVAL);
+
 	while (1){
     	// wait until the timer has expired
     	PROCESS_WAIT_EVENT();
@@ -206,7 +211,7 @@ PROCESS_THREAD(knot_controller, ev, data)
 		} else if ((ev == PROCESS_EVENT_TIMER)){
 			if (data == &clean) {
 				cleaner();
-				etimer_set(&clean,10);
+				etimer_set(&clean,TIMER_INTERVAL);
 			}
 		} else if ((ev == sensors_event) && (data == &button_sensor)){
 			mystate = new_channel();
