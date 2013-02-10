@@ -15,10 +15,10 @@
 char *state_names[7] = {"IDLE","QUERY","QACKED","CONNECTing",
 						"CONNECTED","DisCONNECTED", "PING"};
 
+PROCESS(knot_controller_process,"knot_controller");
+
 static ChannelState *mystate;
 static uint8_t started = 0;
-
-
 
 
 
@@ -115,6 +115,8 @@ void response_handler(ChannelState *state, DataPayload *dp){
 	state->ticks = 100;
 	ResponseMsg *rmsg = (ResponseMsg *)dp->data;
 	printf("%s %d\n", rmsg->name, uip_ntohs(rmsg->data));
+	// ADD CONTEXT SWITCH
+	state->callback()
 }
 
 
@@ -202,10 +204,36 @@ void cleaner(){
 
 }
 
-PROCESS(knot_controller,"knot_controller");
-AUTOSTART_PROCESSES(&knot_controller);
 
-PROCESS_THREAD(knot_controller, ev, data)
+int knot_register_controller(knot_callback callback, uint16_t rate, char controller_name[], uint8_t device_type){
+	ChannelState *state;
+	if (started == 0){
+		process_start(&knot_controller_process,NULL);
+		started = 1;
+	}
+	/* Enter context to call local function */
+	PROCESS_CONTEXT_BEGIN(&knot_controller_process);
+	state = new_channel();
+	PROCESS_CONTEXT_END(&knot_controller_process);
+
+	if (state == NULL) 
+		printf("No more free channels\n");
+		return -1;
+	
+	if (callback != NULL){
+		state->callback = callback;
+	}
+	else return -2;
+
+	state->rate = rate;
+	/* Asnchronously kickstart channel to do a service search */
+	process_post(&knot_controller_process,PROCESS_EVENT_CONTINUE, state);
+
+}
+
+//AUTOSTART_PROCESSES(&knot_controller);
+
+PROCESS_THREAD(knot_controller_process, ev, data)
 {
 	static struct etimer et; // temp timer for loop
 	static struct etimer clean;
@@ -229,6 +257,8 @@ PROCESS_THREAD(knot_controller, ev, data)
 				cleaner();
 				etimer_set(&clean,TIMER_INTERVAL);
 			}
+		} else if (ev == PROCESS_EVENT_CONTINUE){
+			service_search((ChannelState *)data);
 		} else if ((ev == sensors_event) && (data == &button_sensor)){
 			mystate = new_channel();
 			if (mystate == NULL) 

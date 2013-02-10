@@ -55,7 +55,7 @@ struct uip_udp_conn *udp_conn;
 
 extern char *cmdnames[15];
 
-typedef void *(knot_callback)(char name[],void * data);
+typedef void (*knot_callback)(char name[],void * data);
 
 typedef struct ph {
    uint8_t seqno;   /* sequence number */
