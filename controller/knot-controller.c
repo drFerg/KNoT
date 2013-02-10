@@ -7,7 +7,7 @@
 #include "contiki.h"
 #include "contiki-net.h"
 #include "contiki-lib.h"
-#include "../knot-network.h"
+#include "knot-controller.h"
 #include "../channeltable.h"
 
 #define TIMER_INTERVAL 20
@@ -19,10 +19,6 @@ PROCESS(knot_controller_process,"knot_controller");
 
 static ChannelState *mystate;
 static uint8_t started = 0;
-
-
-
-
 
 int init(){
 	udp_conn = udp_broadcast_new(UIP_HTONS(LOCAL_PORT),NULL);
@@ -116,7 +112,9 @@ void response_handler(ChannelState *state, DataPayload *dp){
 	ResponseMsg *rmsg = (ResponseMsg *)dp->data;
 	printf("%s %d\n", rmsg->name, uip_ntohs(rmsg->data));
 	// ADD CONTEXT SWITCH
-	state->callback()
+	PROCESS_CONTEXT_BEGIN(state->ccb.client_process);
+	state->ccb.callback(rmsg->name,&rmsg->data);
+	PROCESS_CONTEXT_END();
 }
 
 
@@ -205,10 +203,14 @@ void cleaner(){
 }
 
 
-int knot_register_controller(knot_callback callback, uint16_t rate, char controller_name[], uint8_t device_type){
+int knot_register_controller(struct process *client_proc, knot_callback callback, uint16_t rate, char controller_name[], uint8_t device_type){
 	ChannelState *state;
 	if (started == 0){
 		process_start(&knot_controller_process,NULL);
+		PROCESS_CONTEXT_BEGIN(&knot_controller_process);
+		init_table();
+		init();
+		PROCESS_CONTEXT_END();		
 		started = 1;
 	}
 	/* Enter context to call local function */
@@ -216,19 +218,22 @@ int knot_register_controller(knot_callback callback, uint16_t rate, char control
 	state = new_channel();
 	PROCESS_CONTEXT_END(&knot_controller_process);
 
-	if (state == NULL) 
+	if (state == NULL) {
 		printf("No more free channels\n");
 		return -1;
+	}
 	
 	if (callback != NULL){
-		state->callback = callback;
+		state->ccb.callback = callback;
+		state->ccb.client_process = client_proc;
+		printf("Set callback\n");
 	}
 	else return -2;
 
 	state->rate = rate;
 	/* Asnchronously kickstart channel to do a service search */
 	process_post(&knot_controller_process,PROCESS_EVENT_CONTINUE, state);
-
+	return 1;
 }
 
 //AUTOSTART_PROCESSES(&knot_controller);
@@ -241,10 +246,6 @@ PROCESS_THREAD(knot_controller_process, ev, data)
 	PROCESS_BEGIN();
 	SENSORS_ACTIVATE(button_sensor);
 
-	init_table();
-	//mystate = new_channel();
-	//mystate->ticks = 10000;
-	init();
 	etimer_set(&clean,TIMER_INTERVAL);
 
 	while (1){
@@ -258,6 +259,7 @@ PROCESS_THREAD(knot_controller_process, ev, data)
 				etimer_set(&clean,TIMER_INTERVAL);
 			}
 		} else if (ev == PROCESS_EVENT_CONTINUE){
+			printf("HELLO\n");
 			service_search((ChannelState *)data);
 		} else if ((ev == sensors_event) && (data == &button_sensor)){
 			mystate = new_channel();

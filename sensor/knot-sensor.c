@@ -51,7 +51,6 @@ int init(){
 }
 
 void send_handler(ChannelState* state){
-	printf("Building a packet\n");
     DataPayload *new_dp = &(state->packet);
 	ResponseMsg rmsg;
 	memcpy(rmsg.name,"Temp\0",5);
@@ -114,7 +113,7 @@ void cack_handler(ChannelState *state, DataPayload *dp){
 	}
 	state->ticks = state->rate * PING_RATE;
 	ctimer_set(&(state->timer),CLOCK_CONF_SECOND * state->rate,send_handler,state); 
-	printf("CONNECTION FULLY ESTABLISHED\n");
+	printf(">>CONNECTION FULLY ESTABLISHED<<\n");
 	state->state = STATE_CONNECTED;
 }
 

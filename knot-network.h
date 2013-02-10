@@ -1,51 +1,20 @@
-#ifndef KNOT_NETWORK
-#define KNOT_NETWORK
+/*
+* author Fergus William Leahy
+*/
+#ifndef KNOT_NETWORK_H
+#define KNOT_NETWORK_H
 
+#include <stdio.h>
+#include <string.h>
 
 #include "contiki.h"
 #include "contiki-net.h"
 #include "contiki-lib.h"
 #include "uip.h"
-#include <stdio.h>
-#include <string.h>
 
-//Sensor type
-#define TEMP   1
-#define HUM    2
-#define SWITCH 3
-
-/* Connection states */
-#define STATE_IDLE       0
-#define STATE_QUERY      1
-#define STATE_QACKED     2
-#define STATE_CONNECT    3
-#define STATE_CONNECTED  4
-#define STATE_DCONNECTED 5
-#define STATE_PING       7
-/* ===================*/
-
-/* Packet command types */
-#define QUERY    1
-#define QACK     2
-#define CONNECT  3
-#define CACK     4
-#define RESPONSE 5
-#define RACK     6
-#define DISCONNECT 7
-#define DACK     8
-#define PING    11
-#define PACK    12
-#define SEQNO   13
-#define SACK    14
-
-#define CMD_LOW CONNECT
-#define CMD_HIGH SACK		/* change this if commands added */
-/* =======================*/
+#include "knot_protocol.h"
 
 #define LOCAL_PORT 5001
-#define MAX_DATA_SIZE 32
-#define NAME_SIZE     16
-
 
 #define P_SIZE 1024
 #define UDP_DATA_LEN 120
@@ -57,56 +26,13 @@ extern char *cmdnames[15];
 
 typedef void (*knot_callback)(char name[],void * data);
 
-typedef struct ph {
-   uint8_t seqno;   /* sequence number */
-   uint8_t src_chan_num;
-   uint8_t dst_chan_num;
-   uint8_t cmd;	/* message type */
-} PayloadHeader;
-
-typedef struct dh {
-   uint16_t tlen;	/* total length of the data */
-} DataHeader;
-
-
-typedef struct dp {		/* template for data payload */
-   PayloadHeader hdr;
-   DataHeader dhdr;
-   unsigned char data[MAX_DATA_SIZE];	/* data is address of `len' bytes */
-} DataPayload;
-
-
-
-/* Message Payloads */
-
-typedef struct query{
-   uint8_t type; 
-   char name[NAME_SIZE];
-   //PAD BYTE
-}QueryMsg;
-
-typedef struct query_response{
-   uint8_t type;
-   uint16_t rate;
-}QueryResponseMsg;
-
-typedef struct connect_message{
-   uint16_t rate;
-   char name[NAME_SIZE];
-}ConnectMsg;
-
-typedef struct cack{
-   uint8_t accept;
-   char name[NAME_SIZE];
-}ConnectACKMsg;
-
-typedef struct response{
-   uint16_t data;
-   char name[NAME_SIZE];
-}ResponseMsg;
+typedef struct callback_control_block{
+   knot_callback callback;
+   struct process *client_process;
+}CallbackControlBlock;
 
 typedef struct channel_state{
-   knot_callback callback;
+   CallbackControlBlock ccb;
    uip_ipaddr_t remote_addr; //Holds address of remote device
    uint32_t remote_port;
    uint8_t state;
