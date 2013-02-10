@@ -6,11 +6,12 @@
 #include "contiki-net.h"
 #include "contiki-lib.h"
 #include "uip.h"
+#include "sys/ctimer.h"
 #include "../knot-network.h"
 #include "../channeltable.h"
 
 #define TIMER_INTERVAL 20
-#define DATA_RATE  5000
+#define DATA_RATE  5
 #define PING_RATE  5   // How many data intervals to wait before PING
 #define RATE_CHANGE 1
 
@@ -49,6 +50,23 @@ int init(){
 	return 1;
 }
 
+void send_handler(ChannelState* state){
+	printf("Building a packet\n");
+    DataPayload *new_dp = &(state->packet);
+	ResponseMsg rmsg;
+	memcpy(rmsg.name,"Temp\0",5);
+	new_dp->hdr.src_chan_num = state->chan_num;
+	new_dp->hdr.dst_chan_num = state->remote_chan_num;
+	rmsg.data = uip_htons(10);
+	//dp_complete(new_dp,10,QACK,1); 
+    (new_dp)->hdr.cmd = RESPONSE; 
+    (new_dp)->dhdr.tlen = uip_htons(sizeof(ResponseMsg));
+    memcpy(&(new_dp->data),&rmsg,sizeof(ResponseMsg));
+    send_on_channel(state,new_dp);
+	printf("Sent data\n");
+	ctimer_reset(&(state->timer));
+
+}
 
 void query_handler(ChannelState *state,DataPayload *dp){
 	uip_ipaddr_copy(&(state->remote_addr) , &(UDP_HDR->srcipaddr));
@@ -73,7 +91,7 @@ void connect_handler(ChannelState *state,DataPayload *dp){
 	printf("Replying on channel %d\n", state->chan_num);
 	/* Request src must be saved to message back */
 	state->remote_chan_num = dp->hdr.src_chan_num;
-
+	state->rate = DATA_RATE;
 	// FILL IN RATE CHECK!!!!!
 	DataPayload *new_dp = &(state->packet);
 	ConnectACKMsg ck;
@@ -95,6 +113,7 @@ void cack_handler(ChannelState *state, DataPayload *dp){
 		return;
 	}
 	state->ticks = state->rate * PING_RATE;
+	ctimer_set(&(state->timer),CLOCK_CONF_SECOND * state->rate,send_handler,state); 
 	printf("CONNECTION FULLY ESTABLISHED\n");
 	state->state = STATE_CONNECTED;
 }
@@ -125,12 +144,12 @@ void network_handler(ev, data){
 	uint16_t len = uip_datalen();
 	printf("ipaddr=%d.%d.%d.%d\n", uip_ipaddr_to_quad(&(UDP_HDR->srcipaddr)));
 	printf("Packet is %d bytes long\n",len);
-	printf("Data is   %d bytes long\n",uip_ntohs(dp->dhdr.tlen));
 
 	memcpy(buf, uip_appdata, len);
 	buf[len] = '\0';
 
 	dp = (DataPayload *)buf;
+	printf("Data is   %d bytes long\n",uip_ntohs(dp->dhdr.tlen));
 	cmd = dp->hdr.cmd;        // only a byte so no reordering :)
 	printf("Received a %s command.\n", cmdnames[cmd]);
 
@@ -164,22 +183,6 @@ void network_handler(ev, data){
 }
 
 
-void send_handler(ChannelState* state){
-	printf("Building a packet\n");
-    DataPayload *new_dp = &(state->packet);
-	ResponseMsg rmsg;
-	memcpy(rmsg.name,"Temp\0",5);
-	new_dp->hdr.src_chan_num = state->chan_num;
-	new_dp->hdr.dst_chan_num = state->remote_chan_num;
-	rmsg.data = uip_htons(10);
-	//dp_complete(new_dp,10,QACK,1); 
-    (new_dp)->hdr.cmd = RESPONSE; 
-    (new_dp)->dhdr.tlen = sizeof(ResponseMsg);
-    memcpy(&(new_dp->data),&rmsg,sizeof(ResponseMsg));
-    send_on_channel(state,new_dp);
-	printf("Sent data\n");
-
-}
 
 void resend(ChannelState *s){
 	printf("Sending last packet\n");

@@ -55,6 +55,8 @@ struct uip_udp_conn *udp_conn;
 
 extern char *cmdnames[15];
 
+typedef void *(knot_callback)(char name[],void * data);
+
 typedef struct ph {
    uint8_t seqno;   /* sequence number */
    uint8_t src_chan_num;
@@ -104,14 +106,16 @@ typedef struct response{
 }ResponseMsg;
 
 typedef struct channel_state{
-   uint8_t state;
-   uint8_t seqno;
+   knot_callback callback;
    uip_ipaddr_t remote_addr; //Holds address of remote device
    uint32_t remote_port;
+   uint8_t state;
+   uint8_t seqno;
    uint8_t chan_num;
    uint8_t remote_chan_num;
    uint16_t ticks;
    uint16_t rate;
+   struct ctimer timer;
    DataPayload packet;
 }ChannelState;
 

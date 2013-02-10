@@ -16,6 +16,12 @@ char *state_names[7] = {"IDLE","QUERY","QACKED","CONNECTing",
 						"CONNECTED","DisCONNECTED", "PING"};
 
 static ChannelState *mystate;
+static uint8_t started = 0;
+
+
+
+
+
 
 
 int init(){
@@ -54,7 +60,7 @@ void cack_handler(ChannelState *state, DataPayload *dp){
 	ConnectACKMsg *ck = (ConnectACKMsg*)dp->data;
 	printf("%s accepts connection request on channel %d\n",ck->name,dp->hdr.src_chan_num);
 	state->remote_chan_num = dp->hdr.src_chan_num;
-	
+
 	DataPayload *new_dp = &(state->packet);
 	memset(new_dp, '\0', sizeof(DataPayload));
 	new_dp->hdr.src_chan_num = state->chan_num;
@@ -112,6 +118,24 @@ void response_handler(ChannelState *state, DataPayload *dp){
 }
 
 
+void copy_address(ChannelState *state){
+	state->remote_port = UDP_HDR->srcport;
+    uip_ipaddr_copy(&state->remote_addr , &UDP_HDR->srcipaddr);
+}
+
+int check_seqno(ChannelState *state, DataPayload *dp){
+	if (state->seqno > dp->hdr.seqno){
+		printf("--Out of sequence--\n");
+		printf("--State SeqNo: %d SeqNo %d--\n--Dropping packet--\n",state->seqno, dp->hdr.seqno);
+		return 0;
+	}
+	else {
+		state->seqno = dp->hdr.seqno;
+		printf("--SeqNo %d--\n", dp->hdr.seqno);
+		return 1;
+	}
+}
+
 void network_handler(ev, data){
 	char buf[UIP_BUFSIZE]; // packet data buffer
 	unsigned short cmd;    // 
@@ -121,36 +145,28 @@ void network_handler(ev, data){
 	uint16_t len = uip_datalen();
 	printf("ipaddr=%d.%d.%d.%d\n", uip_ipaddr_to_quad(&(UDP_HDR->srcipaddr)));
 	printf("Packet is %d bytes long\n",len);
-	printf("Data is   %d bytes long\n",dp->dhdr.tlen);
 
 	memcpy(buf, uip_appdata, len);
 	buf[len] = '\0';
 
 	dp = (DataPayload *)buf;
+	printf("Data is   %d bytes long\n",uip_ntohs(dp->dhdr.tlen));
+	cmd = dp->hdr.cmd;        // only a byte so no reordering :)
+	printf("Received a %s command.\n", cmdnames[cmd]);
 	
 	printf("Message for channel %d\n",dp->hdr.dst_chan_num);
 	state = get_channel_state(dp->hdr.dst_chan_num);
 	if (state == NULL){
 		printf("Channel %d doesn't exist\n", dp->hdr.dst_chan_num);
 	}
-	if (state->seqno > dp->hdr.seqno){
-		printf("--Out of sequence--\n");
-		printf("--State: %d SeqNo %d--\n--Dropping packet--\n",state->seqno, dp->hdr.seqno);
-		return;
-	}
-	else {
-		state->seqno = dp->hdr.seqno;
-		printf("--SeqNo %d--\n", dp->hdr.seqno);
-	}
-	cmd = dp->hdr.cmd;        // only a byte so no reordering :)
-	printf("Received a %s command.\n", cmdnames[cmd]);
-	
-	
-  	state->remote_port = UDP_HDR->srcport;
-  	uip_ipaddr_copy(&state->remote_addr , &UDP_HDR->srcipaddr);
-  	printf("from ipaddr=%d.%d.%d.%d:%u\n", uip_ipaddr_to_quad(&state->remote_addr),uip_htons(state->remote_port));
-	
 
+	if (check_seqno(state, dp) == 0) 
+		return;
+	else {
+		copy_address(state);
+	}
+	
+  	printf("from ipaddr=%d.%d.%d.%d:%u\n", uip_ipaddr_to_quad(&state->remote_addr),uip_htons(state->remote_port));
 	if      (cmd == QUERY)    printf("I'm a controller, Ignoring QUERY\n");
 	else if (cmd == CONNECT)  printf("I'm a controller, Ignoring CONNECT\n");
 	else if (cmd == QACK)     qack_handler(state, dp);
