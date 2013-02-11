@@ -1,5 +1,5 @@
-#include "channeltable.h"
 #include <stdlib.h>
+#include "channeltable.h"
 
 typedef struct knot_channel{
 	ChannelState state;
