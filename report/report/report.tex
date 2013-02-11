@@ -124,8 +124,9 @@ Because of extremely low price point for such hardware the Raspberry Pi was a hu
 
 Even before it's release the community support and ideas were non-stop, everything from home-media centres\cite{Raspbmc} to lego super computers\footnote{Even within the School of Computing, UoG}\cite{LegoSuperComputer} were designed and created from Raspberry Pis.
 
-Whilst the support for utilising the GPIO pins is not as well developed as the Arduino Platform nor does it have the ``Shields'', the power of the device combined with its low price point and connectivity means that it can be very easily incorporated into a ``Internet of Things'' network with little additional hardware.
+Whilst the support for utilising the GPIO pins is not yet as well developed as the Arduino Platform, the power of the device combined with its low price point and connectivity means that it can be very easily incorporated into a ``Internet of Things'' network with little additional hardware and cost.
 
+% ADD PROGRAMMING LANGUAGE PART
 
 \begin{comment}
 new, more powerful open device. runs a real operating system with gpio options
@@ -136,7 +137,20 @@ most languages possible, threading etc
 
 \subsection{Telos B Motes} % (fold)
 \label{sub:telos_b_motes}
+
+With a significant uptake of devices in the academic ..., telos B motes are one of the go to platforms for wireless sensor networks.
+Whilst they may fit under a different paradigm name, the IoT can be seen as an expansion and specialisation of a wireless sensor network.
+With this in mind these Telos B motes are a very good fit for such an environment. 
+
+The devices themselves were developed in the University of Berkely, California and spun off into a seperate company. These devices have fuelled many academic studies/papers and courses in relation to developing low power wireless sensor networks and finding applications for them.
+GIVE EXAMPLES OF APPLICATIONS
+DEVICE SPECS
+
+A variety of very different OS's with stark differences in programming styles.
+
 \begin{comment}
+
+Some research 
 popular academic tool, many OS's, very low power like Arduino, with radio and sensors
 some gpio, but limited
 Contiki c like, event and thread driven
@@ -145,6 +159,8 @@ Contiki c like, event and thread driven
 % section open_source_constrained_devices (end)
 \section{Wireless Sensor Networks} % (fold)
 \label{sec:wireless_sensor_networks}
+Discuss relation to wireless sensor networks, similar disimilar
+Concerns which differ, align.
 
 % section wireless_sensor_networks (end)
 
@@ -153,12 +169,17 @@ Contiki c like, event and thread driven
 
 \subsection{Java JMS} % (fold)
 \label{sub:java_jms}
-
+Great for large, high power machines.
+Not so great on small, low power devices
+JVM can be scalled down but still poses overhead to system.
 % subsection java_jms (end)
 
 \subsection{xAP} % (fold)
 \label{sub:xap}
 \cite{xAP}
+Nice concepts and goals
+BUT fails to deliver a system which can scale and do things efficiently
+
 % subsection xap (end)
 
 \subsection{Developing systems} % (fold)
@@ -171,7 +192,7 @@ Contiki c like, event and thread driven
 
 \subsubsection{Qualcomm} % (fold)
 \label{ssub:qualcomm}
-
+2013 CES Discussed bringing mobile platform hardware to IOT, but still creating a single device with internet as hub mainly 
 % subsubsection qualcomm (end)
 % subsection developing_systems (end)
 % section existing_systems_protocols (end)
@@ -204,6 +225,10 @@ Contiki c like, event and thread driven
 
 \section{Protocol Design} % (fold)
 \label{sec:protocol_design}
+Minimal protocol, only ack required/critical data to save on transmissions
+Provide enough garuantees for a useful and reliable system which can scale
+Provide a distributed and fault tolerant way to find, collect data and control devices from
+
 
 
 \subsection{Protocol Data Unit} % (fold)
@@ -279,12 +304,35 @@ Contiki c like, event and thread driven
 
 \section{Arduino} % (fold)
 \label{sec:arduino}
+Whilst given its user base and ideology makes it a great platform to build for, the immediate lack of compatible hardware and lack of certain expectations leaves it difficult to develop an efficient implementation of the system.
 
+No interrupts
 % section arduino (end)
 
 
-\section{Contiki} % (fold)
+\section{Telos B Motes and Contiki} % (fold)
 \label{sec:contiki}
+Great, well defined and established hardware.
+Contiki is a comprehensive and well devised OS which provides a simple learning curve for a C programmer with only some event magic thrown in.
+
+\subsection{Choosing the transport layer:IP4 vs IPv6 vs Rime} % (fold)
+\label{sub:ip4_vs_ipv6_vs_rime}
+
+% subsection ip4_vs_ipv6_vs_rime (end)
+
+\subsection{Problems Encountered} % (fold)
+\label{sub:problems_encountered}
+
+\subsubsection{Event driven system} % (fold)
+\label{sub:event_driven_system}
+
+% subsubsection event_driven_system (end)
+
+\subsubsection{IPv4 Broadcast support} % (fold)
+\label{sub:ipv4_broadcast_support}
+
+% subsubsection ipv4_broadcast_support (end)
+% subsection problems_encountered (end)
 
 % section contiki (end)
 % chapter implementation (end)
