@@ -112,6 +112,8 @@ void response_handler(ChannelState *state, DataPayload *dp){
 	ResponseMsg *rmsg = (ResponseMsg *)dp->data;
 	printf("%s %d\n", rmsg->name, uip_ntohs(rmsg->data));
 	// ADD CONTEXT SWITCH
+	// Maybe event?
+	// process_post_synch(state->ccb.client_process,MESSAGE_RECEIVED, &rmsg->data);
 	PROCESS_CONTEXT_BEGIN(state->ccb.client_process);
 	state->ccb.callback(rmsg->name,&rmsg->data);
 	PROCESS_CONTEXT_END();
