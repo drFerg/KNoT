@@ -42,7 +42,7 @@ int init(){
 	udp_conn = udp_broadcast_new(UIP_HTONS(LOCAL_PORT),NULL);
 	if (udp_conn != NULL){
 		udp_bind(udp_conn,UIP_HTONS(LOCAL_PORT));
-		printf("SET UP NETWORK\n");
+		printf(">>SET UP NETWORK<<\n");
 	} else return 0;
 	printf("ipaddr=%d.%d.%d.%d:%u\n", 
       uip_ipaddr_to_quad(&(udp_conn->ripaddr)),
@@ -62,7 +62,6 @@ void send_handler(ChannelState* state){
     (new_dp)->dhdr.tlen = uip_htons(sizeof(ResponseMsg));
     memcpy(&(new_dp->data),&rmsg,sizeof(ResponseMsg));
     send_on_channel(state,new_dp);
-	printf("Sent data\n");
 	ctimer_reset(&(state->timer));
 
 }

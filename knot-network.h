@@ -13,6 +13,7 @@
 #include "uip.h"
 
 #include "knot_protocol.h"
+#include "knot_callback.h"
 
 #define LOCAL_PORT 5001
 
@@ -23,13 +24,6 @@
 struct uip_udp_conn *udp_conn;
 
 extern char *cmdnames[15];
-
-typedef void (*knot_callback)(char name[],void * data);
-
-typedef struct callback_control_block{
-   knot_callback callback;
-   struct process *client_process;
-}CallbackControlBlock;
 
 typedef struct channel_state{
    CallbackControlBlock ccb;
