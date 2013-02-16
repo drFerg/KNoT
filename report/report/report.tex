@@ -80,6 +80,7 @@ Fast forward to 2013 and the ``Year of the Internet of Things'' as declared by t
 \newpage
 \section{Open source constrained devices} % (fold)
 \label{sec:open_source_constrained_devices}
+Discuss comment features/attributes/reasons for open devices.
 
 \subsection{Arduino} % (fold)
 \label{sub:arduino}
@@ -169,14 +170,23 @@ Concerns which differ, align.
 
 \subsection{Java JMS} % (fold)
 \label{sub:java_jms}
+A fully featured pub sub system.
 Great for large, high power machines.
 Not so great on small, low power devices
-JVM can be scalled down but still poses overhead to system.
+JVM can be scalled down to lower power devices but still poses overhead to system.
 % subsection java_jms (end)
 
 \subsection{xAP} % (fold)
 \label{sub:xap}
 \cite{xAP}
+
+Core Idea is to build a distributed fault tolerant IoT protocol.
+total broadcasting protocol, every device just beams out its own services and any device on the network can read and interpret the data.
+Can be very inefficient for devices on battery(constant barrage) and doesn't scale well with 10's, 100's, 1000's of devices.
+Designed to be hardware and link agnostic and to co-exist with other protocols. Basic implementation over UDP without any care for reliability AT ALL.
+
+Purpose is that devices can hop on and off the network without breaking/severing the entire network.
+
 Nice concepts and goals
 BUT fails to deliver a system which can scale and do things efficiently
 
@@ -187,6 +197,8 @@ BUT fails to deliver a system which can scale and do things efficiently
 
 \subsubsection{Smart things} % (fold)
 \label{ssub:smart_things}
+Up and coming platform building upon arduino as well as other technology to create an open eco-system of ``Things''. All things tie into a hub which is accessed through an online portal.
+
 
 % subsubsection smart_things (end)
 
@@ -225,15 +237,39 @@ BUT fails to deliver a system which can scale and do things efficiently
 
 \section{Protocol Design} % (fold)
 \label{sec:protocol_design}
-Minimal protocol, only ack required/critical data to save on transmissions
+Minimal protocol, only ack required/critical data to save on transmissions.
+Use some broadcasting for acquiring sensors/actuators
 Provide enough garuantees for a useful and reliable system which can scale
 Provide a distributed and fault tolerant way to find, collect data and control devices from
+Protocol design based around several state machines. 
 
+\subsection{Message passing} % (fold)
+\label{sub:message_passing}
+
+% subsection message_passing (end)
+\subsection{States} % (fold)
+\label{sub:states}
+Derived states from message passing diagram blah blah.
+
+\subsubsection{Controller} % (fold)
+\label{ssub:controller}
+
+% subsubsection controller (end)
+\subsubsection{Sensor} % (fold)
+\label{ssub:sensor}
+
+% subsubsection sensor (end)
+\subsubsection{Actuator} % (fold)
+\label{ssub:actuator}
+
+% subsubsection actuator (end)
+
+% subsection states (end)
 
 
 \subsection{Protocol Data Unit} % (fold)
 \label{sub:protocol_data_unit}
-
+Focus was put on reducing the pdu to as small a size as possible so to reduce the workload on both recieving/transmitting the data as well as parsing it.
 % subsection protocol_data_unit (end)
 
 \subsection{Payload Formats} % (fold)
