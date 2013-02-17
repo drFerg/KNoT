@@ -12,7 +12,7 @@ void init_table();
 
 /*
  * create a new channel if space available
- * return 1 if successful, 0 otherwise
+ * return channel if successful, NULL otherwise
  */
 ChannelState * new_channel();
 

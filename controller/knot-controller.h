@@ -27,7 +27,7 @@ int knot_register_controller(struct process *client_proc,
 							 uint8_t device_type);
 
 
-
+int connect_sensor(ServiceRecord *sc);
 
 
 #endif /* KNOT_CONTROLLER */

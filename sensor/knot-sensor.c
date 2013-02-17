@@ -10,6 +10,14 @@
 #include "../knot-network.h"
 #include "../channeltable.h"
 
+#define DEBUG 1
+
+#if DEBUG
+#define PRINTF(...) printf(__VA_ARGS__)
+#else
+#define PRINTF(...)
+#endif
+
 #define TIMER_INTERVAL 20
 #define DATA_RATE  5
 #define PING_RATE  5   // How many data intervals to wait before PING
@@ -30,6 +38,7 @@
 
 PROCESS(knot_sensor_process,"knot_sensor_process");
 char sensor_name[16];
+uint8_t sensor_type;
 uint8_t started = 0;
 /*
 &(UIP_IP_BUF->srcipaddr),
@@ -39,6 +48,14 @@ UIP_HTONS(UIP_IP_BUF->destport),
 */
 static ChannelState *mystate;
 static ChannelState home_channel_state;
+
+void init_home_channel(){
+	  home_channel_state.chan_num = 0;
+      home_channel_state.seqno = 0;
+      home_channel_state.remote_port = UIP_HTONS(LOCAL_PORT);
+      uip_ipaddr_copy(&(home_channel_state.remote_addr), &broad);
+}
+
 
 void send_handler(ChannelState* state){
     DataPayload *new_dp = &(state->packet);
@@ -65,12 +82,14 @@ void send_callback(void * s){
 
 
 void query_handler(ChannelState *state, DataPayload *dp){
+	QueryMsg *q = dp->data;
+	if (q->type != sensor_type) {PRINTF("Not the right type %d \n", q->type);return;} /* PUT IN DYNAMIC TYPE TO BE CHECKED */
 	uip_ipaddr_copy(&(state->remote_addr) , &(UDP_HDR->srcipaddr));
   	state->remote_port = UDP_HDR->srcport;	
 	DataPayload *new_dp = &(state->packet);
 	QueryResponseMsg qr;
-	/* PUT IN DYNAMIC TYPE TO BE CHECKED */
-	qr.type = TEMP;
+	
+	qr.type = sensor_type;
 	strcpy(qr.name,sensor_name); // copy name
 	qr.rate = uip_htons(5);
 	//dp_complete(new_dp,uip_htons(10),1,(1));
@@ -84,8 +103,8 @@ void query_handler(ChannelState *state, DataPayload *dp){
 
 void connect_handler(ChannelState *state,DataPayload *dp){
 	ConnectMsg *cm = (ConnectMsg*)dp->data;
-	printf("%s wants to connect from channel %d\n",cm->name,dp->hdr.src_chan_num);
-	printf("Replying on channel %d\n", state->chan_num);
+	PRINTF("%s wants to connect from channel %d\n",cm->name,dp->hdr.src_chan_num);
+	PRINTF("Replying on channel %d\n", state->chan_num);
 	/* Request src must be saved to message back */
 	state->ccb.callback = home_channel_state.ccb.callback;
 	state->remote_chan_num = dp->hdr.src_chan_num;
@@ -108,12 +127,12 @@ void connect_handler(ChannelState *state,DataPayload *dp){
 
 void cack_handler(ChannelState *state, DataPayload *dp){
 	if (state->state != STATE_CONNECT){
-		printf("Not in Connecting state\n");
+		PRINTF("Not in Connecting state\n");
 		return;
 	}
 	state->ticks = state->rate * PING_RATE;
 	ctimer_set(&(state->timer),CLOCK_CONF_SECOND * state->rate,send_callback,state); 
-	printf(">>CONNECTION FULLY ESTABLISHED<<\n");
+	PRINTF(">>CONNECTION FULLY ESTABLISHED<<\n");
 	state->state = STATE_CONNECTED;
 }
 
@@ -124,13 +143,13 @@ void copy_address(ChannelState *state){
 
 int check_seqno(ChannelState *state, DataPayload *dp){
 	if (state->seqno > dp->hdr.seqno){
-		printf("--Out of sequence--\n");
-		printf("--State SeqNo: %d SeqNo %d--\n--Dropping packet--\n",state->seqno, dp->hdr.seqno);
+		PRINTF("--Out of sequence--\n");
+		PRINTF("--State SeqNo: %d SeqNo %d--\n--Dropping packet--\n",state->seqno, dp->hdr.seqno);
 		return 0;
 	}
 	else {
 		state->seqno = dp->hdr.seqno;
-		printf("--SeqNo %d--\n", dp->hdr.seqno);
+		PRINTF("--SeqNo %d--\n", dp->hdr.seqno);
 		return 1;
 	}
 }
@@ -142,18 +161,18 @@ void network_handler(ev, data){
 	
 	ChannelState *state = NULL;
 	uint16_t len = uip_datalen();
-	printf("ipaddr=%d.%d.%d.%d\n", uip_ipaddr_to_quad(&(UDP_HDR->srcipaddr)));
-	printf("Packet is %d bytes long\n",len);
+	PRINTF("ipaddr=%d.%d.%d.%d\n", uip_ipaddr_to_quad(&(UDP_HDR->srcipaddr)));
+	PRINTF("Packet is %d bytes long\n",len);
 
 	memcpy(buf, uip_appdata, len);
 	buf[len] = '\0';
 
 	dp = (DataPayload *)buf;
-	printf("Data is   %d bytes long\n", uip_ntohs(dp->dhdr.tlen));
+	PRINTF("Data is   %d bytes long\n", uip_ntohs(dp->dhdr.tlen));
 	cmd = dp->hdr.cmd;        // only a byte so no reordering :)
-	printf("Received a %s command.\n", cmdnames[cmd]);
+	PRINTF("Received a %s command.\n", cmdnames[cmd]);
 
-	printf("Message for channel %d\n",dp->hdr.dst_chan_num);
+	PRINTF("Message for channel %d\n",dp->hdr.dst_chan_num);
 	if (dp->hdr.dst_chan_num == HOMECHANNEL){
 		if (cmd == QUERY){
 			state = &home_channel_state;
@@ -162,16 +181,21 @@ void network_handler(ev, data){
   		}
   		else if (cmd == CONNECT){
   			state = new_channel();
-  			printf("Sensor: New Channel\n");
+  			PRINTF("Sensor: New Channel\n");
   			copy_address(state);
   		}
   	}else {
 		state = get_channel_state(dp->hdr.dst_chan_num);
+		if (state == NULL){
+			PRINTF("Channel doesn't exist\n");
+			return;
+		}
 		copy_address(state);
+		if (check_seqno(state, dp) == 0) 
+		return;
 	}
 
-	if (check_seqno(state, dp) == 0) 
-		return;
+	
 	
 	/* PUT IN QUERY CHECK FOR TYPE */
 	
@@ -185,7 +209,7 @@ void network_handler(ev, data){
 
 
 void resend(ChannelState *s){
-	printf("Sending last packet\n");
+	PRINTF("Sending last packet\n");
 	send_on_channel(s, &(s->packet));
 }
 
@@ -197,12 +221,12 @@ void cleaner(){
 		if (s == NULL) continue; 
 		if (s->state % 2 != 0){
 			if (s->ticks == 0){
-				printf("Retrying\n");
+				PRINTF("Retrying\n");
 				resend(s);
 				s->ticks = 11;
 			}
 		} else if (s->ticks == 0){
-			printf("PING\n");
+			PRINTF("PING\n");
 			ping(s);
 			s->ticks = 101;
 		}
@@ -216,21 +240,23 @@ void cleaner(){
 
 int knot_register_sensor(struct process *client_proc, knot_callback sensor, 
 						 uint16_t rate, char name[], 
-						 uint8_t sensor_type){
+						 uint8_t type){
 	if (started == 0){
 		process_start(&knot_sensor_process,NULL);
 		PROCESS_CONTEXT_BEGIN(&knot_sensor_process);
 		init_table();
 		init();
+		init_home_channel();
 		PROCESS_CONTEXT_END();		
 		started = 1;
 		strcpy(sensor_name,name);
+		sensor_type = type;
 	}
 		
 	if (sensor != NULL){
 		home_channel_state.ccb.callback = sensor;
 		home_channel_state.ccb.client_process = client_proc;
-		printf("Set callback\n");
+		PRINTF("Set callback\n");
 	}
 	else return -2;
 
