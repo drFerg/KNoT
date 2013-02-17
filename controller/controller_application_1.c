@@ -29,6 +29,11 @@ PROCESS_THREAD(application1,ev,data)
 	/* Application do something? */
 	while (1){
 		PROCESS_WAIT_EVENT();
+		if (ev == KNOT_EVENT_SERVICE_FOUND){
+			ServiceRecord *sc = data;
+			printf("EVENT1!!!! %s\n", sc->name); 
+		}
+		else printf("EVENT2!!!!\n");
 	}
 
 	PROCESS_END();

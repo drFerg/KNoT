@@ -22,6 +22,8 @@
 #define UDP_DATA_LEN 120
 #define UDP_HDR ((struct uip_udpip_hdr *)&uip_buf[UIP_LLH_LEN])
 
+static process_event_t KNOT_EVENT_SERVICE_FOUND;
+static process_event_t KNOT_EVENT_DATA_READY; 
 
 extern char *cmdnames[15];
 
@@ -40,6 +42,7 @@ void send(ChannelState *state, DataPayload *dp);
  */
 void send_on_channel(ChannelState *state, DataPayload *dp);
 
+void broadcast(ChannelState *state, DataPayload *dp);
 
 void ping(ChannelState *state);
 void pack_handler(ChannelState *state, DataPayload *dp);

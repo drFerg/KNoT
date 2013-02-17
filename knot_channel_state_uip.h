@@ -5,6 +5,7 @@
 #define KNOT_CHANNEL_STATE_UIP_H
 #include "knot_callback.h"
 #include "knot_protocol.h"
+uip_ipaddr_t broad;
 
 typedef struct channel_state{
    CallbackControlBlock ccb;

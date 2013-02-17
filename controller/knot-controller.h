@@ -1,6 +1,14 @@
 #ifndef KNOT_CONTROLLER_H
 #define KNOT_CONTROLLER_H
 #include "../knot-network.h"
+#include "uip.h"
+#include "contiki-net.h"
+
+typedef struct service_record{
+	uip_ipaddr_t remote_addr;
+	char name[NAME_SIZE];
+}ServiceRecord;
+
 
 /* Register a client process with the controller.
  * 

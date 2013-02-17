@@ -80,6 +80,7 @@ typedef struct query{
 typedef struct query_response{
    uint8_t type;
    uint16_t rate;
+   char name[NAME_SIZE];
 }QueryResponseMsg;
 
 typedef struct connect_message{

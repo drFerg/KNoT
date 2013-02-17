@@ -8,7 +8,7 @@
 
 
 
-uip_ipaddr_t broad;
+
 int first = 0;
 void set_up(){
     uip_ipaddr(&broad,255,255,255,255);

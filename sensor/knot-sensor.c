@@ -71,6 +71,7 @@ void query_handler(ChannelState *state, DataPayload *dp){
 	QueryResponseMsg qr;
 	/* PUT IN DYNAMIC TYPE TO BE CHECKED */
 	qr.type = TEMP;
+	strcpy(qr.name,sensor_name); // copy name
 	qr.rate = uip_htons(5);
 	//dp_complete(new_dp,uip_htons(10),1,(1));
 	new_dp->hdr.dst_chan_num = dp->hdr.src_chan_num; 
@@ -120,6 +121,7 @@ void copy_address(ChannelState *state){
 	state->remote_port = UDP_HDR->srcport;
     uip_ipaddr_copy(&state->remote_addr , &UDP_HDR->srcipaddr);
 }
+
 int check_seqno(ChannelState *state, DataPayload *dp){
 	if (state->seqno > dp->hdr.seqno){
 		printf("--Out of sequence--\n");
@@ -147,7 +149,7 @@ void network_handler(ev, data){
 	buf[len] = '\0';
 
 	dp = (DataPayload *)buf;
-	printf("Data is   %d bytes long\n",uip_ntohs(dp->dhdr.tlen));
+	printf("Data is   %d bytes long\n", uip_ntohs(dp->dhdr.tlen));
 	cmd = dp->hdr.cmd;        // only a byte so no reordering :)
 	printf("Received a %s command.\n", cmdnames[cmd]);
 
