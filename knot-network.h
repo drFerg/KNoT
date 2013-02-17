@@ -14,7 +14,7 @@
 
 #include "knot_protocol.h"
 #include "knot_callback.h"
-
+#include "knot_channel.h"
 #define LOCAL_PORT 5001
 
 #define P_SIZE 1024
@@ -25,19 +25,6 @@ struct uip_udp_conn *udp_conn;
 
 extern char *cmdnames[15];
 
-typedef struct channel_state{
-   CallbackControlBlock ccb;
-   uip_ipaddr_t remote_addr; //Holds address of remote device
-   uint32_t remote_port;
-   uint8_t state;
-   uint8_t seqno;
-   uint8_t chan_num;
-   uint8_t remote_chan_num;
-   uint16_t ticks;
-   uint16_t rate;
-   struct ctimer timer;
-   DataPayload packet;
-}ChannelState;
 
 /*
  * sends datapayload to the connections default address

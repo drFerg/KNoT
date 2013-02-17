@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include "channeltable.h"
+#include "knot_channel_state_uip.h"
 
 typedef struct knot_channel{
 	ChannelState state;
@@ -10,25 +11,20 @@ typedef struct knot_channel{
 static Channel channelTable[CHANNEL_NUM];
 static Channel *nextFree;
 int size;
-uip_ipaddr_t broad;
 
 /* 
  * initialise the channel table 
  */
 void init_table(){
 	printf("Initialising table\n");
-	uip_ipaddr(&broad,255,255,255,255);
+
 	int i;
 	size = 0;
 	nextFree = channelTable;
 	for (i = 0; i < CHANNEL_NUM; i++){
 		channelTable[i].active = 0;
 		channelTable[i].nextChannel = (struct knot_channel *)&(channelTable[(i+1) % CHANNEL_NUM]);
-		channelTable[i].state.chan_num = i+1;
-		channelTable[i].state.seqno = 0;
-		channelTable[i].state.remote_port = UIP_HTONS(LOCAL_PORT);
-		uip_ipaddr_copy(&(channelTable[i].state.remote_addr) , &broad);
-		printf("Port: %d\n",uip_ntohs(channelTable[i].state.remote_port));
+		init_state(&(channelTable[i].state));
 	}
 	channelTable[CHANNEL_NUM-1].nextChannel = NULL;
 }
@@ -45,7 +41,7 @@ ChannelState * new_channel(){
 	temp->nextChannel = NULL;
 	size++;
 	printf("New channel created\n");
-	return &temp->state;
+	return &(temp->state);
 }
 
 /* 
