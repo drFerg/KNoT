@@ -24,7 +24,7 @@ void init_table(){
 	for (i = 0; i < CHANNEL_NUM; i++){
 		channelTable[i].active = 0;
 		channelTable[i].nextChannel = (struct knot_channel *)&(channelTable[(i+1) % CHANNEL_NUM]);
-		init_state(&(channelTable[i].state));
+		init_state((&channelTable[i].state), i+ 1);
 	}
 	channelTable[CHANNEL_NUM-1].nextChannel = NULL;
 }
@@ -59,7 +59,7 @@ ChannelState * get_channel_state(int channel){
  */
 void remove_channel(int channel){
 	channelTable[channel-1].nextChannel = nextFree;
-	uip_ipaddr_copy(&channelTable[channel-1].state.remote_addr , &broad);
+	init_state(&(channelTable[channel-1].state),channel);
 	channelTable[channel-1].active = 0;
 	nextFree = &channelTable[channel-1];
 	size--;

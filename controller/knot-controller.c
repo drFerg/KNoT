@@ -20,18 +20,6 @@ PROCESS(knot_controller_process,"knot_controller");
 static ChannelState *mystate;
 static uint8_t started = 0;
 
-int init(){
-	udp_conn = udp_broadcast_new(UIP_HTONS(LOCAL_PORT),NULL);
-	if (udp_conn != NULL){
-		udp_bind(udp_conn,UIP_HTONS(LOCAL_PORT));
-		printf("SET UP NETWORK\n");
-	} else return 0;
-	printf("ipaddr=%d.%d.%d.%d:%u\n", 
-      uip_ipaddr_to_quad(&(udp_conn->ripaddr)),
-      uip_htons(udp_conn->rport));
-	return 1;
-}
-
 void create_channel(ChannelState *state, DataPayload *dp){
     //DataPayload *new_dp = (DataPayload*)malloc(sizeof(PayloadHeader) + sizeof(DataHeader) + sizeof(ConnectMsg));	//dp_complete(new_dp,10,QACK,1);
 	DataPayload *new_dp = &(state->packet);

@@ -14,18 +14,21 @@
 
 #include "knot_protocol.h"
 #include "knot_callback.h"
-#include "knot_channel.h"
+#include "knot_channel_state_uip.h"
+
 #define LOCAL_PORT 5001
 
 #define P_SIZE 1024
 #define UDP_DATA_LEN 120
 #define UDP_HDR ((struct uip_udpip_hdr *)&uip_buf[UIP_LLH_LEN])
 
-struct uip_udp_conn *udp_conn;
 
 extern char *cmdnames[15];
 
-
+/* 
+ * returns 1 if successful, 0 otherwise 
+ */
+int init();
 /*
  * sends datapayload to the connections default address
  * (good for broadcast)

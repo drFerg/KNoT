@@ -11,6 +11,7 @@
 #define TEMP   1
 #define HUM    2
 #define SWITCH 3
+#define LIGHT  4
 
 /* Connection states */
 #define STATE_IDLE       0

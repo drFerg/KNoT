@@ -1,18 +1,22 @@
 /*
 * author Fergus William Leahy
 */
+#include "contiki-net.h"
+#include "uip.h"
+#include "knot-network.h"
+#include "knot_channel_state_uip.h"
 
-#include "knot_channel_state.h"
+
 
 uip_ipaddr_t broad;
-int init = 0;
-void init(){
+int first = 0;
+void set_up(){
     uip_ipaddr(&broad,255,255,255,255);
 }
 
-void init_state(ChannelState * state){
-      if (init == 0) init();
-      state->chan_num = i+1;
+void init_state(ChannelState *state, uint8_t chan_num){
+      if (first == 0) set_up();
+      state->chan_num = chan_num;
       state->seqno = 0;
       state->remote_port = UIP_HTONS(LOCAL_PORT);
       uip_ipaddr_copy(&(state->remote_addr), &broad);

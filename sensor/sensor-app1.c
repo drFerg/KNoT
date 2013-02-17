@@ -1,5 +1,6 @@
-#include "knot-controller.h"
-
+#include "knot-sensor.h"
+#include "light.h"
+#include "contiki.h"
 static uint16_t rate = 5;
 
 PROCESS(application1,"application1");
@@ -7,24 +8,19 @@ AUTOSTART_PROCESSES(&application1);
 
 void callback(char name[],void * data){
 	printf(">>APP: %s sensor = %d\n", name, uip_ntohs(*(int*)data));
+	uint16_t *d = data;
+	*d = sensors_light1();
 }
 
-void callback2(char name[],void * data){
-	printf(">>APP2: %s sensor = %d\n", name, uip_ntohs(*(int*)data));
-}
-
-void callback3(char name[],void * data){
-	printf(">>APP3: %s sensor = %d\n", name, uip_ntohs(*(int*)data));
-}
 
 PROCESS_THREAD(application1,ev,data)
 {
 	PROCESS_BEGIN();
-
+	sensors_light_init();
 	printf("LAUNCH SUCCESS: %d\n",
-		knot_register_controller(&application1,
+		knot_register_sensor(&application1,
 								 (knot_callback)&callback, 
-								 rate, "BOSS", TEMP));
+								 rate, "Light", LIGHT));	
 	
 	/* Application do something? */
 	while (1){

@@ -7,6 +7,22 @@ char *cmdnames[15] = {"", "QUERY", "QACK","CONNECT", "CACK",
                                  "RESPONSE", "RACK", "DISCONNECT", "DACK",
                                  "ERROR", "ERROR", "PING", "PACK", "SEQNO",
                                  "SACK"};
+
+struct uip_udp_conn *udp_conn;
+
+int init(){
+   udp_conn = udp_broadcast_new(UIP_HTONS(LOCAL_PORT),NULL);
+   if (udp_conn != NULL){
+      udp_bind(udp_conn,UIP_HTONS(LOCAL_PORT));
+      printf(">>SET UP NETWORK<<\n");
+   } else return 0;
+   printf("ipaddr=%d.%d.%d.%d:%u\n", 
+      uip_ipaddr_to_quad(&(udp_conn->ripaddr)),
+      uip_htons(udp_conn->rport));
+   return 1;
+}
+
+                          
 /**Send a message to the connection in state **/
 void send_on_channel(ChannelState *state, DataPayload *dp){
    int dplen = sizeof(PayloadHeader) + sizeof(DataHeader) + uip_ntohs(dp->dhdr.tlen);

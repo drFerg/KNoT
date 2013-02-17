@@ -3,6 +3,8 @@
 */
 #ifndef KNOT_CHANNEL_STATE_UIP_H
 #define KNOT_CHANNEL_STATE_UIP_H
+#include "knot_callback.h"
+#include "knot_protocol.h"
 
 typedef struct channel_state{
    CallbackControlBlock ccb;
@@ -19,7 +21,7 @@ typedef struct channel_state{
 }ChannelState;
 
 
-void init_state(ChannelState * channel);
+void init_state(ChannelState *state, uint8_t chan_num);
 
 
 #endif /* KNOT_CHANNEL_STATE_UIP_H */

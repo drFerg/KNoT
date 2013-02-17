@@ -15,7 +15,6 @@
 #define PING_RATE  5   // How many data intervals to wait before PING
 #define RATE_CHANGE 1
 
-#define SENSORNAME "Temp"
 #define HOMECHANNEL 0
 
 
@@ -29,6 +28,9 @@
                                   (cp)->hdr.seqno=uip_htonl(sn); \
                                 }
 
+PROCESS(knot_sensor_process,"knot_sensor_process");
+char sensor_name[16];
+uint8_t started = 0;
 /*
 &(UIP_IP_BUF->srcipaddr),
 UIP_HTONS(UIP_IP_BUF->srcport),
@@ -36,37 +38,33 @@ UIP_HTONS(UIP_IP_BUF->srcport),
 UIP_HTONS(UIP_IP_BUF->destport),
 */
 static ChannelState *mystate;
-static ChannelState localState;
-
-int init(){
-	udp_conn = udp_broadcast_new(UIP_HTONS(LOCAL_PORT),NULL);
-	if (udp_conn != NULL){
-		udp_bind(udp_conn,UIP_HTONS(LOCAL_PORT));
-		printf(">>SET UP NETWORK<<\n");
-	} else return 0;
-	printf("ipaddr=%d.%d.%d.%d:%u\n", 
-      uip_ipaddr_to_quad(&(udp_conn->ripaddr)),
-      uip_htons(udp_conn->rport));
-	return 1;
-}
+static ChannelState home_channel_state;
 
 void send_handler(ChannelState* state){
     DataPayload *new_dp = &(state->packet);
 	ResponseMsg rmsg;
-	memcpy(rmsg.name,"Temp\0",5);
+	uint16_t data = 0;
+	state->ccb.callback(NULL, &data);
+	rmsg.data = uip_htons(data);
+	strcpy(rmsg.name,sensor_name);
+
 	new_dp->hdr.src_chan_num = state->chan_num;
 	new_dp->hdr.dst_chan_num = state->remote_chan_num;
-	rmsg.data = uip_htons(10);
-	//dp_complete(new_dp,10,QACK,1); 
-    (new_dp)->hdr.cmd = RESPONSE; 
-    (new_dp)->dhdr.tlen = uip_htons(sizeof(ResponseMsg));
+    new_dp->hdr.cmd = RESPONSE; 
+    new_dp->dhdr.tlen = uip_htons(sizeof(ResponseMsg));
     memcpy(&(new_dp->data),&rmsg,sizeof(ResponseMsg));
+
     send_on_channel(state,new_dp);
 	ctimer_reset(&(state->timer));
 
 }
 
-void query_handler(ChannelState *state,DataPayload *dp){
+void send_callback(void * s){
+	send_handler((ChannelState *)s);
+}
+
+
+void query_handler(ChannelState *state, DataPayload *dp){
 	uip_ipaddr_copy(&(state->remote_addr) , &(UDP_HDR->srcipaddr));
   	state->remote_port = UDP_HDR->srcport;	
 	DataPayload *new_dp = &(state->packet);
@@ -88,14 +86,16 @@ void connect_handler(ChannelState *state,DataPayload *dp){
 	printf("%s wants to connect from channel %d\n",cm->name,dp->hdr.src_chan_num);
 	printf("Replying on channel %d\n", state->chan_num);
 	/* Request src must be saved to message back */
+	state->ccb.callback = home_channel_state.ccb.callback;
 	state->remote_chan_num = dp->hdr.src_chan_num;
 	state->rate = DATA_RATE;
 	// FILL IN RATE CHECK!!!!!
 	DataPayload *new_dp = &(state->packet);
 	ConnectACKMsg ck;
-	memcpy(ck.name,SENSORNAME,10);
+	strcpy(ck.name,sensor_name); // copy name
 	new_dp->hdr.src_chan_num = state->chan_num;
 	new_dp->hdr.dst_chan_num = state->remote_chan_num;
+
 	//dp_complete(new_dp,10,QACK,1);
     (new_dp)->hdr.cmd = CACK; 
     
@@ -111,7 +111,7 @@ void cack_handler(ChannelState *state, DataPayload *dp){
 		return;
 	}
 	state->ticks = state->rate * PING_RATE;
-	ctimer_set(&(state->timer),CLOCK_CONF_SECOND * state->rate,send_handler,state); 
+	ctimer_set(&(state->timer),CLOCK_CONF_SECOND * state->rate,send_callback,state); 
 	printf(">>CONNECTION FULLY ESTABLISHED<<\n");
 	state->state = STATE_CONNECTED;
 }
@@ -154,7 +154,7 @@ void network_handler(ev, data){
 	printf("Message for channel %d\n",dp->hdr.dst_chan_num);
 	if (dp->hdr.dst_chan_num == HOMECHANNEL){
 		if (cmd == QUERY){
-			state = &localState;
+			state = &home_channel_state;
 			copy_address(state);
   			
   		}
@@ -209,28 +209,40 @@ void cleaner(){
 
 }
 
-void send_callback(int channel){
-	ChannelState *s = get_channel_state(channel);
-	send_handler(s);
+
+
+
+int knot_register_sensor(struct process *client_proc, knot_callback sensor, 
+						 uint16_t rate, char name[], 
+						 uint8_t sensor_type){
+	if (started == 0){
+		process_start(&knot_sensor_process,NULL);
+		PROCESS_CONTEXT_BEGIN(&knot_sensor_process);
+		init_table();
+		init();
+		PROCESS_CONTEXT_END();		
+		started = 1;
+		strcpy(sensor_name,name);
+	}
+		
+	if (sensor != NULL){
+		home_channel_state.ccb.callback = sensor;
+		home_channel_state.ccb.client_process = client_proc;
+		printf("Set callback\n");
+	}
+	else return -2;
+
+	home_channel_state.rate = rate;
+	return 1;
 }
 
-PROCESS(knot_sensor,"knot-sensor");
-AUTOSTART_PROCESSES(&knot_sensor);
 
-PROCESS_THREAD(knot_sensor, ev, data)
+
+PROCESS_THREAD(knot_sensor_process, ev, data)
 {
-	static struct etimer et;
-	static struct ctimer ct;
+
 	PROCESS_BEGIN();
-
-	init_table();
-	init();
-
 	while (1){
-    	// wait until the timer has expired
-    	// if (mystate.state == STATE_CONNECTED){
-    	// 	etimer_set(&et, CLOCK_CONF_SECOND*5);
-    	// }
     	PROCESS_WAIT_EVENT();
 		if (ev == tcpip_event && uip_newdata()) network_handler(ev,data);
 		else if (ev == PROCESS_EVENT_TIMER) send_handler(mystate);
