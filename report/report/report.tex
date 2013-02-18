@@ -35,6 +35,8 @@ This uptake in interest and development can be largely attributed to the advent 
 
 Similarly there has also been much enthusiasm from small companies and start ups trying to create the next hit consumer device. Social funding platform, Kickstarter\cite{Kickstarter}, has seen many attempts at creating the perfect ``Thing'' for the Internet\cite{SmartThings}\cite{Twine}.
 
+
+
 Whilst all of these devices from manufacturers, start ups and hobbyists may very well be great ``Things'' by themselves, there exists a problem. How do you connect all of these heterogeneous platforms and devices together to create a true Internet of ``Things''?
 
 This project focuses on just that and endeavours to create a communication protocol that is not only platform agnostic but also lightweight enough to be run on the most brain-dead constrained devices, such as the TelosB Sky Motes(8MHz,10K ram)\cite{TelosB}. Another design focus is that the protocol must be able to scale well as the network dramatically increases and decreases in size.
@@ -51,13 +53,13 @@ This project focuses on just that and endeavours to create a communication proto
 The standard model of how we use computers and the Internet today revolves around the idea of an interconnected network of servers, routers and data centres around which users connect using their personal computers to access, input, manipulate and retrieve data. 
 
 This model heavily relies upon the users to provide the data which the Internet is powered by. Without this data the Internet would be a barren place, with nothing to search for, sell, buy, share, watch, listen to, play, analyse or learn from.
-Users from all around the world have contributed to make the Internet \textit{the} single biggest resource in the world by snapping photos, capturing videos, writing blogs, creating websites, commenting, discussing, reviewing, buying, selling and inputing data. So much data in fact that the estimated size of the Internet in 2009 was 500bn gigabytes, of which 70\% was contributed to by users.\cite{Size}   
+Users from all around the world have contributed to make the Internet \textit{the} single biggest resource in the world by snapping photos, capturing videos, writing blogs, creating websites, commenting, discussing, reviewing, buying, selling and inputting data. So much data in fact that the estimated size of the Internet in 2009 was 500bn gigabytes, of which 70\% was contributed to by users.\cite{Size}   
 
 % INSERT DIAGRAM HERE
 Within this model there exists two significant problems posed by users; time and accuracy. In terms of time, users only have so many hours in a day to input data; which can only be so accurate as all users are prone to error through one means or another.
 These two problems make it difficult to observe our world and represent it in an accurate and reliable digital form.
 
-The idea of taking this responsibility of inputing data away from the user and giving it to the machine is where the ``Internet of Things'' term initially came from. The term itself was thought to have first been coined by Kevin Ashton\cite{K.Ashton} in 1999, who at the time was interested in linking up a company's supply chain to the Internet using RFID technology to allow for autonomous monitoring its state.
+The idea of taking this responsibility of inputting data away from the user and giving it to the machine is where the ``Internet of Things'' term initially came from. The term itself was thought to have first been coined by Kevin Ashton\cite{K.Ashton} in 1999, who at the time was interested in linking up a company's supply chain to the Internet using RFID technology to allow for autonomous monitoring its state.
 Sadly at that time the idea progressed little and didn't garner much support.
 
 Fast forward to 2013 and the ``Year of the Internet of Things'' as declared by the MIT Technology Review\cite{2013IoT} and observed in the Consumer Electronics Show 2013 (CES).
@@ -75,6 +77,10 @@ Fast forward to 2013 and the ``Year of the Internet of Things'' as declared by t
  % linking home automation, security and IoT i.e. toaster/coffee machine
  % 
 
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% HOME AUTOMATION? ??????????????????????
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 % section internet_of_things_paradigm (end)
 \newpage
@@ -87,7 +93,7 @@ Discuss comment features/attributes/reasons for open devices.
 In the past decade there have been many attempts at creating an affordable, low power and approachable electronics platform such as Arduino, Netduino, BeagleBone, Teensy and MSP430 Launchpad. All of which have taken very different approaches, some opting for absolute low cost (MSP430 Launchpad), whilst others for aimed to be fully featured and powerful devices (BeagleBone). Whilst the Arduino is by far not the cheapest or the most powerful of the bunch, it excelled in areas others lacked and created a sweet spot in the middle.
 
 The Arduino was born in 2005 at an Italian university, Interaction Design Institute Ivrea, out of the necessity of creating a cheap and approachable electronics platform which could enable design students to create interaction design projects without the need of an electronics background.
-The main device which was created and remained much the same since is based on an Amtel ATmega328 8bit micro-controller running at 16MHz with 2KB of RAM and 32KB of storage for programmes written in a variation on C/C++. The board itself maps out the micro-controller's mix of 20 digital and analog input/output pins and supports several standardised protocols for communicating with other devices such as I\textsuperscript{2}C\footnote{I\textsuperscript{2}C - Inter-Intergrated Circuit} and UART\footnote{UART - Universal Asynchronous Reciever/Transmitter}. 
+The main device which was created and remained much the same since is based on an Amtel ATmega328 8bit micro-controller running at 16MHz with 2KB of RAM and 32KB of storage for programmes written in a variation on C/C++. The board itself maps out the micro-controller's mix of 20 digital and analogue input/output pins and supports several standardised protocols for communicating with other devices such as I\textsuperscript{2}C\footnote{I\textsuperscript{2}C - Inter-Integrated Circuit} and UART\footnote{UART - Universal Asynchronous Reciever/Transmitter}. 
 
 But the key to the Arduino Platform is not the micro-controller itself but instead the design, software and support provided by the creators and other developers. The other major factor to its success is that the device along with the documentation and support are all open source, thus allowing anyone to learn from, replicate and expand upon the platform in any way they wish.
 
@@ -123,9 +129,9 @@ The Raspberry Pi itself is a moderately well powered single board computer capab
 
 Because of extremely low price point for such hardware the Raspberry Pi was a huge success selling over 500,000 units in the first 8 months only limited by their production speed.\cite{RaspberryPiSold}
 
-Even before it's release the community support and ideas were non-stop, everything from home-media centres\cite{Raspbmc} to lego super computers\footnote{Even within the School of Computing, UoG}\cite{LegoSuperComputer} were designed and created from Raspberry Pis.
+Even before it's release the community support and ideas were non-stop, everything from home-media centres\cite{Raspbmc} to Lego super computers\footnote{Even within the School of Computing, UoG}\cite{LegoSuperComputer} were designed and created from Raspberry Pis.
 
-Whilst the support for utilising the GPIO pins is not yet as well developed as the Arduino Platform, the power of the device combined with its low price point and connectivity means that it can be very easily incorporated into a ``Internet of Things'' network with little additional hardware and cost.
+Whilst the support for utilising the GPIO pins is not yet as well developed as the Arduino Platform, the power of the device combined with its low price point and connectivity means that it can be very easily incorporated into a ``Internet of Things'' network with little additional hardware or cost.
 
 % ADD PROGRAMMING LANGUAGE PART
 
@@ -139,11 +145,11 @@ most languages possible, threading etc
 \subsection{Telos B Motes} % (fold)
 \label{sub:telos_b_motes}
 
-With a significant uptake of devices in the academic ..., telos B motes are one of the go to platforms for wireless sensor networks.
+With a significant uptake of devices in the academic ..., TelosB motes are one of the go to platforms for wireless sensor networks.
 Whilst they may fit under a different paradigm name, the IoT can be seen as an expansion and specialisation of a wireless sensor network.
-With this in mind these Telos B motes are a very good fit for such an environment. 
+With this in mind these TelosB motes are a very good fit for such an environment. 
 
-The devices themselves were developed in the University of Berkely, California and spun off into a seperate company. These devices have fuelled many academic studies/papers and courses in relation to developing low power wireless sensor networks and finding applications for them.
+The devices themselves were developed in the University of Berkeley, California and spun off into a separate company. These devices have fuelled many academic studies/papers and courses in relation to developing low power wireless sensor networks and finding applications for them.
 GIVE EXAMPLES OF APPLICATIONS
 DEVICE SPECS
 
@@ -160,7 +166,7 @@ Contiki c like, event and thread driven
 % section open_source_constrained_devices (end)
 \section{Wireless Sensor Networks} % (fold)
 \label{sec:wireless_sensor_networks}
-Discuss relation to wireless sensor networks, similar disimilar
+Discuss relation to wireless sensor networks, similar dissimilar
 Concerns which differ, align.
 
 % section wireless_sensor_networks (end)
@@ -173,13 +179,25 @@ Concerns which differ, align.
 A fully featured pub sub system.
 Great for large, high power machines.
 Not so great on small, low power devices
-JVM can be scalled down to lower power devices but still poses overhead to system.
+JVM can be scaled down to lower power devices but still poses overhead to system.
 % subsection java_jms (end)
 
 \subsection{xAP} % (fold)
 \label{sub:xap}
 \cite{xAP}
+As an attempt to bring together a variety of technologies developed and used for home automation an open source group decided to create a protocol to bridge the differences and create a unifying platform.
 
+xAP, eXtensible Automation Protocol is designed to be a minimalist, elegant and easy to implement protocol with very basic requirements for what hardware, operating system, network and language it can run on.  
+The primary implementation is based on UDP/IP with a distributed architecture where no central controller co-ordinates the network. Instead each device either transmits or listens for data on a broadcast channel.
+Their core justification for this is that the network becomes fault tolerant and can withstand devices disappearing off the network for one reason or another without having a detrimental effect on the whole network.
+
+In this design there are two key classes of devices, senders and receivers, of which a device can be either or both. 
+The receiver simply attaches to the network and listens for any incoming packets, it then chooses which ones are relevant to it and processes them.
+The sender attaches to the network and broadcasts packets with payloads containing data relating to its service i.e. sensor data, incoming caller ID etc. These packets only contain enough information to uniquely identify the source and the payload it wishes to send. There is no constraint on whether or not the packet must have a destination.
+
+This design enables new devices to attach to the network and start interacting without having to go through the process of setting up connections to other devices. It also makes it very easy to implement certain types of devices like loggers or informational displays which can collect data from all senders with relative ease.
+
+\begin{comment}
 Core Idea is to build a distributed fault tolerant IoT protocol.
 total broadcasting protocol, every device just beams out its own services and any device on the network can read and interpret the data.
 Can be very inefficient for devices on battery(constant barrage) and doesn't scale well with 10's, 100's, 1000's of devices.
@@ -189,7 +207,7 @@ Purpose is that devices can hop on and off the network without breaking/severing
 
 Nice concepts and goals
 BUT fails to deliver a system which can scale and do things efficiently
-
+\end{comment}
 % subsection xap (end)
 
 \subsection{Developing systems} % (fold)
@@ -197,7 +215,7 @@ BUT fails to deliver a system which can scale and do things efficiently
 
 \subsubsection{Smart things} % (fold)
 \label{ssub:smart_things}
-Up and coming platform building upon arduino as well as other technology to create an open eco-system of ``Things''. All things tie into a hub which is accessed through an online portal.
+Up and coming platform building upon Arduino as well as other technology to create an open eco-system of ``Things''. All things tie into a hub which is accessed through an online portal.
 
 
 % subsubsection smart_things (end)
@@ -239,7 +257,7 @@ Up and coming platform building upon arduino as well as other technology to crea
 \label{sec:protocol_design}
 Minimal protocol, only ack required/critical data to save on transmissions.
 Use some broadcasting for acquiring sensors/actuators
-Provide enough garuantees for a useful and reliable system which can scale
+Provide enough guarantees for a useful and reliable system which can scale
 Provide a distributed and fault tolerant way to find, collect data and control devices from
 Protocol design based around several state machines. 
 
