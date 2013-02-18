@@ -38,6 +38,7 @@ static ChannelState home_channel_state;
 static process_event_t KNOT_EVENT_CONNECT;
 static uint8_t started = 0;
 
+
 void init_home_channel(){
 	  home_channel_state.chan_num = 0;
       home_channel_state.seqno = 0;
@@ -57,11 +58,13 @@ void create_channel(ServiceRecord *sc){
 	state->remote_addr = sc->remote_addr;
 	state->ccb.client_process = home_channel_state.ccb.client_process;
 	state->ccb.callback = home_channel_state.ccb.callback;
+	state->rate = home_channel_state.rate;
 	DataPayload *new_dp = &(state->packet);
 	clean_packet(new_dp);
 
 	ConnectMsg *cm = (ConnectMsg *)new_dp->data;
 	strcpy(cm->name, controller_name);
+	cm->rate = state->rate;
 	new_dp->hdr.dst_chan_num = 0;
 	new_dp->hdr.src_chan_num = state->chan_num;
     (new_dp)->hdr.cmd = CONNECT; 
@@ -133,7 +136,7 @@ void service_search(ChannelState* state, uint8_t type){
 }
 
 void response_handler(ChannelState *state, DataPayload *dp){
-	if (state->state != STATE_CONNECTED || state->state != STATE_PING){
+	if (state->state != STATE_CONNECTED){
 		PRINTF("Not connected to device!\n");
 		return;
 	}
