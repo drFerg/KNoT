@@ -108,8 +108,12 @@ void connect_handler(ChannelState *state,DataPayload *dp){
 	/* Request src must be saved to message back */
 	state->ccb.callback = home_channel_state.ccb.callback;
 	state->remote_chan_num = dp->hdr.src_chan_num;
-	state->rate = DATA_RATE;
-	// FILL IN RATE CHECK!!!!!
+	if (uip_ntohs(cm->rate) > DATA_RATE){
+		state->rate = uip_ntohs(cm->rate);
+	}else{
+		state->rate = DATA_RATE;
+		printf("%d\n", uip_ntohs(cm->rate));
+	}
 	DataPayload *new_dp = &(state->packet);
 	ConnectACKMsg ck;
 	strcpy(ck.name,sensor_name); // copy name
