@@ -35,11 +35,9 @@ This uptake in interest and development can be largely attributed to the advent 
 
 Similarly there has also been much enthusiasm from small companies and start ups trying to create the next hit consumer device. Social funding platform, Kickstarter\cite{Kickstarter}, has seen many attempts at creating the perfect ``Thing'' for the Internet\cite{SmartThings}\cite{Twine}.
 
-
-
 Whilst all of these devices from manufacturers, start ups and hobbyists may very well be great ``Things'' by themselves, there exists a problem. How do you connect all of these heterogeneous platforms and devices together to create a true Internet of ``Things''?
 
-This project focuses on just that and endeavours to create a communication protocol that is not only platform agnostic but also lightweight enough to be run on the most brain-dead constrained devices, such as the TelosB Sky Motes(8MHz,10K ram)\cite{TelosB}. Another design focus is that the protocol must be able to scale well as the network dramatically increases and decreases in size.
+This project focuses on just that and endeavours to create a communication protocol that is not only platform agnostic but also lightweight enough to be run on the most brain-dead constrained devices, such as the TelosB Sky Motes(8MHz CPU,10K ram)\cite{TelosB}. Another core design focus is that the protocol must be able to scale effectively as the network dramatically increases size as can be expected with the rapidly increasing availability of network-connected devices.
 
 %==============================================================================
 
@@ -142,7 +140,7 @@ most languages possible, threading etc
 \end{comment}
 % subsection raspberry_pi (end)
 
-\subsection{Telos B Motes} % (fold)
+\subsection{TelosB Motes} % (fold)
 \label{sub:telos_b_motes}
 
 With a significant uptake of devices in the academic ..., TelosB motes are one of the go to platforms for wireless sensor networks.
@@ -176,7 +174,15 @@ Concerns which differ, align.
 
 \subsection{Java JMS} % (fold)
 \label{sub:java_jms}
-A fully featured pub sub system.
+Although the Java Messaging Service itself isn't directly targeted towards ``Internet of Things'' implementation, it does provide a standard and well defined framework for communicating and coordinating between both local and remote processes on a network. 
+
+
+A fully featured pub sub system as well as point to point
+pubs and subs don't know about each other but interact through Topics
+Topics emulate the concept of a service very well i.e. Topic = bedroom light, living room thermostat. where subscribers can subscribe to events published to their topic
+
+
+
 Great for large, high power machines.
 Not so great on small, low power devices
 JVM can be scaled down to lower power devices but still poses overhead to system.
@@ -185,17 +191,20 @@ JVM can be scaled down to lower power devices but still poses overhead to system
 \subsection{xAP} % (fold)
 \label{sub:xap}
 \cite{xAP}
-As an attempt to bring together a variety of technologies developed and used for home automation an open source group decided to create a protocol to bridge the differences and create a unifying platform.
+In the early 2000's, as an attempt to bring together a variety of technologies developed and used for Home Automation an open source group decided to create a protocol to bridge the differences and create a unifying platform.
 
 xAP, eXtensible Automation Protocol is designed to be a minimalist, elegant and easy to implement protocol with very basic requirements for what hardware, operating system, network and language it can run on.  
-The primary implementation is based on UDP/IP with a distributed architecture where no central controller co-ordinates the network. Instead each device either transmits or listens for data on a broadcast channel.
-Their core justification for this is that the network becomes fault tolerant and can withstand devices disappearing off the network for one reason or another without having a detrimental effect on the whole network.
+The primary implementation is based on UDP/IP with a distributed architecture where no central controller co-ordinates the network. Instead each device either transmits or listens for data on a broadcast channel. Their core justification for this is that the network becomes fault tolerant and can withstand devices disappearing off the network for one reason or another without having a detrimental effect on the whole network.
 
 In this design there are two key classes of devices, senders and receivers, of which a device can be either or both. 
 The receiver simply attaches to the network and listens for any incoming packets, it then chooses which ones are relevant to it and processes them.
-The sender attaches to the network and broadcasts packets with payloads containing data relating to its service i.e. sensor data, incoming caller ID etc. These packets only contain enough information to uniquely identify the source and the payload it wishes to send. There is no constraint on whether or not the packet must have a destination.
+The sender attaches to the network and broadcasts packets with payloads containing data relating to its service i.e. sensor data, incoming caller ID, etc. These packets only contain enough information to uniquely identify the source and the payload it wishes to send. There is no constraint on whether or not the packet must have a destination.
 
-This design enables new devices to attach to the network and start interacting without having to go through the process of setting up connections to other devices. It also makes it very easy to implement certain types of devices like loggers or informational displays which can collect data from all senders with relative ease.
+This design feature makes it very simple for new devices to attach to the network and start interacting without having to go through the process of setting up connections to other devices. It also makes it very easy to implement certain types of devices like loggers or informational displays which can collect data from all senders with relative ease. However, this also creates a huge strain on the devices attached to the network which all have to receive and process any transmitted data, especially for those devices with limited resources. This becomes an increasing problem as more and more connected devices invade the home, from which the network will very quickly deteriorate as the volume of traffic being broadcast increases.
+
+The protocol also defines a set schema for how packets should be formatted so that all devices can interoperate correctly. The schema covers both the header and the payload format, of which is almost entirely text-based, resembling albeit pre-dating JSON, with the main intention of being human readable. Whilst so, this does come at the cost of not only increasing the size of the packet considerably with redundant text, but also the complexity in parsing it for the data with its varying delimiters. 
+
+After the protocol's initial inception it has had limited success, even whilst it has been continuously developed over the years, it has done so in the shadows and not in an explicitly open and collaborative way, with no central repository for code collaboration/review and no single developer's forum for discussion. % POST LINK TO YAHOO FORUMS ETC
 
 \begin{comment}
 Core Idea is to build a distributed fault tolerant IoT protocol.
@@ -235,10 +244,17 @@ Up and coming platform building upon Arduino as well as other technology to crea
 
 %==============================================================================
 
-\chapter{Requirments gathering} % (fold)
+\chapter{Requirements gathering} % (fold)
 \label{cha:requirments_gathering}
 
 % Requirements of the hardware independent design
+ 
+ % Looking at xAP, JMS, what's wrong, how can that be resolved
+% what are typical use cases/ types of devices
+
+
+
+
 
 % section problems_encountered (end)
 % chapter requirments_gathering (end)
