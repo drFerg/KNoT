@@ -2,6 +2,8 @@
 
 \documentclass{l4proj}
 \usepackage{comment}
+\usepackage{graphicx}
+\usepackage{caption}
 %
 % put any packages here
 %
@@ -29,13 +31,13 @@ A level 4 project which explores the current use of protocols for the Internet o
 \chapter{Introduction}
 \pagenumbering{arabic}
 
-The ``Internet of Things'' paradigm along with the ``Smart'' prefix has recently seen a significant rise in interest and popularity with manufacturers, hobbyists and end-users. Everything from your set-top box to your washing machine\cite{LG} can now be ``Smart''\cite{SmartCraze} and connect to the Internet to tell you if your favourite TV show has downloaded or that your wash cycle has complete. Some hobbyists have gone so far to make plants send a text or tweet when it needs watering\cite{Botanicalls}\cite{TweetPlant}.
+The ``Internet of Things'' paradigm along with the ``Smart'' prefix has recently seen a significant rise in interest and popularity with manufacturers, hobbyists and end-users. Everything from your set-top box to your washing machine can now be ``Smart'' and connect to the Internet to tell you if your favourite TV show has downloaded or that your wash cycle has complete\cite{LG, SmartCraze}. Some hobbyists have gone so far to make plants send a text or tweet when it needs watering\cite{Botanicalls, TweetPlant}.
 
 This uptake in interest and development can be largely attributed to the advent of lower power, smaller and most importantly cheaper devices. Large companies such as the mobile phone chip-set manufacturer, Qualcomm, recently declared their support at CES 2012 with the announcement of a dedicated development platform for the ``Internet of Things''\cite{Qualcomm}.
 
-Similarly there has also been much enthusiasm from small companies and start ups trying to create the next hit consumer device. Social funding platform, Kickstarter\cite{Kickstarter}, has seen many attempts at creating the perfect ``Thing'' for the Internet\cite{SmartThings}\cite{Twine}.
+Similarly there has also been much enthusiasm from small companies and start-ups trying to create the next hit consumer device. Social funding platform, Kickstarter\cite{Kickstarter}, has seen many attempts at creating the perfect ``Thing'' for the Internet\cite{SmartThings, Twine}.
 
-Whilst all of these devices from manufacturers, start ups and hobbyists may very well be great ``Things'' by themselves, there exists a problem. How do you connect all of these heterogeneous platforms and devices together to create a true Internet of ``Things''?
+Whilst all of these devices from manufacturers, start-ups and hobbyists may very well be great ``Things'' by themselves, there exists a problem. How does one connect all of these heterogeneous platforms and devices together to create a true interconnected ``Internet of Things''?
 
 This project focuses on just that and endeavours to create a communication protocol that is not only platform agnostic but also lightweight enough to be run on the most brain-dead constrained devices, such as the TelosB Sky Motes(8MHz CPU,10K ram)\cite{TelosB}. Another core design focus is that the protocol must be able to scale effectively as the network dramatically increases size as can be expected with the rapidly increasing availability of network-connected devices.
 
@@ -60,7 +62,33 @@ These two problems make it difficult to observe our world and represent it in an
 The idea of taking this responsibility of inputting data away from the user and giving it to the machine is where the ``Internet of Things'' term initially came from. The term itself was thought to have first been coined by Kevin Ashton\cite{K.Ashton} in 1999, who at the time was interested in linking up a company's supply chain to the Internet using RFID technology to allow for autonomous monitoring its state.
 Sadly at that time the idea progressed little and didn't garner much support.
 
-Fast forward to 2013 and the ``Year of the Internet of Things'' as declared by the MIT Technology Review\cite{2013IoT} and observed in the Consumer Electronics Show 2013 (CES).
+Fast forward to 2013, the ``Year of the Internet of Things'' as declared by the MIT Technology Review\cite{2013IoT} and observed in the Consumer Electronics Show 2013 (CES) with manufacturers introducing everything from smart fridges to smart washing machines. Parallel to this low power devices have become increasingly affordable and small enough to embed into other devices making it much more possible to create a truly autonomous system, either in the home, office or car, wherein the user doesn't have to interact directly with any of the devices but instead just go about their daily life which in the background is enhanced by these ubiquitous devices operating together.
+
+With all the possible ``Things'' that can exist, the core functionality in the ``Internet of Things'' can be simply modelled as closed loop system in which it can sense, process and interact with the real world as well as other devices and services. This system is represented at its simplest by an if statement, \textit{if \textbf{event occurs} then \textbf{do action}}, which provides developers and users alike an easy to understand yet powerful model to create rules for autonomous interaction.i.e.
+\begin{center}
+	\textit{if \textbf{temp \textless  20C} then \textbf{Turn ON heating}}
+
+	\textit{if \textbf{washing machine done} then \textbf{Text John}}
+\end{center}
+
+There currently exists a variety of online services and devices which give the end-user this ability to do such tasks, such as the Twine device \cite{Twine} which is a small low power device with a variety of sensors and a WIFI radio. The goal of the device was to make it simple, easy to set up and use; the user just puts the device in the desired environment, perhaps a on a washing machine, sets up some rules, ``When accelerometer is knocked Then tweet'' and when the condition is true the preset action, in this case tweeting, is performed. Whilst this gives the user great flexibility to perform actions automatically, the limitations show when trying to interact with more than one Twine or with other devices and not just Internet services. 
+
+\begin{figure}[h]
+	\centering
+	\begin{minipage}{.5\textwidth}
+		\includegraphics[width=.6\linewidth]{twine-device.jpg}
+		\captionof{figure}{Twine IoT device.}
+		\label{fig:twine_device}
+	\end{minipage}%
+	\begin{minipage}{.5\textwidth}
+		\includegraphics[width=.6\linewidth]{twine-rules.jpg}
+		\captionof{figure}{Twine rule, When x Then y}
+	\end{minipage}
+\end{figure}
+
+The Twine device isn't the only device out there, Smart Things\cite{SmartThings} goes one step further than Twine and gives the user a network of devices connected to the Internet through a central hub which the user can then interact with online.
+
+The main problem that exists and will continue to be so is that the digital environment is filled with a huge variety of heterogeneous devices and the key to the future of the ``Internet of Things'' is to find a way to abstract out the differences between these devices and create a simple platform on which all types of devices can communicate to build a more rich and powerful ``Internet of Things''.
 
  % Kevin Ashton, RFID, coined IoT
  % http://www.rfidjournal.com/article/view/4986
@@ -86,9 +114,12 @@ Fast forward to 2013 and the ``Year of the Internet of Things'' as declared by t
 \label{sec:open_source_constrained_devices}
 Discuss comment features/attributes/reasons for open devices.
 
+In the past 5-10 years there have been many attempts at creating an affordable, low power and approachable electronics platform such as Arduino, Netduino, BeagleBone, Teensy and MSP430 Launchpad. All of which have taken very different approaches, some opting for absolute low cost (MSP430 Launchpad), whilst others for aimed to be fully featured and powerful devices (BeagleBone). Other devices such as the TelosB mote whilst not cheap has fuelled academic research into new ways of designing and implementing Wireless Sensor Networks. More recently the Raspberry Pi has created a whole new market of super low cost yet moderately powerful computers aimed at education and hobbyists.
+
+ In the rest of this section a variety of different devices and platforms will be discussed including the Arduino, TelosB mote, Raspberry Pi and other ``Internet of Things'' related devices. 
+
 \subsection{Arduino} % (fold)
 \label{sub:arduino}
-In the past decade there have been many attempts at creating an affordable, low power and approachable electronics platform such as Arduino, Netduino, BeagleBone, Teensy and MSP430 Launchpad. All of which have taken very different approaches, some opting for absolute low cost (MSP430 Launchpad), whilst others for aimed to be fully featured and powerful devices (BeagleBone). Whilst the Arduino is by far not the cheapest or the most powerful of the bunch, it excelled in areas others lacked and created a sweet spot in the middle.
 
 The Arduino was born in 2005 at an Italian university, Interaction Design Institute Ivrea, out of the necessity of creating a cheap and approachable electronics platform which could enable design students to create interaction design projects without the need of an electronics background.
 The main device which was created and remained much the same since is based on an Amtel ATmega328 8bit micro-controller running at 16MHz with 2KB of RAM and 32KB of storage for programmes written in a variation on C/C++. The board itself maps out the micro-controller's mix of 20 digital and analogue input/output pins and supports several standardised protocols for communicating with other devices such as I\textsuperscript{2}C\footnote{I\textsuperscript{2}C - Inter-Integrated Circuit} and UART\footnote{UART - Universal Asynchronous Reciever/Transmitter}. 
@@ -131,6 +162,7 @@ Even before it's release the community support and ideas were non-stop, everythi
 
 Whilst the support for utilising the GPIO pins is not yet as well developed as the Arduino Platform, the power of the device combined with its low price point and connectivity means that it can be very easily incorporated into a ``Internet of Things'' network with little additional hardware or cost.
 
+Another considerable point for developing on the Raspberry Pi is that because of its ability to run Linux, a much larger variety of programming languages can be used, including high level languages like Python, C++ and Java.
 % ADD PROGRAMMING LANGUAGE PART
 
 \begin{comment}
@@ -143,15 +175,18 @@ most languages possible, threading etc
 \subsection{TelosB Motes} % (fold)
 \label{sub:telos_b_motes}
 
-With a significant uptake of devices in the academic ..., TelosB motes are one of the go to platforms for wireless sensor networks.
-Whilst they may fit under a different paradigm name, the IoT can be seen as an expansion and specialisation of a wireless sensor network.
-With this in mind these TelosB motes are a very good fit for such an environment. 
+With a significant uptake of devices in academia, TelosB motes are one of the go to platforms for wireless sensor networks research. Whilst they may fit under a different paradigm, the IoT can be seen as a specialisation of a wireless sensor network. Although the are extremely constrained they are a good low end benchmark for which to test and develop software for use on constrained devices. 
 
-The devices themselves were developed in the University of Berkeley, California and spun off into a separate company. These devices have fuelled many academic studies/papers and courses in relation to developing low power wireless sensor networks and finding applications for them.
-GIVE EXAMPLES OF APPLICATIONS
-DEVICE SPECS
+The device was developed in the University of Berkeley, California and spun off into a separate company. As a result these devices have fuelled many academic studies and courses in relation to developing low power wireless sensor networks and researching applications for them. With very limited resources, 8MHz CPU, 10KB RAM, 48KB ROM, light/temperature sensors, battery powered and a low 802.15.4 power radio, these devices require new ways of thinking in order to design, program and deploy them. Many scenarios must also take into consideration the environment in which they will be deployed, which are often hostile and unpredictable that can cause nodes to disappear from the network sporadically. Such environments have ranged from forests for fire detection\cite{FireDetection} to monitoring livestock \cite{Livestock}.
 
-A variety of very different OS's with stark differences in programming styles.
+A significant part of the development for these types of devices has surrounded the operating system and programming style. Currently there exist many different operating systems in which TinyOS and Contiki are most used and developed for. Both operating systems take quite different approaches to both operating system design and programming API. 
+
+TinyOS is designed as a completely modular, event-driven and thread-less operating system which makes for a difficult system to program and reason about at first due to its unfamiliar execution style and the design of its programming language, nesC, a significant variant of C. Due to its modular design programs are written in ``components'' which are comprised of their ``configuration''(how they link/wire to other components) and ``module''(the implementation of the component). 
+
+In contrast, Contiki is designed to fit the middle ground, having both lightweight threads which can interleave in execution and events to allow the program react to stimuli, written in C. This approach is much more familiar to the experienced programmer of larger systems whilst still providing an efficient environment to program in albeit with some compromises(stackless threads). Where TinyOS breaks programs down into components, Contiki aligns with standard C with headers and .c files.
+
+In regards to the ``Internet of Things'', Contiki provides a much more approachable platform to design for as a significant portion of code written for larger platforms can be ported without much transformations to the code. Combined with the hardware's array of sensors, the two create an ideal low end platform for developing at the bottom end of the ``Internet of Things''.
+
 
 \begin{comment}
 
@@ -174,24 +209,39 @@ Concerns which differ, align.
 
 \subsection{Java JMS} % (fold)
 \label{sub:java_jms}
-Although the Java Messaging Service itself isn't directly targeted towards ``Internet of Things'' implementation, it does provide a standard and well defined framework for communicating and coordinating between both local and remote processes on a network. 
+Although the Java Messaging Service itself isn't directly targeted towards ``Internet of Things'' implementation, it does provide a standard and well defined framework for communicating and coordinating between both local and remote applications on a network. 
+
+It can operate in two modes, either in a publish - subscribe or point to point architecture. Using the publish subscribe system, publishers publish to topics, to which subscribers subscribe to. The topics bridge the two types of clients together and allow for many to many relationships without either side knowing about the other. With the ``Internet of Things'' in mind this type of publish - subscribe systems fits in well with the \textit{if \textbf{event occurs} then \textbf{do action}} model. Topics map to events/conditions which sensors can publish to and other devices can subscribe to, to do some action as a result.
+
+\begin{figure}[h!]
+	\centering
+		\includegraphics[scale=0.4]{JMS-IoT.jpg}
+		\captionof{figure}{JMS Publish - Subscribe modelling IoT}
+\end{figure}
 
 
+Whilst JMS provides a well fitted framework it does however come at a cost due to the runtime environment of Java and the additional overhead of having to run a separate server to glue the publishers and subscribers together. Whilst currently running the Java runtime on these constrained devices may not be possible, with the current pace of innovation, especially in optimisation of the Java runtime, and Moore's Law giving devices more power for the same cost and form factor every 18 months, it won't be long before it's really possible to have it running on the constrained devices of tomorrow. But until then other alternatives and perhaps more suited tools, libraries and frameworks should be engineered starting at the lowest common denominator rather than shoe-horning large scale systems to fit constrained devices.
+
+
+\begin{comment}
 A fully featured pub sub system as well as point to point
 pubs and subs don't know about each other but interact through Topics
 Topics emulate the concept of a service very well i.e. Topic = bedroom light, living room thermostat. where subscribers can subscribe to events published to their topic
 
-
-
 Great for large, high power machines.
 Not so great on small, low power devices
 JVM can be scaled down to lower power devices but still poses overhead to system.
+\end{comment}
 % subsection java_jms (end)
+
+
+
+\newpage
 
 \subsection{xAP} % (fold)
 \label{sub:xap}
-\cite{xAP}
-In the early 2000's, as an attempt to bring together a variety of technologies developed and used for Home Automation an open source group decided to create a protocol to bridge the differences and create a unifying platform.
+
+In the early 2000's, as an attempt to bring together a variety of technologies developed and used for Home Automation an open source group decided to create a protocol to bridge the differences and create a unifying platform.\cite{xAP}
 
 xAP, eXtensible Automation Protocol is designed to be a minimalist, elegant and easy to implement protocol with very basic requirements for what hardware, operating system, network and language it can run on.  
 The primary implementation is based on UDP/IP with a distributed architecture where no central controller co-ordinates the network. Instead each device either transmits or listens for data on a broadcast channel. Their core justification for this is that the network becomes fault tolerant and can withstand devices disappearing off the network for one reason or another without having a detrimental effect on the whole network.
@@ -218,6 +268,11 @@ Nice concepts and goals
 BUT fails to deliver a system which can scale and do things efficiently
 \end{comment}
 % subsection xap (end)
+
+\subsection{OWSN Berkeley} % (fold)
+\label{sub:owsn_berkeley}
+
+% subsection owsn_berkeley (end)
 
 \subsection{Developing systems} % (fold)
 \label{sub:developing_systems}
