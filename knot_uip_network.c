@@ -1,4 +1,4 @@
-#include "knot-network.h"
+#include "knot_uip_network.h"
 
 #define DEBUG 1
 #if DEBUG
@@ -11,17 +11,12 @@
 #define SEQNO_START 0
 #define SEQNO_LIMIT 254
 
-char *cmdnames[15] = {"", "QUERY", "QACK","CONNECT", "CACK", 
-                                 "RESPONSE", "RACK", "DISCONNECT", "DACK",
-                                 "ERROR", "ERROR", "PING", "PACK", "SEQNO",
-                                 "SACK"};
+
 
 struct uip_udp_conn *udp_conn;
 uip_ipaddr_t broad;
 
-int init(){
-   KNOT_EVENT_SERVICE_FOUND = process_alloc_event();
-   KNOT_EVENT_DATA_READY    = process_alloc_event();
+int init_link_layer(){
    udp_conn = udp_broadcast_new(UIP_HTONS(LOCAL_PORT),NULL);
    if (udp_conn != NULL){
       udp_bind(udp_conn,UIP_HTONS(LOCAL_PORT));
@@ -71,42 +66,3 @@ void send(ChannelState *state, DataPayload *dp){
       uip_htons(udp_conn->rport));
 }
 
-void ping(ChannelState *state){
-   DataPayload *new_dp = &(state->packet);
-   memset(new_dp, '\0', sizeof(DataPayload));
-   new_dp->hdr.dst_chan_num = state->chan_num;
-
-   (new_dp)->hdr.cmd = PING; 
-   (new_dp)->hdr.seqno = uip_htonl(1);
-   (new_dp)->dhdr.tlen = 0;
-   send_on_channel(state,new_dp);
-   state->state = STATE_PING;
-   state->ticks = 100;
-}
-
-void pack_handler(ChannelState *state, DataPayload *dp){
-   if (state->state != STATE_PING) {
-      PRINTF("%d Not in PING state\n", state->state);
-      return;
-   }
-   state->state = STATE_CONNECTED;
-   state->ticks = 100;
-
-}
-
-void ping_handler(ChannelState *state,DataPayload *dp){
-   if (state->state != STATE_CONNECTED) {
-      PRINTF("Not in Connected state\n");
-      return;
-   }
-
-   DataPayload *new_dp = &(state->packet);
-   memset(new_dp, '\0', sizeof(DataPayload));
-   new_dp->hdr.dst_chan_num = state->chan_num;
-   
-   (new_dp)->hdr.cmd = PACK; 
-   (new_dp)->hdr.seqno = uip_htonl(1);
-   (new_dp)->dhdr.tlen = 0;
-   send_on_channel(state,new_dp);
-   state->ticks = 100;
-}
