@@ -1,8 +1,13 @@
 #ifndef KNOT_CONTROLLER_H
 #define KNOT_CONTROLLER_H
-#include "../knot-network.h"
-#include "uip.h"
+#include "contiki.h"
 #include "contiki-net.h"
+#include "uip.h"
+
+#include "../knot_uip_network.h"
+#include "../knot_callback.h"
+
+
 
 typedef struct service_record{
 	uip_ipaddr_t remote_addr;

@@ -1,14 +1,19 @@
+#include "knot-sensor.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "contiki.h"
 #include "contiki-net.h"
 #include "contiki-lib.h"
 #include "uip.h"
 #include "sys/ctimer.h"
-#include "../knot-network.h"
+
+#include "../knot_protocol.h"
+#include "../knot_uip_network.h"
+#include "../knot_network.h"
 #include "../channeltable.h"
+
 
 #define DEBUG 1
 
@@ -82,7 +87,7 @@ void send_callback(void * s){
 
 
 void query_handler(ChannelState *state, DataPayload *dp){
-	QueryMsg *q = dp->data;
+	QueryMsg *q = (QueryMsg* )dp->data;
 	if (q->type != sensor_type) {PRINTF("Not the right type %d \n", q->type);return;} /* PUT IN DYNAMIC TYPE TO BE CHECKED */
 	uip_ipaddr_copy(&(state->remote_addr) , &(UDP_HDR->srcipaddr));
   	state->remote_port = UDP_HDR->srcport;	
@@ -135,7 +140,7 @@ void cack_handler(ChannelState *state, DataPayload *dp){
 		return;
 	}
 	state->ticks = state->rate * PING_RATE;
-	ctimer_set(&(state->timer),CLOCK_CONF_SECOND * state->rate,send_callback,state); 
+	ctimer_set(&(state->timer),CLOCK_CONF_SECOND ,send_callback,state); 
 	PRINTF(">>CONNECTION FULLY ESTABLISHED<<\n");
 	state->state = STATE_CONNECTED;
 }
@@ -249,7 +254,7 @@ int knot_register_sensor(struct process *client_proc, knot_callback sensor,
 		process_start(&knot_sensor_process,NULL);
 		PROCESS_CONTEXT_BEGIN(&knot_sensor_process);
 		init_table();
-		init();
+		init_knot_network();
 		init_home_channel();
 		PROCESS_CONTEXT_END();		
 		started = 1;

@@ -1,6 +1,8 @@
 #ifndef KNOT_SENSOR_H
 #define KNOT_SENSOR_H
-#include "../knot-network.h"
+#include "contiki.h"
+#include "../knot_uip_network.h"
+#include "../knot_callback.h"
 
 /* Register a client process with the sensor.
  * 

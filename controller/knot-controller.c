@@ -1,15 +1,20 @@
+#include "knot-controller.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "button-sensor.h"
 
-#include "contiki.h"
-#include "contiki-net.h"
 #include "contiki-lib.h"
-#include "knot-controller.h"
-#include "../knot_callback.h"
+
+#include "../knot_protocol.h"
+#include "../knot_uip_network.h"
+#include "../knot_network.h"
 #include "../channeltable.h"
+#include "../knot_events.h"
+
+
 
 #define DEBUG 1
 
@@ -143,12 +148,7 @@ void response_handler(ChannelState *state, DataPayload *dp){
 	state->ticks = 100;
 	ResponseMsg *rmsg = (ResponseMsg *)dp->data;
 	PRINTF("%s %d\n", rmsg->name, uip_ntohs(rmsg->data));
-	// ADD CONTEXT SWITCH
-	// Maybe event?
-	// process_post_synch(state->ccb.client_process,MESSAGE_RECEIVED, &rmsg->data);
-	PROCESS_CONTEXT_BEGIN(state->ccb.client_process);
-	state->ccb.callback(rmsg->name,&rmsg->data);
-	PROCESS_CONTEXT_END();
+	process_post_synch(state->ccb.client_process, KNOT_EVENT_DATA_READY, rmsg);
 }
 
 
@@ -264,7 +264,7 @@ int knot_register_controller(struct process *client_proc, knot_callback callback
 		process_start(&knot_controller_process,NULL);
 		PROCESS_CONTEXT_BEGIN(&knot_controller_process);
 		init_table();
-		init();
+		init_knot_network();
 		init_home_channel();
 		PROCESS_CONTEXT_END();		
 		started = 1;
