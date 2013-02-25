@@ -22,6 +22,8 @@
 #define UDP_DATA_LEN 120
 #define UDP_HDR ((struct uip_udpip_hdr *)&uip_buf[UIP_LLH_LEN])
 
+
+typedef void * Address;
 /* 
  * returns 1 if successful, 0 otherwise 
  */
@@ -39,5 +41,8 @@ void send_on_channel(ChannelState *state, DataPayload *dp);
 
 void broadcast(ChannelState *state, DataPayload *dp);
 
+void copy_address(ChannelState *state);
+void copy_address_ab(Address a, Address b);
+void copy_address_broad(Address a);
 
 #endif /*KNOT_NETWORK*/

@@ -8,8 +8,6 @@
 #define PRINTF(...)
 #endif
 
-#define SEQNO_START 0
-#define SEQNO_LIMIT 254
 
 
 
@@ -29,15 +27,25 @@ int init_link_layer(){
    return 1;
 }
 
+void copy_address(ChannelState *state){
+   state->remote_port = UDP_HDR->srcport;
+   uip_ipaddr_copy(&(state->remote_addr) , &(UDP_HDR->srcipaddr));
+}
+
+void copy_address_ab(Address a, Address b){
+   
+   uip_ipaddr_copy((uip_ipaddr_t *)a , (uip_ipaddr_t *)b);
+}
+
+void copy_address_broad(Address a){
+   uip_ipaddr_copy((uip_ipaddr_t *)a, &broad);
+}
+
 
 /**Send a message to the connection in state **/
 void send_on_channel(ChannelState *state, DataPayload *dp){
    int dplen = sizeof(PayloadHeader) + sizeof(DataHeader) + uip_ntohs(dp->dhdr.tlen);
    PRINTF("DPLEN %d\n",dplen);
-   if (state->seqno >= SEQNO_LIMIT)
-      state->seqno = SEQNO_START;
-   state->seqno++;
-   dp->hdr.seqno = state->seqno;
    uip_udp_packet_sendto(udp_conn, (char*)dp, dplen,
                           &state->remote_addr,state->remote_port);
    PRINTF("Sent %s to ipaddr=%d.%d.%d.%d:%u\n", 

@@ -12,8 +12,13 @@
 #include "knot_uip_network.h"
 
 
-
 int init_knot_network();
+int check_seqno(ChannelState *state, DataPayload *dp);
+void send_on_knot_channel(ChannelState *state, DataPayload *dp);
+void knot_broadcast(ChannelState *state, DataPayload *dp);
+void set_broadcast(Address a);
+void copy_link_address(ChannelState *state);
+void clean_packet(DataPayload *dp);
 void ping(ChannelState *state);
 void pack_handler(ChannelState *state, DataPayload *dp);
 void ping_handler(ChannelState *state, DataPayload *dp);

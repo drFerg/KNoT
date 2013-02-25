@@ -51,14 +51,14 @@ UIP_HTONS(UIP_IP_BUF->srcport),
 &(UIP_IP_BUF->destipaddr)
 UIP_HTONS(UIP_IP_BUF->destport),
 */
-static ChannelState *mystate;
+
 static ChannelState home_channel_state;
 
 void init_home_channel(){
 	  home_channel_state.chan_num = 0;
       home_channel_state.seqno = 0;
       home_channel_state.remote_port = UIP_HTONS(LOCAL_PORT);
-      uip_ipaddr_copy(&(home_channel_state.remote_addr), &broad);
+      set_broadcast(&(home_channel_state.remote_addr));
 }
 
 
@@ -76,7 +76,7 @@ void send_handler(ChannelState* state){
     new_dp->dhdr.tlen = uip_htons(sizeof(ResponseMsg));
     memcpy(&(new_dp->data),&rmsg,sizeof(ResponseMsg));
 
-    send_on_channel(state,new_dp);
+    send_on_knot_channel(state,new_dp);
 	ctimer_reset(&(state->timer));
 
 }
@@ -102,7 +102,7 @@ void query_handler(ChannelState *state, DataPayload *dp){
     new_dp->hdr.cmd = QACK; 
     new_dp->dhdr.tlen = uip_htons(sizeof(QueryResponseMsg));
     memcpy(new_dp->data,&qr,sizeof(QueryResponseMsg));
-	send_on_channel(state,new_dp);
+	send_on_knot_channel(state,new_dp);
 
 }
 
@@ -130,7 +130,7 @@ void connect_handler(ChannelState *state,DataPayload *dp){
     
     (new_dp)->dhdr.tlen = uip_htons(sizeof(ConnectACKMsg));
     memcpy(&(new_dp->data),&ck,sizeof(ConnectACKMsg));
-	send_on_channel(state,new_dp);
+	send_on_knot_channel(state,new_dp);
 	state->state = STATE_CONNECT;
 }
 
@@ -140,28 +140,13 @@ void cack_handler(ChannelState *state, DataPayload *dp){
 		return;
 	}
 	state->ticks = state->rate * PING_RATE;
-	ctimer_set(&(state->timer),CLOCK_CONF_SECOND ,send_callback,state); 
+	ctimer_set(&(state->timer),CLOCK_CONF_SECOND * state->rate ,send_callback,state); 
 	PRINTF(">>CONNECTION FULLY ESTABLISHED<<\n");
 	state->state = STATE_CONNECTED;
 }
 
-void copy_address(ChannelState *state){
-	state->remote_port = UDP_HDR->srcport;
-    uip_ipaddr_copy(&state->remote_addr , &UDP_HDR->srcipaddr);
-}
 
-int check_seqno(ChannelState *state, DataPayload *dp){
-	if (state->seqno > dp->hdr.seqno){
-		PRINTF("--Out of sequence--\n");
-		PRINTF("--State SeqNo: %d SeqNo %d--\n--Dropping packet--\n",state->seqno, dp->hdr.seqno);
-		return 0;
-	}
-	else {
-		state->seqno = dp->hdr.seqno;
-		PRINTF("--SeqNo %d--\n", dp->hdr.seqno);
-		return 1;
-	}
-}
+
 
 void network_handler(ev, data){
 	char buf[UIP_BUFSIZE];
@@ -185,13 +170,13 @@ void network_handler(ev, data){
 	if (dp->hdr.dst_chan_num == HOMECHANNEL){
 		if (cmd == QUERY){
 			state = &home_channel_state;
-			copy_address(state);
+			copy_link_address(state);
   			
   		}
   		else if (cmd == CONNECT){
   			state = new_channel();
   			PRINTF("Sensor: New Channel\n");
-  			copy_address(state);
+  			copy_link_address(state);
   		}
   	}else {
 		state = get_channel_state(dp->hdr.dst_chan_num);
@@ -199,7 +184,7 @@ void network_handler(ev, data){
 			PRINTF("Channel doesn't exist\n");
 			return;
 		}
-		copy_address(state);
+		copy_link_address(state);
 		if (check_seqno(state, dp) == 0) 
 		return;
 	}
@@ -282,7 +267,7 @@ PROCESS_THREAD(knot_sensor_process, ev, data)
 	while (1){
     	PROCESS_WAIT_EVENT();
 		if (ev == tcpip_event && uip_newdata()) network_handler(ev,data);
-		else if (ev == PROCESS_EVENT_TIMER) send_handler(mystate);
+
 		
 	}
 
