@@ -1,6 +1,6 @@
 #ifndef CHANNEL_TABLE
 #define CHANNEL_TABLE
-#include "knot-network.h"
+#include "knot_uip_network.h"
 
 /* Num of channels available in table */
 #define CHANNEL_NUM 10

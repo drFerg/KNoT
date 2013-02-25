@@ -3,7 +3,7 @@
 */
 #include "contiki-net.h"
 #include "uip.h"
-#include "knot-network.h"
+#include "knot_uip_network.h"
 #include "knot_channel_state_uip.h"
 
 

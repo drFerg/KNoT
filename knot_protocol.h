@@ -7,6 +7,8 @@
 #ifndef KNOT_PROTOCOL_H
 #define KNOT_PROTOCOL_H
 
+#include "contiki.h"
+
 //Sensor type
 #define TEMP   1
 #define HUM    2
@@ -47,6 +49,7 @@
 #define MAX_DATA_SIZE 32
 #define NAME_SIZE     16
 
+extern char *cmdnames[15];
 
 typedef struct ph {
    uint8_t seqno;   /* sequence number */
