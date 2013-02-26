@@ -3,9 +3,12 @@
 */
 #ifndef KNOT_CHANNEL_STATE_UIP_H
 #define KNOT_CHANNEL_STATE_UIP_H
+//#include "knot_uip_network.h"
+#include "contiki-net.h"
+#include "uip.h"
+
 #include "knot_callback.h"
 #include "knot_protocol.h"
-uip_ipaddr_t broad;
 
 typedef struct channel_state{
    CallbackControlBlock ccb;

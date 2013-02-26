@@ -11,7 +11,34 @@
 #endif
 
 
+#define SEQNO_START 0
+#define SEQNO_LIMIT 255
 
+
+void increment_seq_no(ChannelState *state, DataPayload *dp){
+   if (state->seqno >= SEQNO_LIMIT)
+      state->seqno = SEQNO_START;
+   else 
+      state->seqno++;
+   dp->hdr.seqno = state->seqno;
+}
+
+int check_seqno(ChannelState *state, DataPayload *dp){
+   if (state->seqno > dp->hdr.seqno){
+      PRINTF("--Out of sequence--\n");
+      PRINTF("--State SeqNo: %d SeqNo %d--\n--Dropping packet--\n",state->seqno, dp->hdr.seqno);
+      return 0;
+   }
+   else {
+      state->seqno = dp->hdr.seqno;
+      PRINTF("--SeqNo %d--\n", dp->hdr.seqno);
+      if (state->seqno >= SEQNO_LIMIT){
+         state->seqno = SEQNO_START;
+         PRINTF("--Reset SeqNo\n");
+      }
+      return 1;
+   }
+}
 
 int init_knot_network(){
    KNOT_EVENT_SERVICE_FOUND = process_alloc_event();
@@ -21,8 +48,26 @@ int init_knot_network(){
 }
 
 
+void send_on_knot_channel(ChannelState *state, DataPayload *dp){
+   increment_seq_no(state, dp);
+   send_on_channel(state, dp);
+}
 
+void knot_broadcast(ChannelState *state, DataPayload *dp){
+   increment_seq_no(state, dp);
+   broadcast(state,dp);
+}
 
+void set_broadcast(Address a){
+   copy_address_broad(a);
+}
+void copy_link_address(ChannelState *state){
+   copy_address(state);
+}
+
+void clean_packet(DataPayload *dp){
+   memset(dp, '\0', sizeof(DataPayload));
+}
 
 void ping(ChannelState *state){
    DataPayload *new_dp = &(state->packet);

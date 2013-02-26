@@ -14,8 +14,6 @@
 #include "../channeltable.h"
 #include "../knot_events.h"
 
-
-
 #define DEBUG 1
 
 #if DEBUG
@@ -25,17 +23,11 @@
 #define PRINTF(...)
 #endif
 
-
-
 #define TIMER_INTERVAL 20
 #define HOMECHANNEL 0
 
 char *state_names[7] = {"IDLE","QUERY","QACKED","CONNECTing",
 						"CONNECTED","DisCONNECTED", "PING"};
-
-
-
-
 
 PROCESS(knot_controller_process,"knot_controller");
 char controller_name[16];
@@ -48,14 +40,11 @@ void init_home_channel(){
 	  home_channel_state.chan_num = 0;
       home_channel_state.seqno = 0;
       home_channel_state.remote_port = UIP_HTONS(LOCAL_PORT);
-      uip_ipaddr_copy(&(home_channel_state.remote_addr), &broad);
-      PRINTF("Port: %d\n",uip_ntohs(home_channel_state.remote_port));
+      set_broadcast(&(home_channel_state.remote_addr));
       KNOT_EVENT_CONNECT = process_alloc_event();
 }
 
-void clean_packet(DataPayload *dp){
-	memset(dp, '\0', sizeof(DataPayload));
-}
+
 
 void create_channel(ServiceRecord *sc){
 	ChannelState * state = new_channel();
@@ -74,7 +63,7 @@ void create_channel(ServiceRecord *sc){
 	new_dp->hdr.src_chan_num = state->chan_num;
     (new_dp)->hdr.cmd = CONNECT; 
     (new_dp)->dhdr.tlen = uip_htons(sizeof(ConnectMsg));
-	send_on_channel(state,new_dp);
+	send_on_knot_channel(state,new_dp);
 	state->state = STATE_CONNECT;
 	state->ticks = 10;
 }
@@ -95,14 +84,14 @@ void cack_handler(ChannelState *state, DataPayload *dp){
 	//dp_complete(new_dp,10,QACK,1);
     (new_dp)->hdr.cmd = CACK; 
     (new_dp)->dhdr.tlen = UIP_HTONS(0);
-	send_on_channel(state,new_dp);
+	send_on_knot_channel(state,new_dp);
 	state->state = STATE_CONNECTED;
 	state->ticks = 100;
 	
 }
 
 
-void qack_handler(ChannelState *state, DataPayload *dp, uip_ipaddr_t *remote_addr){
+void qack_handler(ChannelState *state, DataPayload *dp){
 	if (state->state != STATE_QUERY) {
 		PRINTF("Not in Query state\n");
 		return;
@@ -111,7 +100,7 @@ void qack_handler(ChannelState *state, DataPayload *dp, uip_ipaddr_t *remote_add
 	QueryResponseMsg *qr = (QueryResponseMsg *)&dp->data;
 	ServiceRecord sc;
 
-	uip_ipaddr_copy(&(sc.remote_addr), remote_addr);
+	copy_address_ab(&(sc.remote_addr), &(state->remote_addr));
 	strcpy(sc.name,qr->name);
 	PRINTF("Sensor name: %s\n",qr->name);
 	PRINTF("Sensor type:%d\n", qr->type);
@@ -135,7 +124,7 @@ void service_search(ChannelState* state, uint8_t type){
    
     q->type = type;
     strcpy(q->name, controller_name);
-	broadcast(state,new_dp);
+	knot_broadcast(state,new_dp);
 	state->state = STATE_QUERY;
 	state->ticks = 100;
 }
@@ -152,34 +141,17 @@ void response_handler(ChannelState *state, DataPayload *dp){
 }
 
 
-void copy_address(ChannelState *state){
-	state->remote_port = UDP_HDR->srcport;
-    uip_ipaddr_copy(&(state->remote_addr) , &(UDP_HDR->srcipaddr));
-}
-
-int check_seqno(ChannelState *state, DataPayload *dp){
-	if (state->seqno > dp->hdr.seqno){
-		PRINTF("--Out of sequence--\n");
-		PRINTF("--State SeqNo: %d SeqNo %d--\n--Dropping packet--\n",state->seqno, dp->hdr.seqno);
-		return 0;
-	}
-	else {
-		state->seqno = dp->hdr.seqno;
-		PRINTF("--SeqNo %d--\n", dp->hdr.seqno);
-		return 1;
-	}
-}
 
 void network_handler(ev, data){
 	char buf[UIP_BUFSIZE]; // packet data buffer
 	unsigned short cmd;    // 
 	DataPayload *dp;
-	uip_ipaddr_t remote_addr;
 	ChannelState *state = NULL;
 	uint16_t len = uip_datalen();
 	PRINTF("ipaddr=%d.%d.%d.%d\n", uip_ipaddr_to_quad(&(UDP_HDR->srcipaddr)));
 	PRINTF("Packet is %d bytes long\n",len);
-	uip_ipaddr_copy(&remote_addr,&(UDP_HDR->srcipaddr));
+
+
 	memcpy(buf, uip_appdata, len);
 	buf[len] = '\0';
 
@@ -191,7 +163,7 @@ void network_handler(ev, data){
 	if (dp->hdr.dst_chan_num == HOMECHANNEL){
 		if (cmd == QACK){
 			state = &home_channel_state;
-			copy_address(state);
+			copy_link_address(state);
   		}
   	}
 	else{
@@ -201,18 +173,16 @@ void network_handler(ev, data){
 			PRINTF("Channel %d doesn't exist\n", dp->hdr.dst_chan_num);
 			return;
 		}
-
 		if (check_seqno(state, dp) == 0) 
 			return;
 		else {
-			copy_address(state);
+			copy_link_address(state);
 		}
 	}
 	
-  	PRINTF("from ipaddr=%d.%d.%d.%d:%u\n", uip_ipaddr_to_quad(&state->remote_addr),uip_htons(state->remote_port));
 	if      (cmd == QUERY)    PRINTF("I'm a controller, Ignoring QUERY\n");
 	else if (cmd == CONNECT)  PRINTF("I'm a controller, Ignoring CONNECT\n");
-	else if (cmd == QACK)     qack_handler(state, dp, &remote_addr);
+	else if (cmd == QACK)     qack_handler(state, dp);
 	else if (cmd == CACK)     cack_handler(state, dp);
 	else if (cmd == RESPONSE) response_handler(state, dp);
 	else if (cmd == PING)     ping_handler(state, dp);
@@ -221,7 +191,7 @@ void network_handler(ev, data){
 
 void resend(ChannelState *s){
 	PRINTF("Sending last packet\n");
-	send_on_channel(s, &(s->packet));
+	send_on_knot_channel(s, &(s->packet));
 }
 
 void check_timer(ChannelState *s){
