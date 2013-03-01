@@ -176,7 +176,7 @@ most languages possible, threading etc
 
 With a significant uptake of devices in academia, TelosB motes are one of the go to platforms for wireless sensor networks research. Whilst they may fit under a different paradigm, the IoT can be seen as a specialisation of a wireless sensor network. Although the are extremely constrained, they are a good, low-end benchmark for which to test and develop software for use on constrained devices. 
 
-The device was developed at the University of Berkeley, California and spun off into a separate company. As a result, these devices have fuelled many academic studies and courses in relation to developing low power wireless sensor networks and researching applications for them. With very limited resources, 8MHz CPU, 10KB RAM, 48KB ROM, light/temperature sensors, battery powered and a low-power wireless radio, these devices require new ways of thinking in order to design, program and deploy them. Many scenarios must also take into consideration the environment in which they will be deployed, which are often hostile and unpredictable that can cause nodes to disappear from the network sporadically. Such environments have ranged from forests for fire detection\cite{FireDetection} to monitoring livestock \cite{Livestock}.
+The device was developed at the University of California, Berkeley, and spun off into a separate company. As a result, these devices have fuelled many academic studies and courses in relation to developing low power wireless sensor networks and researching applications for them. With very limited resources, 8MHz CPU, 10KB RAM, 48KB ROM, light/temperature sensors, battery powered and a low-power wireless radio, these devices require new ways of thinking in order to design, program and deploy them. Many scenarios must also take into consideration the environment in which they will be deployed, which are often hostile and unpredictable that can cause nodes to disappear from the network sporadically. Such environments have ranged from forests for fire detection\cite{FireDetection} to monitoring livestock \cite{Livestock}.
 
 A significant part of the development for these types of devices has surrounded the operating system and programming style. Currently there exist many different operating systems in which TinyOS and Contiki are most used and developed for. Both operating systems take quite different approaches to both operating system design and programming API. 
 
@@ -266,8 +266,11 @@ BUT fails to deliver a system which can scale and do things efficiently
 \end{comment}
 % subsection xap (end)
 
-\subsection{OWSN Berkeley} % (fold)
+\subsection{OpenWSN} % (fold)
 \label{sub:owsn_berkeley}
+Currently being developed at the University of California, Berkeley, the Open Wireless Sensor Network project is collection of open-source implementations of protocol stacks designed against to-be-finalised ``Internet of Things'' standards, for a range of different software and hardware platforms.
+
+%TO BE CONTINUED
 
 % subsection owsn_berkeley (end)
 
@@ -301,8 +304,25 @@ Up and coming platform building upon Arduino as well as other technology to crea
 
 % Requirements of the hardware independent design
  
- % Looking at xAP, JMS, what's wrong, how can that be resolved
+% Looking at xAP, JMS, what's wrong, how can that be resolved
 % what are typical use cases/ types of devices
+
+As discussed in the previous chapter, many different platforms and protocols exist to create an ``Internet of Things'' and most take very different approaches. The rest of this section will discuss the requirements for developing a new system based on creating an ``Internet of Things'', as well as highlight several drawbacks of some the previously mentioned systems and explain how such problems can be resolved with this new approach.
+
+Due to the nature of the target hardware platforms, constrained devices such as Arduino and TelosB, heavyweight approaches become infeasible i.e, Java \& JMS. Therefore an extremely lightweight and scalable protocol, both in terms of the protocol data unit (pdu) and the complexity in processing and managing the runtime, is a primary requirement.
+
+Secondary to this, because of the often unstructured and ad-hoc design of a typical ``Internet of Things'' network, building a centralised system i.e, a nameserver for device search, is an un-natural fit with the network. A single failure in the server could bring the entire network down, whilst all other devices are fully operational with no way to communicate with each other.
+Instead, creating a distributed system which gives any of the devices the power and control to communicate with each other, relieves the network of a single point of failure and can help spread the load across the network.
+%Heavy weight Java
+%Centralised
+
+%XAP wasteful, doesn't scale
+%not easy to parse
+
+%Joining devices together rather than lone wolves connecting, cheapening links
+
+
+
 
 
 
