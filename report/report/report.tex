@@ -273,6 +273,11 @@ Currently being developed at the University of California, Berkeley, the Open Wi
 
 %TO BE CONTINUED
 
+
+\subsubsection{CoAP} % (fold)
+\label{ssub:coap}
+
+% subsubsection coap (end)
 % subsection owsn_berkeley (end)
 
 
@@ -314,7 +319,7 @@ Up and coming platform building upon Arduino as well as other technology to crea
 % Looking at xAP, JMS, what's wrong, how can that be resolved
 % what are typical use cases/ types of devices
 
-As discussed in the previous chapter, many different platforms and protocols exist to create an ``Internet of Things'' and most take very different approaches. The rest of this section will discuss the requirements for developing a new system based on creating an ``Internet of Things'', as well as highlight several drawbacks of some the previously mentioned systems and explain how such problems can be resolved with this new approach.
+As discussed in the previous chapter, many different platforms and protocols exist to create an ``Internet of Things'' and most take very different approaches. This chapter will discuss the requirements for developing a new system better suited for constrained devices and the environment of the ``Internet of Things'', as well as highlight several drawbacks of some the previously mentioned systems and explain how such problems can be resolved with this new approach.
 
 Due to the nature of the target hardware platforms, constrained devices such as Arduino and TelosB, heavyweight approaches become infeasible i.e, Java \& JMS. Therefore an extremely lightweight and scalable protocol, both in terms of the protocol data unit (pdu) and the complexity in processing and managing the runtime, is a primary requirement.
 
@@ -324,11 +329,92 @@ Instead, creating a distributed system which gives all devices the power and con
 Taking into consideration the typical types of devices connected to the ``Internet of Things'', three general classifications of devices can be discerned; a sensor, an actuator and a controller. Sensors, anything from a temperature sensor to an open door sensor, provide a continuous service to other devices in the form of real-time data, usually from the outside world. Similarly, actuators also provide a service to other devices in the form of an interaction with the outside world, such as a speaker, light switch or thermostat. Lastly, controllers are devices which orchestrate the ``Things'' in the network, forming relationships between devices and creating useful interactions between the digital and real world i.e, connecting to both a door sensor and a light switch, when the door opens the light turns on. Whilst there are these distinct classifications, it is often the case that one class of device could overlap with another i.e, a light switch can both sense, its state, and provide an action, turn on or off.
 
 
+\section{Typical Use Cases} % (fold)
+\label{sec:typical_use_cases}
+This section will demonstrate several typical use case scenarios of different combinations of devices that an ``Internet of Things'' around the home may be composed of, with some necessary requirements in order to operate correctly.
+
+\begin{itemize}
+	\item Logging % single devices, no complex relationship
+	\begin{itemize}
+		\item The logging application runs on a controller device interacting with one or more sensors. The controller requests data from a temperature sensor and logs it to a file locally. The purpose of such an application can be to help with understanding the state of an area, room or home over a larger period of time, from which some assessment can be made i.e, one room is always warmer than the other during the afternoon. 
+	\end{itemize}
+	\item Presence detection lighting % Multiple devices, complex relationship
+	\begin{itemize}
+		\item The presence detection application runs on a controller device interacting with both a sensor and actuator devices. Within certain areas of the environment motion detectors are placed to detect the presence of a person in a particular space. This data is then communicated back to the controller and used to determine which lights to command to turn on or off. The purpose of this application would be to reduce the energy costs associated with lights unnecessarily left on.
+	\end{itemize}
+	\item Wash cycle complete
+	\begin{itemize}
+		\item 
+	\end{itemize}
+	\item Direct control and observation
+	\begin{itemize}
+		\item A direct control application would allow a user to interact with the ``Internet of Things'' directly through a web browser or smartphone application. Such an application would operate on a controller device and allow a user to dynamically create new rules and relationships between existing devices as well as directly command devices such as lights, thermostats etc.
+		This would allow a user to easily create and destroy relationships between devices without reconfiguring or restarting the network of devices.
+	\end{itemize}
+	\item Multi-decision heating
+	\begin{itemize}
+		\item A multi-decision application, such as a heating system, would take advantage of an arrangement of multiple different types of sensors and existing services. These sensors could include: temperature sensors to sense the current temperature of different spaces, presence sensors to detect where a person in the environment, location sensors to detect if someone is actually home. The combination of these sensors could allow the system to detect whether the environment should be heated, and if so when and by how much. Building upon the initial use case of logging, a logger could be used to create a basic schedule of when people are in the environment so that heating schedules can be created, this would allow the environment to be heated upon the arrival of someone.
+	\end{itemize}
+\end{itemize}
+
+\section{Functional Requirements} % (fold)
+\label{sec:functional_requirements}
+
+% section functional_requirements (end)
+\begin{enumerate}
+	\item Support 3 classifications of devices
+	\item Configuration of device attributes, such as name, type, freq
+	\item Discovery/Querying of devices, use of multicast
+	\item Negotiation and Connection to devices
+	\item Closing Connections to devices
+	\item Sending data from Sensors to Controllers
+	\item Sending commands from Controllers to actuators
+	\item Aliveness checks through pings
+	\item 
+\end{enumerate}
+
+\section{Non-Functional Requirements} % (fold)
+\label{sec:non_functional_requirements}
+
+\subsection{System Requirements} % (fold)
+\label{sub:system_requirements}
+\begin{itemize}
+	\item Lightweight
+	\item Scalable both in device power and quantity
+	\item Basic reliability of data due to unpredictable network conditions
+	\item Network resilience to device failures
+	\item Network reliability of only essential communications
+	\item Aliveness monitoring
+	\item System performance
+\end{itemize}
+%How the system should perform
+%LIGHTWEIGHT, SCALABLE
+%Resilience, discovery, reliability, pinging
+
+% subsection system_requirements (end)
+
+\subsection{Development Requirements} % (fold)
+\label{sub:development_requirements}
+\begin{itemize}
+	\item The system must be designed and developed within a limited time frame, 20ish weeks
+	\item Choice of devices is based on the availability of constrained devices between the School of Computing the student, therefore the use of TelosB motes is imperative.
+	\item The choice of operating system for the constrained device is based on prior experience with similar systems and platform languages available to the OS. The Contiki OS uses a small variant of C, making it quicker and simpler to get started based on the author's experience with C as well as simpler to keep (mostly)platform independent.
+\end{itemize}
+% subsection development_requirements (end)
+
+% section non_functional_requirements (end)
+
+
+
+% subsection typical_use_cases (end)
+\begin{comment}
+
+\end{comment}
 
 
 %Heavy weight Java
 %Centralised
-
+% selective reliability, ephemeral data
 %XAP wasteful, doesn't scale
 %not easy to parse
 %Some request response
