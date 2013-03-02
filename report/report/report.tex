@@ -4,6 +4,8 @@
 \usepackage{comment}
 \usepackage{graphicx}
 \usepackage{caption}
+\usepackage{url}
+
 %
 % put any packages here
 %
@@ -90,6 +92,25 @@ The Twine device isn't the only device out there, Smart Things\cite{SmartThings}
 
 The main problem that exists and will continue to be so is that the digital environment is filled with a huge variety of heterogeneous devices. The key to the future of the ``Internet of Things'' is to find a way to abstract the differences between these devices and create a simple platform on which all types of devices can communicate to build a more rich and powerful ``Internet of Things''.
 
+
+\section{Typical ``Internet of Things'' examples} % (fold)
+\label{sec:typical_}
+In order to better understand the possibilities and typical scenarios surrounding an ``Internet of Things'' equipped home or office, this section will outline two ideal examples of an ``Internet of Things'' network embedded in the home and office, discuss their respective benefits as well as the current state of ``Internet of Things'' networks.
+
+\subsection{``Internet of Things'' at Home} % (fold)
+\label{sub:home}
+The most common association with the ``Internet of Things'' is the ``Home of the Future'', which gives the consumer the impression that the static home they are used to will come alive with technology, to make life at home far simpler and more enjoyable. Therefore, this initial example will focus on the ``Internet of Things'' around the home and demonstrate several uses of it.
+
+The primary goal of an ``Internet of Things'' network embedded in the home is to create an awareness of the user. By making the home aware of the user, it can observe them in real-time and determine \textit{smart} things to do autonomously within the home. These could relate to security, such as locking and unlocking doors and windows when the user enters or leaves, or relate to convenience, such as turning on and off appropriate lights as the user moves between rooms, turning on the heating in anticipation of the user's arrival. 
+Over longer periods of time it could keep track of the user's habits and adapt heating schedules or open the blinds when the user usually goes to sleep or wakes, it could even turn on the coffee pot so when the user awakes in the morning a fresh cup of coffee awaits them.
+
+Other examples are less concerned with the user but instead with the safety and upkeep of the home, by embedding sensors within objects in the home autonomous maintenance can be carried out. Some examples of this could be, automatic plant watering when low soil moisture is detected, or autonomous vacuuming at certain periods of time when the user is away.\cite{Roomba} By creating these possibilities, it not only reduces the workload for the user but it also allows the user to do things which matter most to them and of course it stops the plants from dying.
+
+
+%  home (end)
+
+
+% subsection typical_ (end)
  % Kevin Ashton, RFID, coined IoT
  % http://www.rfidjournal.com/article/view/4986
  % Giving everyday objects a digital presence and creating machine to machine connections
@@ -323,7 +344,7 @@ As discussed in the previous chapter, many different platforms and protocols exi
 
 Due to the nature of the target hardware platforms, constrained devices such as Arduino and TelosB, heavyweight approaches become infeasible i.e, Java \& JMS. Therefore an extremely lightweight and scalable protocol, both in terms of the protocol data unit (pdu) and the complexity in processing and managing the runtime, is a primary requirement.
 
-Secondary to this, because of the often unstructured and ad-hoc design of a typical ``Internet of Things'' network, building a centralised system i.e, a nameserver for device search, is an un-natural fit with the network. A single failure in the server could bring the entire network down, whilst all other devices are fully operational and no way to communicate with each other.
+Secondary to this, because of the often unstructured and ad-hoc design of a typical ``Internet of Things'' network, building a centralised system i.e, a name server for device search, is an unnatural fit with the network. A single failure in the server could bring the entire network down, whilst all other devices are fully operational and no way to communicate with each other.
 Instead, creating a distributed system which gives all devices the power and control to communicate with each other, relieves the network of a single point of failure and can help spread the load across the network. % ADD SOMETHING TO DO WITH DISCOVERY
 
 Taking into consideration the typical types of devices connected to the ``Internet of Things'', three general classifications of devices can be discerned; a sensor, an actuator and a controller. Sensors, anything from a temperature sensor to an open door sensor, provide a continuous service to other devices in the form of real-time data, usually from the outside world. Similarly, actuators also provide a service to other devices in the form of an interaction with the outside world, such as a speaker, light switch or thermostat. Lastly, controllers are devices which orchestrate the ``Things'' in the network, forming relationships between devices and creating useful interactions between the digital and real world i.e, connecting to both a door sensor and a light switch, when the door opens the light turns on. Whilst there are these distinct classifications, it is often the case that one class of device could overlap with another i.e, a light switch can both sense, its state, and provide an action, turn on or off.
@@ -363,6 +384,9 @@ This section will demonstrate several typical use case scenarios of different co
 % section functional_requirements (end)
 \begin{enumerate}
 	\item Support 3 classifications of devices
+	\begin{itemize}
+		\item 
+	\end{itemize}
 	\item Configuration of device attributes, such as name, type, freq
 	\item Discovery/Querying of devices, use of multicast
 	\item Negotiation and Connection to devices
@@ -396,8 +420,8 @@ This section will demonstrate several typical use case scenarios of different co
 \subsection{Development Requirements} % (fold)
 \label{sub:development_requirements}
 \begin{itemize}
-	\item The system must be designed and developed within a limited time frame, 20ish weeks
-	\item Choice of devices is based on the availability of constrained devices between the School of Computing the student, therefore the use of TelosB motes is imperative.
+	\item The system must be designed and developed within a limited time frame, about 20 weeks
+	\item Choice of devices is based on the availability of constrained devices between the School of Computing and the author, therefore the use of TelosB motes is imperative.
 	\item The choice of operating system for the constrained device is based on prior experience with similar systems and platform languages available to the OS. The Contiki OS uses a small variant of C, making it quicker and simpler to get started based on the author's experience with C as well as simpler to keep (mostly)platform independent.
 \end{itemize}
 % subsection development_requirements (end)
