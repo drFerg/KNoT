@@ -48,10 +48,14 @@ This project focuses on just that and endeavours to create a communication proto
 \chapter{Background and Related Work} % (fold)
 \label{cha:background}
 
-\section{Internet of Things paradigm} % (fold)
+\section{What is the ``Internet of Things''} % (fold)
 \label{sec:internet_of_things_paradigm}
+This section will describe the concept of the ``Internet of Things'', its slow development up to the present and the motivations as to why one would want to create an ``Internet of Things''.
 
+\subsection{Past, Present and Future} % (fold)
+\label{sub:past_present_and_future}
 
+% subsection past_present_and_future (end)
 The standard model of how we use computers and the Internet today revolves around the idea of an interconnected network of servers, routers and data centres around which users connect using their personal computers to access, input, manipulate and retrieve data. 
 
 This model heavily relies upon the users to provide the data from which the Internet is powered. Without this data the Internet would be a barren place, with nothing to search for, sell, buy, share, watch, listen to, play, analyse or learn from.
@@ -78,12 +82,12 @@ There currently exists a variety of online services and devices which give the e
 \begin{figure}[h]
 	\centering
 	\begin{minipage}{.5\textwidth}
-		\includegraphics[width=.6\linewidth]{twine-device.jpg}
+		\includegraphics[width=.6\linewidth]{images/twine-device.jpg}
 		\captionof{figure}{Twine IoT device.}
 		\label{fig:twine_device}
 	\end{minipage}%
 	\begin{minipage}{.5\textwidth}
-		\includegraphics[width=.6\linewidth]{twine-rules.jpg}
+		\includegraphics[width=.6\linewidth]{images/twine-rules.jpg}
 		\captionof{figure}{Twine rule, When x Then y}
 	\end{minipage}
 \end{figure}
@@ -92,6 +96,17 @@ The Twine device isn't the only device out there, Smart Things\cite{SmartThings}
 
 The main problem that exists and will continue to be so is that the digital environment is filled with a huge variety of heterogeneous devices. The key to the future of the ``Internet of Things'' is to find a way to abstract the differences between these devices and create a simple platform on which all types of devices can communicate to build a more rich and powerful ``Internet of Things''.
 
+\subsection{Motivation} % (fold)
+\label{sub:motivation}
+Like any new paradigm of computing there must be sufficient motivation and interest for it to be picked up, used and developed further. In the case of the ``Internet of Things'' there are many cases why such a paradigm is of great interest, both to consumers and organisations. 
+
+Reducing work load giving people back more time, simplifying life
+Improving security, 
+ECO
+COST SAVING
+Improving living standards
+
+% subsection motivation (end)
 
 \section{Typical ``Internet of Things'' examples} % (fold)
 \label{sec:typical_}
@@ -219,7 +234,7 @@ Contiki c like, event and thread driven
 % section open_source_constrained_devices (end)
 \section{Wireless Sensor Networks} % (fold)
 \label{sec:wireless_sensor_networks}
-(Discuss relation to wireless sensor networks, similar dissimilar
+(Discuss relation to wireless sensor networks, mesh networking topology, similar dissimilar
 Concerns which differ, align.)
 
 % section wireless_sensor_networks (end)
@@ -235,7 +250,7 @@ It can operate in two modes, either in a publish - subscribe or point to point a
 
 \begin{figure}[h!]
 	\centering
-		\includegraphics[scale=0.4]{JMS-IoT.jpg}
+		\includegraphics[scale=0.4]{images/JMS-IoT.jpg}
 		\captionof{figure}{JMS Publish - Subscribe modelling IoT}
 \end{figure}
 
@@ -342,6 +357,8 @@ Up and coming platform building upon Arduino as well as other technology to crea
 
 As discussed in the previous chapter, many different platforms and protocols exist to create an ``Internet of Things'' and most take very different approaches. This chapter will discuss the requirements for developing a new system better suited for constrained devices and the environment of the ``Internet of Things'', as well as highlight several drawbacks of some the previously mentioned systems and explain how such problems can be resolved with this new approach.
 
+\section{Primary Requirements}
+\label{sec:primary_requirements}
 Due to the nature of the target hardware platforms, constrained devices such as Arduino and TelosB, heavyweight approaches become infeasible i.e, Java \& JMS. Therefore an extremely lightweight and scalable protocol, both in terms of the protocol data unit (pdu) and the complexity in processing and managing the runtime, is a primary requirement.
 
 Secondary to this, because of the often unstructured and ad-hoc design of a typical ``Internet of Things'' network, building a centralised system i.e, a name server for device search, is an unnatural fit with the network. A single failure in the server could bring the entire network down, whilst all other devices are fully operational and no way to communicate with each other.
