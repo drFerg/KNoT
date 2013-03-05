@@ -7,12 +7,12 @@ As discussed in the previous chapter, many different platforms and protocols exi
 
 \section{Primary Requirements}
 \label{sec:primary_requirements}
-Due to the nature of the target hardware platforms, constrained devices such as Arduino and TelosB, heavyweight approaches become infeasible i.e, Java \& JMS. Therefore an extremely lightweight and scalable protocol, both in terms of the protocol data unit (pdu) and the complexity in processing and managing the runtime, is a primary requirement.
+Due to the nature of the target hardware platforms, constrained devices such as Arduino and TelosB, heavyweight approaches become infeasible i.e., Java \& JMS. Therefore an extremely lightweight and scalable protocol, both in terms of the protocol data unit (pdu) and the complexity in processing and managing the runtime, is a primary requirement.
 
 Secondary to this, because of the often unstructured and ad-hoc design of a typical ``Internet of Things'' network, building a centralised system i.e, a name server for device search, is an unnatural fit with the network. A single failure in the server could bring the entire network down, whilst all other devices are fully operational and no way to communicate with each other.
 Instead, creating a distributed system which gives all devices the power and control to communicate with each other, relieves the network of a single point of failure and can help spread the load across the network. % ADD SOMETHING TO DO WITH DISCOVERY
 
-Taking into consideration the typical types of devices connected to the ``Internet of Things'', three general classifications of devices can be discerned; a sensor, an actuator and a controller. Sensors, anything from a temperature sensor to an open door sensor, provide a continuous service to other devices in the form of real-time data, usually from the outside world. Similarly, actuators also provide a service to other devices in the form of an interaction with the outside world, such as a speaker, light switch or thermostat. Lastly, controllers are devices which orchestrate the ``Things'' in the network, forming relationships between devices and creating useful interactions between the digital and real world i.e, connecting to both a door sensor and a light switch, when the door opens the light turns on. Whilst there are these distinct classifications, it is often the case that one class of device could overlap with another i.e, a light switch can both sense, its state, and provide an action, turn on or off.
+Taking into consideration the typical types of devices connected to the ``Internet of Things'', three general classifications of devices can be discerned; a sensor, an actuator and a controller. Sensors, anything from a temperature sensor to an open door sensor, provide a continuous service to other devices in the form of real-time data, usually from the outside world. Similarly, actuators also provide a service to other devices in the form of an interaction with the outside world, such as a speaker, light switch or thermostat. Lastly, controllers are devices which orchestrate the ``Things'' in the network, forming relationships between devices and creating useful interactions between the digital and real world i.e., connecting to both a door sensor and a light switch, when the door opens the light turns on. Whilst there are these distinct classifications, it is often the case that one class of device could overlap with another i.e., a light switch can both sense, its state, and provide an action, turn on or off.
 
 
 \section{Typical Use Cases} % (fold)
@@ -22,7 +22,7 @@ This section will demonstrate several typical use case scenarios of different co
 \begin{itemize}
 	\item Logging % single devices, no complex relationship
 	\begin{itemize}
-		\item The logging application runs on a controller device interacting with one or more sensors. The controller requests data from a temperature sensor and logs it to a file locally. The purpose of such an application can be to help with understanding the state of an area, room or home over a larger period of time, from which some assessment can be made i.e, one room is always warmer than the other during the afternoon. 
+		\item The logging application runs on a controller device interacting with one or more sensors. The controller requests data from a temperature sensor and logs it to a file locally. The purpose of such an application can be to help with understanding the state of an area, room or home over a larger period of time, from which some assessment can be made i.e., one room is always warmer than the other during the afternoon. 
 	\end{itemize}
 	\item Presence detection lighting % Multiple devices, complex relationship
 	\begin{itemize}
@@ -30,7 +30,7 @@ This section will demonstrate several typical use case scenarios of different co
 	\end{itemize}
 	\item Wash cycle complete
 	\begin{itemize}
-		\item The wash cycle complete application runs on a controller interacting with a sensor and an actuator. The actuator could be any form of communication medium that can alert the user i.e, sending a text message or tweet. This application would enable a washing machine to act as a sensor, relaying information back to the user(time left) and when a wash cycle has completed or requires further attention the user could be alerted in some form so that they can attend to it.
+		\item The wash cycle complete application runs on a controller interacting with a sensor and an actuator. The actuator could be any form of communication medium that can alert the user i.e., sending a text message or tweet. This application would enable a washing machine to act as a sensor, relaying information back to the user(time left) and when a wash cycle has completed or requires further attention the user could be alerted in some form so that they can attend to it.
 	\end{itemize}
 	\item Direct control and observation
 	\begin{itemize}

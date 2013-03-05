@@ -20,7 +20,7 @@ Sadly, at that time the idea progressed little and didn't garner much support.
 
 Fast forward to 2013, the ``Year of the Internet of Things'' as declared by the MIT Technology Review\cite{2013IoT} and observed in the Consumer Electronics Show 2013 (CES) with manufacturers introducing everything from smart fridges to smart weighing scales. Concurrently, low power devices have become increasingly affordable and small enough to embed into other devices, making it much more possible to create a truly autonomous system, either in the home, office or car, wherein the user doesn't have to interact directly with any of the devices but instead just go about daily life, which, in the background, is enhanced by these ubiquitous devices operating together.
 
-With all the possible ``Things'' that can exist, the core functionality in the ``Internet of Things'' can be simply modelled as closed loop system in which a ``Thing'' can sense, process and interact with the real world as well as other devices and services. This system is represented at its simplest by an if statement, \textit{if \textbf{event occurs} then \textbf{do action}}, which provides developers and users alike an easy to understand yet powerful model to create rules for autonomous interaction.i.e.
+With all the possible ``Things'' that can exist, the core functionality in the ``Internet of Things'' can be simply modelled as closed loop system in which a ``Thing'' can sense, process and interact with the real world as well as other devices and services. This system is represented at its simplest by an if statement, \textit{if \textbf{event occurs} then \textbf{do action}}, which provides developers and users alike an easy to understand yet powerful model to create rules for autonomous interaction.i.e.,
 \begin{center}
 	\textit{if \textbf{temp \textless  20C} then \textbf{Turn ON heating}}
 
@@ -57,15 +57,15 @@ Like any new paradigm of computing, there must be sufficient motivation and inte
 	\end{itemize}
 	\item Cost and Eco-savings
 	\begin{itemize}
-		\item One of the key benefits from collecting data from these devices rather than users is that more accurate and reliable data can be gathered, from which smarter decisions can be made for the user, often resulting in energy savings i.e, turning off unnecessary lights or optimising heating schedules. These energy savings not only benefit the user in terms of monetary cost but also benefit the planet, making it valuable to both the individual and larger community as a whole.
+		\item One of the key benefits from collecting data from these devices rather than users is that more accurate and reliable data can be gathered, from which smarter decisions can be made for the user, often resulting in energy savings i.e., turning off unnecessary lights or optimising heating schedules. These energy savings not only benefit the user in terms of monetary cost but also benefit the planet, making it valuable to both the individual and larger community as a whole.
 	\end{itemize}
 	\item Security
 	\begin{itemize}
-		\item By utilising these devices, not only can data be collected reliably but actions can also be executed reliably, unlike users. This can benefit the user in terms of security, ensuring that an important action is always carried out i.e, automatic door and windows locking upon exiting the house.
+		\item By utilising these devices, not only can data be collected reliably but actions can also be executed reliably, unlike users. This can benefit the user in terms of security, ensuring that an important action is always carried out i.e., automatic door and windows locking upon exiting the house.
 	\end{itemize}
 	\item Remote
 	\begin{itemize}
-		\item Because of the connectivity of these devices, users can interact with them from anywhere with an Internet connection, giving them access to change, update and ensure the system is working correctly i.e, check oven is turned off and front door locked when out.
+		\item Because of the connectivity of these devices, users can interact with them from anywhere with an Internet connection, giving them access to change, update and ensure the system is working correctly i.e., check oven is turned off and front door locked when out.
 	\end{itemize}
 \end{itemize}
 
@@ -194,7 +194,7 @@ A significant part of the development for these types of devices has surrounded 
 
 TinyOS is designed as a completely modular, event-driven and thread-less operating system which makes for a difficult system to program and reason about; this is due to its unfamiliar execution style and the design of its programming language, nesC, a significant variant of C. Due to its modular design, programs are written in ``components'' which are comprised of their ``configuration''(how they link/wire to other components) and ``module''(the implementation of the component). 
 
-In contrast, Contiki is designed to fit the middle ground between Event driven programming, like TinyOS, and imperative programming, like C. It acheives this by having both lightweight threads, which can interleave in execution, and events, which allow the program to react to stimuli, written in a slight variation of C \cite{ContikiPaper}. This approach is much more familiar to the experienced programmer of larger systems whilst still providing an efficient environment in which to program albeit with some compromises (stackless threads). Where TinyOS breaks programs down into a complex array of components, modules and configurations, Contiki aligns with standard C, using header and .c files.
+In contrast, Contiki is designed to fit the middle ground between Event driven programming, like TinyOS, and imperative programming, like C. It achieves this by having both lightweight threads, which can interleave in execution, and events, which allow the program to react to stimuli, written in a slight variation of C \cite{ContikiPaper}. This approach is much more familiar to the experienced programmer of larger systems whilst still providing an efficient environment in which to program albeit with some compromises (stackless threads). Where TinyOS breaks programs down into a complex array of components, modules and configurations, Contiki aligns with standard C, using header and .c files.
 
 In regards to the ``Internet of Things'', Contiki provides a much more approachable platform to design for, as a significant portion of code written for larger platforms can be ported without much transformations to the code. Combining this with the hardware's array of sensors and low-power radio, the two create an ideal low end platform for developing at the bottom end of the ``Internet of Things''.
 
@@ -258,9 +258,9 @@ The primary implementation is based on UDP/IP with a distributed architecture wh
 
 In this design there are two key classes of devices, senders and receivers, of which a device can be either or both. 
 The receiver simply attaches to the network and listens for any incoming packets, it then chooses which ones are relevant to it and processes them.
-The sender attaches to the network and broadcasts packets with payloads containing data relating to its service i.e. sensor data, incoming caller ID, etc. These packets only contain enough information to uniquely identify the source and the payload it wishes to send. There is no constraint on whether or not the packet must have a destination.
+The sender attaches to the network and broadcasts packets with payloads containing data relating to its service i.e., sensor data, incoming caller ID, etc. These packets only contain enough information to uniquely identify the source and the payload it wishes to send. There is no constraint on whether or not the packet must have a destination.
 
-This design feature makes it very simple for new devices to attach to the network and start interacting without having to go through the process of setting up connections to other devices. It also makes it very easy to implement certain types of devices like loggers or informational displays which can collect data from all senders with relative ease. However, this also creates a huge strain on the devices attached to the network which all have to receive and process any broadcasted data, especially for those devices with limited resources. This becomes an increasing problem as more and more connected devices invade the home, from which the network will very quickly deteriorate as the volume of traffic being broadcast increases.
+This design feature makes it very simple for new devices to attach to the network and start interacting without having to go through the process of setting up connections to other devices. It also makes it very easy to implement certain types of devices like loggers or informational displays which can collect data from all senders with relative ease. However, this also creates a huge strain on the devices attached to the network which all have to receive and process any broadcasted data, especially for those devices with limited power resources. This becomes an increasing problem as more and more connected devices invade the home, from which the network will very quickly deteriorate as the volume of traffic being broadcast increases.
 
 The protocol also defines a set schema for how packets should be formatted so that all devices can interoperate correctly. The schema covers both the header and the payload format, which is almost entirely text-based, resembling, albeit pre-dating, JSON, with the main intention of being human readable. Whilst so, this does come at the cost of not only increasing the size of the packet considerably with redundant text, but also the complexity in parsing the data with its varying delimiters. 
 
@@ -298,8 +298,19 @@ Currently being developed at the University of California, Berkeley, the Open Wi
 %TO BE CONTINUED
 
 
-\subsubsection{CoAP} % (fold)
+\subsection{CoAP} % (fold)
 \label{ssub:coap}
+CoAP, Constrained Application Protocol is currently a proposed IETF standard to create a request-response style web protocol, specifically designed to fit the limitations of constrained devices, such as micro-controllers, for use in machine-to-machine communication and the``Internet of Things''. The protocol is designed as an asynchronous RESTful protocol, to run on top of UDP, using a subset of the standard commands e.g., GET, PUT, DELETE. The reason is that due to the common commands, it allows for an easy transition to standard HTTP if necessary, whilst reducing the complexity of the protocol. Together with this, the protocol also provides support for service discovery and basic subscribing to other CoAP nodes.
+
+Because the protocol is designed to run on top of UDP, which is a connectionless, unreliable transport layer, CoAP provides both un-reliable and reliable support for requests; which is provided by marking a message as non-confirmable (unreliable) or confirmable (reliable). This allows nodes to send data which is essential, reliably, and to send data un-reliable when data is ephemeral, such as sensor readings.   
+
+As mentioned previously, the protocol also supports service discovery, to allow nodes to find new sources to request resources from, without necessarily using a centralised server. If a node's IP address is known a priori, then a unicast discovery can be used to locate the entry point of the resource of interest, otherwise a multicast discovery must be used; this is done by making a GET request to a standardised location, from which receiving nodes respond based on whether the request matches any of the resources it holds (by type or description).\cite{IETF_CORE}
+
+To combat one of the problems normally associated with constrained devices, power, CoAP supports the ability for nodes to subscribe to one another. This means that instead of a node being repeatedly polled for any changes, the node instead notifies all subscribed nodes when the resource of interest has changed. This reduces the amount of packets received by the receiving node, in turn helping to reduce its power consumption.
+
+Lastly, because CoAP is so similar to HTTP in the commands that it uses (GET, PUT, DELETE, etc.), it makes it simple translate messages between protocols, and therefore allow these constrained devices to send and receive data to and from the WWW.\cite{IETF_COAP_HTTP} 
+
+At the time of writing, the protocol is still being developed and finalised, although there have been a variety of implementations (of some degree) \cite{COAP_1}\cite{COAP_2}\cite{COAP_3}, it's yet to see if the protocol will be fully adopted both commercially and in the open source community.
 
 % subsubsection coap (end)
 % subsection owsn_berkeley (end)
