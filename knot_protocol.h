@@ -36,10 +36,12 @@
 #define RACK     6
 #define DISCONNECT 7
 #define DACK     8
+#define CMD      9
 #define PING    11
 #define PACK    12
 #define SEQNO   13
 #define SACK    14
+
 
 #define CMD_LOW CONNECT
 #define CMD_HIGH SACK		/* change this if commands added */
