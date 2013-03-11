@@ -7,13 +7,18 @@ This chapter will discuss and illustrate the design of the new protocol, indepen
 
 \section{Protocol Design} % (fold)
 \label{sec:protocol_design}
+This section will discuss the design of the protocol from the basic sequence of messages, deriving state machines and then the packet design and formats.
 
-
-Minimal protocol, only ack required/critical data to save on transmissions.
-Use some broadcasting for acquiring sensors/actuators
-Provide enough guarantees for a useful and reliable system which can scale
-Provide a distributed and fault tolerant way to find, collect data and control devices from
-Protocol design based around several state machines. 
+\subsection{Features} % (fold)
+\label{sub:features}
+The protocol is designed to fulfil several key requirements:
+\begin{itemize}
+	\item Minimalistic protocol, selective reliability for critical data
+	\item Device discovery, use of broadcast to discover devices
+	\item Reliability, reliable set-up of connections and assurance of correct data
+	\item Fault tolerant, liveness checks and no central point of failure
+\end{itemize}
+% subsection features (end)
 
 \subsection{Sequence diagrams} % (fold)
 \label{sub:message_passing}
