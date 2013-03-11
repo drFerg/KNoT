@@ -1,0 +1,162 @@
+
+% Design of system independent of hardware implementation.
+This chapter will discuss and illustrate the design of the new protocol, independent of any hardware and software platforms, as set out by the requirements gathered in the previous chapter. Towards the end of the chapter, some of the key design choices for this protocol will be compared to decisions made by other pre-existing protocols, to highlight and discuss their differences and/or similarities.
+
+
+
+
+\section{Protocol Design} % (fold)
+\label{sec:protocol_design}
+
+
+Minimal protocol, only ack required/critical data to save on transmissions.
+Use some broadcasting for acquiring sensors/actuators
+Provide enough guarantees for a useful and reliable system which can scale
+Provide a distributed and fault tolerant way to find, collect data and control devices from
+Protocol design based around several state machines. 
+
+\subsection{Sequence diagrams} % (fold)
+\label{sub:message_passing}
+
+% subsection message_passing (end)
+\subsection{Protocol state machines} % (fold)
+\label{sub:states}
+
+\subsubsection{Controller} % (fold)
+\label{ssub:controller}
+
+% subsubsection controller (end)
+\subsubsection{Sensor} % (fold)
+\label{ssub:sensor}
+
+% subsubsection sensor (end)
+\subsubsection{Actuator} % (fold)
+\label{ssub:actuator}
+
+% subsubsection actuator (end)
+
+% subsection states (end)
+
+
+\subsection{Protocol Data Unit} % (fold)
+\label{sub:protocol_data_unit}
+
+
+
+\definecolor{lightgray}{gray}{0.8}
+\newlength{\maxheight}
+\setlength{\maxheight}{\heightof{W}}
+
+\newcommand{\baselinealign}[1]{%
+	\centering
+	\raisebox{0pt}[\maxheight][0pt]{#1}%
+}
+\begin{center}
+\begin{bytefield}{32}
+\bitheader{0,8,16,24,31}\\
+\bitbox{8}{src channel} & \bitbox{8}{dst channel} & \bitbox{8}{seqno} & \bitbox{8}{cmd} \\
+\bitbox{16}{len} & \bitbox[lrt]{16}{} \\
+\wordbox[lrb]{1}{Command specific payload}
+\end{bytefield}
+\end{center}
+% subsection protocol_data_unit (end)
+
+\subsection{Payload Formats} % (fold)
+\label{sub:payload_formats}
+
+\subsubsection{Query} % (fold)
+\label{ssub:query}
+\begin{center}
+\begin{bytefield}{32}
+\bitheader{0,8,16,24,31}\\
+\bitbox{8}{type} & \bitbox{16}{name} &\bitbox{8}{\color{lightgray}\rule{\width}{\height}}
+\end{bytefield}
+\end{center}
+% subsubsection query (end)
+
+\subsubsection{Query Response} % (fold)
+\label{ssub:query_response}
+\begin{center}
+\begin{bytefield}{32}
+\bitheader{0,8,16,24,31}\\
+\bitbox{8}{type} & \bitbox{16}{rate} &\bitbox{8}{name}\\
+\bitbox{8}{name...}
+\end{bytefield}
+\end{center}
+% subsubsection query_response (end)
+
+\subsubsection{Connect} % (fold)
+\label{ssub:connect}
+\begin{center}
+\begin{bytefield}{32}
+\bitheader{0,8,16,24,31}\\
+\bitbox{16}{rate} & \bitbox{16}{name}
+\end{bytefield}
+\end{center}
+% subsubsection connect (end)
+
+\subsubsection{Connect ACK} % (fold)
+\label{ssub:connect_ack}
+\begin{center}
+\begin{bytefield}{32}
+\bitheader{0,8,16,24,31}\\
+\bitbox{8}{accept} & \bitbox{16}{name} & \bitbox{8}{\color{lightgray}\rule{\width}{\height}}
+\end{bytefield}
+\end{center}
+% subsubsection connect_ack (end)
+
+\subsubsection{Response} % (fold)
+\label{ssub:response}
+\begin{center}
+\begin{bytefield}{32}
+\bitheader{0,8,16,24,31}\\
+\bitbox{16}{data} & \bitbox{16}{name}
+\end{bytefield}
+\end{center}
+% subsubsection response (end)
+
+\subsubsection{Ping} % (fold)
+\label{ssub:ping}
+
+% subsubsection ping (end)
+
+\subsubsection{Ping ACK} % (fold)
+\label{ssub:ping_ack}
+
+% subsubsection ping_ack (end)
+
+\subsubsection{Disconnect} % (fold)
+\label{ssub:disconnect}
+
+% subsubsection disconnect (end)
+
+\subsubsection{Disconnect ACK} % (fold)
+\label{ssub:disconnect_ack}
+
+% subsubsection disconnect_ack (end)
+% subsection payload_formats (end)
+
+
+% section protocol_design (end)
+
+
+
+\section{Comparisons to other systems}
+This section will discuss and compare some of the key design features of this new system with the design of other pre-existing protocols and systems. 
+
+\subsubsection{Distributed vs Centralised} % (fold)
+\label{ssub:distributed_vs_centralised}
+
+% subsubsection distributed_vs_centralised (end)
+\subsubsection{Selective Unicast/Multicast vs Multicast} % (fold)
+\label{ssub:selective_unicast_multicast_vs_multicast}
+
+% subsubsection selective_unicast_multicast_vs_multicast (end)
+\subsubsection{Reliable vs Unreliable} % (fold)
+\label{ssub:reliable_vs_unreliable}
+
+% subsubsection reliable_vs_unreliable (end)
+\subsubsection{``Thing'' vs network of ``Things''} % (fold)
+\label{ssub:_thing_vs_network_of_things_}
+
+% subsubsection _thing_vs_network_of_things_ (end)

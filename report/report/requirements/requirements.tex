@@ -3,13 +3,13 @@
 % Looking at xAP, JMS, what's wrong, how can that be resolved
 % what are typical use cases/ types of devices
 
-As discussed in the previous chapter, many different platforms and protocols exist to create an ``Internet of Things'' and most take very different approaches. This chapter will discuss the requirements for developing a new system better suited for constrained devices and the environment of the ``Internet of Things'', as well as highlight several drawbacks of some the previously mentioned systems and explain how such problems can be resolved with this new approach.
+As discussed in the previous chapter, many different platforms and protocols exist to create an ``Internet of Things'' and most take very different approaches. This chapter will discuss the requirements for developing a new system, which is better suited for constrained devices and the environment of the ``Internet of Things'', as well as highlight several drawbacks of some the previously mentioned systems and explain how such problems can be resolved with this new approach.
 
 \section{Primary Requirements}
 \label{sec:primary_requirements}
 Due to the nature of the target hardware platforms, constrained devices such as Arduino and TelosB, heavyweight approaches become infeasible i.e., Java \& JMS. Therefore an extremely lightweight and scalable protocol, both in terms of the protocol data unit (pdu) and the complexity in processing and managing the runtime, is a primary requirement.
 
-Secondary to this, because of the often unstructured and ad-hoc design of a typical ``Internet of Things'' network, building a centralised system i.e, a name server for device search, is an unnatural fit with the network. A single failure in the server could bring the entire network down, whilst all other devices are fully operational and no way to communicate with each other.
+Secondary to this, because of the often unstructured and ad-hoc design of a typical ``Internet of Things'' network, building a centralised system i.e., a name server for device search, is an unnatural fit with the network. A single failure in the server could bring the entire network down, whilst all other devices are fully operational and no way to communicate with each other.
 Instead, creating a distributed system which gives all devices the power and control to communicate with each other, relieves the network of a single point of failure and can help spread the load across the network. % ADD SOMETHING TO DO WITH DISCOVERY
 
 Taking into consideration the typical types of devices connected to the ``Internet of Things'', three general classifications of devices can be discerned; a sensor, an actuator and a controller. Sensors, anything from a temperature sensor to an open door sensor, provide a continuous service to other devices in the form of real-time data, usually from the outside world. Similarly, actuators also provide a service to other devices in the form of an interaction with the outside world, such as a speaker, light switch or thermostat. Lastly, controllers are devices which orchestrate the ``Things'' in the network, forming relationships between devices and creating useful interactions between the digital and real world i.e., connecting to both a door sensor and a light switch, when the door opens the light turns on. Whilst there are these distinct classifications, it is often the case that one class of device could overlap with another i.e., a light switch can both sense, its state, and provide an action, turn on or off.
@@ -45,38 +45,105 @@ This section will demonstrate several typical use case scenarios of different co
 
 \section{Functional Requirements} % (fold)
 \label{sec:functional_requirements}
-
+This section describes the functional requirements which were gathered and are based upon the needs of the use cases discussed in the previous section.
 % section functional_requirements (end)
 \begin{enumerate}
 	\item Support 3 classifications of devices
 	\begin{itemize}
 		\item This includes; Sensors to sense the environment, Actuators to interact with the environment and Controllers to orchestrate the network of devices.
 	\end{itemize}
-	\item Configuration of device attributes, such as name, type, frequency, etc.
+	\item Configuration of device attributes i.e., name, type, frequency, etc.
 	\begin{itemize}
-		\item Devices in the network should be configurable programmitcally 
+		\item Devices in the network should be configurable both at compile time and run time(programmitcally). 
 	\end{itemize}
-	\item Discovery/Querying of devices, use of multicast
-	\item Negotiation and Connection to devices
-	\item Closing Connections to devices
-	\item Sending data from Sensors to Controllers
-	\item Sending commands from Controllers to actuators
-	\item Aliveness checks through pings
+	\item Discovery/querying of devices
+	\begin{itemize}
+		\item Devices must be able to discover each other through the use of multicast on a well known channel, as well as query devices for their services and attributes.
+	\end{itemize}
+	\item Negotiation and connection to devices
+	\begin{itemize}
+		\item Devices need to be able form connections to other devices found through discovery. Negotiation is necessary to determine the frequency and live-ness of the connection.
+	\end{itemize}
+	\item Closing connections to devices
+	\begin{itemize}
+		\item Devices should be able to gracefully close any formed connections, cleaning up and ensuring all other concerned devices are notified.
+	\end{itemize}
+	\item Sensors must be able to send data to controllers
+	\begin{itemize}
+		\item A sensor's functionality must include sending data at a set frequency, either configured or negotiated, to an actuator.
+	\end{itemize}
+	\item Actuators must be able to receive commands from controllers
+	\begin{itemize}
+		\item An actuator's functionality must include receiving and carrying out commands sent from controllers.
+	\end{itemize}
+	\item Controllers must be able to send commands to actuators and receive data from sensors
+	\begin{itemize}
+		\item A controller's functionality must include receiving data from sensors and sending commands to actuators. 
+	\end{itemize}
+	\item All classes of devices must support connections to multiple devices 
+	\begin{itemize}
+		\item This will allow sensors and actuators to serve multiple controllers, and allow controllers to form connections between many devices.
+	\end{itemize}
+	\item Liveness checks through pings
+	\begin{itemize}
+		\item All classes of devices must support and respond to pings from other devices on the network.
+	\end{itemize}
+	\item Application Protocol Interface
+	\begin{itemize}
+		\item The system must support the use of a well defined API, this will allow applications to utilise the system and build functionality on top.
+	\end{itemize}
 \end{enumerate}
 
 \section{Non-Functional Requirements} % (fold)
 \label{sec:non_functional_requirements}
-
+This section describes the non-functional requirements based on the expectations of the system, its performance characteristics and the requirements for developing the project as a whole.
 \subsection{System Requirements} % (fold)
 \label{sub:system_requirements}
 \begin{itemize}
+	\item Closed loop system
+	\begin{itemize}
+		\item The system must be able to sense, process and react within the network itself, to create a fully reactive closed loop system.
+	\end{itemize}
 	\item Lightweight
+	\begin{itemize}
+		\item The system must be lightweight enough, both in terms of protocol data unit and system resources, so that it is able to run on constrained devices, such as the TelosB mote.
+	\end{itemize}
 	\item Scalable both in device power and quantity
-	\item Basic reliability of data due to unpredictable network conditions
+	\begin{itemize}
+		\item The system must be scalable in network size, to support 10's, if not 100's of devices within the network efficiently. It must also be able to scale to more powerful devices (i.e., to support more connections).
+	\end{itemize}
+	\item Cross platform compatibility
+	\begin{itemize}
+		\item The system must be designed in such a way so that it is both hardware and software independent, enabling it to be implemented on a variety of heterogeneous platforms.
+	\end{itemize}
+	\item Simple to extend
+	\begin{itemize}
+		\item The system must be able to be extended to support new types of devices and also be able to support new payloads specific to these devices.
+	\end{itemize}
+	\item Reliability of essential communications due to unpredictable network conditions
+	\begin{itemize}
+		\item Reliability must be selectively enforced in order to perform some critical operations, such as setting up connections, due to un-reliability of the network environment.
+	\end{itemize}
+	\item Basic assurance of correct data
+		\begin{itemize}
+			\item The system must support basic checking of data sent to ensure that it is correct, through the use of checksums.
+		\end{itemize}
 	\item Network resilience to device failures
-	\item Network reliability for essential communications
-	\item Aliveness monitoring
+	\begin{itemize}
+		\item The network must react gracefully to device failures, without the entire system being rendered in-operational.
+	\end{itemize}
+	\item Liveness monitoring
+	\begin{itemize}
+		\item The system must be able to monitor and react to the liveness of devices in the network i.e., if a device becomes unreachable, close connection gracefully and clean up.
+	\end{itemize}
 	\item System performance
+	\begin{itemize}
+		\item The system must perform suitably, so that data is received and commands are carried out within acceptable real-time bounds.
+	\end{itemize}
+	\item Device resources
+	\begin{itemize}
+		\item The system must consume a little device resources as possible in order to support the development of user applications on top.
+	\end{itemize}
 \end{itemize}
 %How the system should perform
 %LIGHTWEIGHT, SCALABLE
@@ -87,9 +154,9 @@ This section will demonstrate several typical use case scenarios of different co
 \subsection{Development Requirements} % (fold)
 \label{sub:development_requirements}
 \begin{itemize}
-	\item The system must be designed and developed within a limited time frame, about 20 weeks.
-	\item Choice of devices is based on the availability of constrained devices between the School of Computing and the author, therefore the use of TelosB motes is imperative.
-	\item The choice of operating system for the constrained device is based on prior experience with similar systems and platform languages available to the OS. The Contiki OS uses a small variant of C, making it quicker and simpler to get started based on the author's experience with C as well as simpler to keep (mostly)platform independent.
+	\item The system must be researched, designed and developed within a limited time frame, about 20 weeks.
+	\item The choice of platforms for implementing the design is based on the availability of constrained devices between the School of Computing Science and the author.
+	\item The choice of operating system for the constrained device is based on prior experience with similar systems and platform languages available to the OS. The Contiki OS uses a small variant of C, making it quicker and simpler to get started based on the author's experience with C, as well as simpler to keep (mostly)platform independent.
 \end{itemize}
 % subsection development_requirements (end)
 
@@ -113,10 +180,3 @@ This section will demonstrate several typical use case scenarios of different co
 %Joining devices together rather than lone wolves connecting, cheapening links
 
 
-
-
-
-
-
-
-% section problems_encountered (end)
