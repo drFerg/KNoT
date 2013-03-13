@@ -3,22 +3,36 @@
 This chapter will discuss and illustrate the design of the new protocol, independent of any hardware and software platforms, as set out by the requirements gathered in the previous chapter. Towards the end of the chapter, some of the key design choices for this protocol will be compared to decisions made by other pre-existing protocols, to highlight and discuss their differences and/or similarities.
 
 
-
-
 \section{Protocol Design} % (fold)
 \label{sec:protocol_design}
-This section will discuss the design of the protocol from the basic sequence of messages, deriving state machines and then the packet design and formats.
+This section will discuss the design of the protocol from the basic sequence of messages, to deriving state machines and then the packet design and formats.
 
 \subsection{Features} % (fold)
 \label{sub:features}
 The protocol is designed to fulfil several key requirements:
 \begin{itemize}
 	\item Minimalistic protocol, selective reliability for critical data
+	\item Minimal header overhead, reduce cost of networking
 	\item Device discovery, use of broadcast to discover devices
 	\item Reliability, reliable set-up of connections and assurance of correct data
 	\item Fault tolerant, liveness checks and no central point of failure
 \end{itemize}
 % subsection features (end)
+
+\subsection{The 3 classifications of devices} % (fold)
+\label{sub:the_3_classifications_of_devices}
+In order to understand and design the system correctly the three basic classifications of devices in the ``Internet of Things'' must be explicitly defined; these classes will ultimately dictate the core communication model between devices in the network.
+
+\subsubsection{Sensor} % (fold)
+\label{ssub:sensor}
+This is \textit{the} key component of any ``Internet of Things'' network, without the ability to sense, either on demand, periodically or in real time, the user is forced to consciously interact with the system, in turn defeating the purpose of the ``Internet of Things''.
+
+The sensor in the ``Internet of Things''can be seen as a simple device which does little to no computation, except that of formatting or preprocessing the data it senses, and simply forwards it to one or more devices in the network whom are interested in its data, at set time intervals. These intervals can be decided either by the sensor or the interested device, based upon the needs and resources available to both.
+
+Data from sensors is usually of an ephemeral nature, thus recovery/retransmission of damaaged/lost packets is usually not of interest after the next one in the sequence has arrived, i.e., no need for previous temperature readings when interested in the current temperature now. However, knowing that the data has arrived correctly and undamaged is of importance, as data must be correct for the system to operate as expected.
+
+% subsubsection sensor (end)
+% subsection the_3_classifications_of_devices (end)
 
 \subsection{Sequence diagrams} % (fold)
 \label{sub:message_passing}
@@ -74,7 +88,7 @@ The protocol is designed to fulfil several key requirements:
 \begin{center}
 \begin{bytefield}{32}
 \bitheader{0,8,16,24,31}\\
-\bitbox{8}{type} & \bitbox{16}{name} &\bitbox{8}{\color{lightgray}\rule{\width}{\height}}
+\bitbox{8}{type} & \bitbox{24}{name...}
 \end{bytefield}
 \end{center}
 % subsubsection query (end)
@@ -84,8 +98,8 @@ The protocol is designed to fulfil several key requirements:
 \begin{center}
 \begin{bytefield}{32}
 \bitheader{0,8,16,24,31}\\
-\bitbox{8}{type} & \bitbox{16}{rate} &\bitbox{8}{name}\\
-\bitbox{8}{name...}
+\bitbox{8}{type} & \bitbox{16}{rate} &\bitbox[lrt]{8}{}\\
+\wordbox[lrb]{1}{name...}
 \end{bytefield}
 \end{center}
 % subsubsection query_response (end)
@@ -152,6 +166,10 @@ This section will discuss and compare some of the key design features of this ne
 \subsubsection{Distributed vs Centralised} % (fold)
 \label{ssub:distributed_vs_centralised}
 
+\subsubsection{Cloud vs Local} % (fold)
+\label{ssub:cloud_vs_local}
+
+% subsubsection cloud_vs_local (end)
 % subsubsection distributed_vs_centralised (end)
 \subsubsection{Selective Unicast/Multicast vs Multicast} % (fold)
 \label{ssub:selective_unicast_multicast_vs_multicast}

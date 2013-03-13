@@ -108,13 +108,14 @@ This section describes the non-functional requirements based on the expectations
 	\begin{itemize}
 		\item The system must be lightweight enough, both in terms of protocol data unit and system resources, so that it is able to run on constrained devices, such as the TelosB mote.
 	\end{itemize}
+
 	\item Scalable both in device power and quantity
 	\begin{itemize}
 		\item The system must be scalable in network size, to support 10's, if not 100's of devices within the network efficiently. It must also be able to scale to more powerful devices (i.e., to support more connections).
 	\end{itemize}
 	\item Cross platform compatibility
 	\begin{itemize}
-		\item The system must be designed in such a way so that it is both hardware and software independent, enabling it to be implemented on a variety of heterogeneous platforms.
+		\item The system must be designed in such a way so that it is both hardware and software independent, enabling it to be implemented on a variety of heterogeneous platforms as well as across a variety of networks.
 	\end{itemize}
 	\item Simple to extend
 	\begin{itemize}
@@ -125,9 +126,9 @@ This section describes the non-functional requirements based on the expectations
 		\item Reliability must be selectively enforced in order to perform some critical operations, such as setting up connections, due to un-reliability of the network environment.
 	\end{itemize}
 	\item Basic assurance of correct data
-		\begin{itemize}
+	\begin{itemize}
 			\item The system must support basic checking of data sent to ensure that it is correct, through the use of checksums.
-		\end{itemize}
+	\end{itemize}
 	\item Network resilience to device failures
 	\begin{itemize}
 		\item The network must react gracefully to device failures, without the entire system being rendered in-operational.
@@ -156,7 +157,7 @@ This section describes the non-functional requirements based on the expectations
 \begin{itemize}
 	\item The system must be researched, designed and developed within a limited time frame, about 20 weeks.
 	\item The choice of platforms for implementing the design is based on the availability of constrained devices between the School of Computing Science and the author.
-	\item The choice of operating system for the constrained device is based on prior experience with similar systems and platform languages available to the OS. The Contiki OS uses a small variant of C, making it quicker and simpler to get started based on the author's experience with C, as well as simpler to keep (mostly)platform independent.
+	\item The choice of operating system for the constrained device is based on prior experience with similar systems and platform languages available to the OS. The Contiki OS uses a minor variation of C for programmingyy, making it quicker and simpler to get started based on the author's experience with C, as well as simpler to keep (mostly)platform independent.
 \end{itemize}
 % subsection development_requirements (end)
 
