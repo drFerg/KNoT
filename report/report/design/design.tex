@@ -1,67 +1,4 @@
-
-% Design of system independent of hardware implementation.
-This chapter will discuss and illustrate the design of the new protocol, independent of any hardware and software platforms, as set out by the requirements gathered in the previous chapter. Towards the end of the chapter, some of the key design choices for this protocol will be compared to decisions made by other pre-existing protocols, to highlight and discuss their differences and/or similarities.
-
-
-\section{Protocol Design} % (fold)
-\label{sec:protocol_design}
-This section will discuss the design of the protocol from the basic sequence of messages, to deriving state machines and then the packet design and formats.
-
-\subsection{Features} % (fold)
-\label{sub:features}
-The protocol is designed to fulfil several key requirements:
-\begin{itemize}
-	\item Minimalistic protocol, selective reliability for critical data
-	\item Minimal header overhead, reduce cost of networking
-	\item Device discovery, use of broadcast to discover devices
-	\item Reliability, reliable set-up of connections and assurance of correct data
-	\item Fault tolerant, liveness checks and no central point of failure
-\end{itemize}
-% subsection features (end)
-
-\subsection{The 3 classifications of devices} % (fold)
-\label{sub:the_3_classifications_of_devices}
-In order to understand and design the system correctly the three basic classifications of devices in the ``Internet of Things'' must be explicitly defined; these classes will ultimately dictate the core communication model between devices in the network.
-
-\subsubsection{Sensor} % (fold)
-\label{ssub:sensor}
-This is \textit{the} key component of any ``Internet of Things'' network, without the ability to sense, either on demand, periodically or in real time, the user is forced to consciously interact with the system, in turn defeating the purpose of the ``Internet of Things''.
-
-The sensor in the ``Internet of Things''can be seen as a simple device which does little to no computation, except that of formatting or preprocessing the data it senses, and simply forwards it to one or more devices in the network whom are interested in its data, at set time intervals. These intervals can be decided either by the sensor or the interested device, based upon the needs and resources available to both.
-
-Data from sensors is usually of an ephemeral nature, thus recovery/retransmission of damaaged/lost packets is usually not of interest after the next one in the sequence has arrived, i.e., no need for previous temperature readings when interested in the current temperature now. However, knowing that the data has arrived correctly and undamaged is of importance, as data must be correct for the system to operate as expected.
-
-% subsubsection sensor (end)
-% subsection the_3_classifications_of_devices (end)
-
-\subsection{Sequence diagrams} % (fold)
-\label{sub:message_passing}
-
-% subsection message_passing (end)
-\subsection{Protocol state machines} % (fold)
-\label{sub:states}
-
-\subsubsection{Controller} % (fold)
-\label{ssub:controller}
-
-% subsubsection controller (end)
-\subsubsection{Sensor} % (fold)
-\label{ssub:sensor}
-
-% subsubsection sensor (end)
-\subsubsection{Actuator} % (fold)
-\label{ssub:actuator}
-
-% subsubsection actuator (end)
-
-% subsection states (end)
-
-
-\subsection{Protocol Data Unit} % (fold)
-\label{sub:protocol_data_unit}
-
-
-
+% SETTINGS
 \definecolor{lightgray}{gray}{0.8}
 \newlength{\maxheight}
 \setlength{\maxheight}{\heightof{W}}
@@ -70,12 +7,146 @@ Data from sensors is usually of an ephemeral nature, thus recovery/retransmissio
 	\centering
 	\raisebox{0pt}[\maxheight][0pt]{#1}%
 }
+%END OF SETTINGS
+
+
+% Design of system independent of hardware implementation.
+This chapter will discuss and illustrate the design of the new protocol, independent of any hardware and software platforms, as set out by the requirements gathered in the previous chapter. Towards the end of the chapter, some of the key design choices for this protocol will be compared to decisions made by other pre-existing protocols, to highlight and discuss their differences and/or similarities.
+
+\section{The 3 device roles} % (fold)
+\label{sec:the_3_classifications_of_devices}
+In order to understand and design the system correctly the three basic device roles in the ``Internet of Things'' must be explicitly defined; these roles will ultimately dictate the core communication model between devices in the network. However, whilst these roles are distinct in nature, a single device may take on one or more roles, i.e., a light sensing its state, and offering a command to turn it on/off.
+
+By separating out functionality into distinct roles, it enables each to device to offer individual, context-less services which can be offered to many different devices, to create a powerful, rich and adaptable ``Internet of Things''.
+
+\subsection{Sensor} % (fold)
+\label{sub:sensor}
+The sensor is \textit{the} key component of any ``Internet of Things'' network, without the ability to sense, either on demand, periodically or in real time, the user is forced to consciously interact with the system, in turn defeating the purpose of the ``Internet of Things''.
+
+The sensor in the ``Internet of Things''can be seen as a simple device which does little to no computation, except that of formatting or preprocessing the data it senses, and simply forwards it to one or more devices in the network whom are interested in its data, at set time intervals. These intervals can be decided either by the sensor or the interested device, based upon the needs and resources available to both.
+
+Because data from sensors is usually of an ephemeral nature, thus recovery/retransmission of damaged/lost packets is usually not of interest after the next one in the sequence has arrived, i.e., no need for previous temperature readings when interested in the current temperature now. However, knowing that the data has arrived correctly and undamaged is of importance, as data must be correct for the system to operate correctly and as expected.
+% subsection sensor (end)
+
+\subsection{Actuator} % (fold)
+\label{sub:actuator}
+Actuators, like sensors, are a key component in the ``Internet of things'', performing actions to interact with the real world, i.e., turn on light or display the current temperature. Without the use of actuators, the system would only be able to record and process the environment without having anyway of reacting to any events.
+
+By themselves actuators are primitive devices and are only able to perform context-less actions by themselves, i.e., turn on and off a light. In order to create meaningful actions, such as turning on a light when someone enters the room, actuators need to be able to offer their actions, or functions, as a service to other devices in the network whom are interested in performing such actions.
+
+Because of the on-demand semantics of performing an action, actuators need to be always available and ready to respond to incoming commands at any time. 
+% subsection actuator (end)
+
+\subsection{Controller} % (fold)
+\label{sub:controller}
+Controllers, unlike sensors and actuators, are the brains of the ``Internet of Things'', by themselves can do nothing, but by utilising other devices in tandem, they can create a powerful, sensing and reactive system. 
+
+By connecting to sensors, controllers can give the data sensed a purpose and meaning, and by connecting to actuators it can give actions a reason to perform, i.e., when the temperature sensor readings are \textgreater 26C, the room is too warm, therefore turn down the thermostat, in order to reduce the temperature to a more preferable setting. 
+
+Within a single network it is possible to have several controllers all connected to the same or different devices as well as connected to each other, and each could perform different functions in the network i.e., one controller logs all devices in the network, one controller controls living room devices and another controls bedroom devices. Furthering this, by allowing controllers to connect to one another enables the network to form more complex relationships to perform actions that one controller alone could not, such as one controller having Internet connectivity providing resources such as cloud connectivity to the other controllers.
+% subsection controller (end)
+% section the_3_classifications_of_devices (end)
+
+
+\section{Protocol Design} % (fold)
+\label{sec:protocol_design}
+This section will discuss the design of the protocol based on the formal requirements, from the basic sequence of messages passed between the different roles, to deriving specific state machines for each role.
+
+\subsection{Features} % (fold)
+\label{sub:features}
+The protocol is designed to fulfil several key requirements:
+\begin{itemize}
+	\item Minimalistic protocol, reliability for critical data, no reliability for non-critical data
+	\item Minimal header overhead, reduce transmission and receiving cost of data
+	\item Device discovery, use of broadcast to discover devices
+	\item Reliability, reliable set-up of connections and assurance of correct data
+	\item Fault tolerant, liveness checks and no central point of failure
+\end{itemize}
+% subsection features (end)
+
+\subsection{Selective Multicast/Unicast} % (fold)
+\label{sub:selective_multicast_unicast}
+The use of multicast in a network can be extremely expensive, both in terms of the bandwidth consumed on the network as well as the time and energy cost of every device being forced to receive and process the packet. Therefore multicast transmissions must be kept to a minimum and where they are necessary, ensure that it is not used excessively.
+
+In the case of device discovery, multicasting is required due to the distributed nature of the system, where no central name server exists. 
+% subsection selective_multicast_unicast (end)
+\subsection{Selective Reliability} % (fold)
+\label{sub:selective_reliability}
+In an effort to both reduce the cost of data transmission for devices and bandwidth consumption on the network, reliability will only be ensured for critical data transmissions, including connection set-up and tear-down.
+
+Because of the unreliable nature of the underlying network, ensuring that connections are formed correctly is extremely important, otherwise a connection forming packet might be dropped, causing one device to believe the connection has been fully set-up whilst the other waits for the dropped packet which will never arrive. 
+
+Whereas, when sending data such as sensor readings the reliability of it arriving is not as important, this is largely attributed to the ephemeral nature of sensor readings, especially in a real-time environment like the ``Internet of Things''. For example, in a scenario where the current temperature is being displayed to the user, the need for old data which was lost in transmission becomes unnecessary as the user is only interested in the current temperature.
+% subsection selective_reliability (end)
+
+
+\subsection{Liveness response} % (fold)
+\label{sub:liveness_response}
+In order to ensure the connections between devices are kept alive, the liveness of a connection needs to be kept track of, this is done differently depending on the device.
+\begin{itemize}
+	\item [Sensor -] Because sensors transmit data back to a controller at a set frequency, the controller can easily keep track of the liveness by simply monitoring incoming packets. If an arbitrary number of packets is not received after a multiple of the frequency period, then a time-out will occur and the connection can then be probed using a PING message to check if the packet loss is transient. If no responses are received in the form of PACKs, then the connection can be closed gracefully. 
+	\item [Actuator -] Because actuators just listen on the connection for any commands from a controller, it becomes necessary to regularly check at an arbitrary frequency that the connection is still alive using PINGs. Without PINGs, if a command was sent, it would initially be difficult to tell whether the packet was lost or the connection is dead. Instead, keeping track of the actuators liveness 
+	\item [Controller -] Because controllers actively keep track of actuators, actuators therefore implicitly know that the controller is still alive. However, this is not the case for sensors, which are only liveness checked passively unless there is packet loss. Because of this, the sensor must therefore regularly send PINGs at an arbitrary frequency to check to see if the controller is still alive to receive the packets of data being transmitted. If this was not checked, then the sensor would be not only wasting its own resources by needlessly sending data, but it would also consume the resources of other devices if this was deployed on a low-power multi-hop mesh network, typical for ``Internet of Things'' networks.
+\end{itemize}
+
+In order to ensure the network does not become congested by the retransmission of PINGs within a short period of time, an exponential back-off will be used. This will ensure that if a device were to disappear of the network, the rest of the network would not suffer. In a large network where multiple devices could fail at once, perhaps due to a common link, the network could become heavily congested if exponential back-off were not used.
+% subsection liveness_response (end)
+
+\subsection{Sequence diagrams} % (fold)
+\label{sub:message_passing}
+
+% subsection message_passing (end)
+\subsection{Protocol state machines} % (fold)
+\label{sub:states}
+
+\subsubsection{Sensor} % (fold)
+\label{ssub:sensor}
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=0.7]{design/img/sensor_state.1}
+\caption{Sensor life cycle diagram}
+\label{fig:sensorstate}
+\end{figure}
+% subsubsection sensor (end)
+\subsubsection{Actuator} % (fold)
+\label{ssub:actuator}
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=0.7]{design/img/actuator_state.1}
+\caption{Actuator life cycle diagram}
+\label{fig:controllerstate}
+\end{figure}
+% subsubsection actuator (end)
+
+\subsubsection{Controller} % (fold)
+\label{ssub:controller}
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=0.7]{design/img/controller_state.1}
+\caption{Controller life cycle diagram}
+\label{fig:controllerstate}
+\end{figure}
+
+
+% subsubsection controller (end)
+
+
+% subsection states (end)
+
+
+
+\newpage
+\section{Protocol Data Unit} % (fold)
+\label{sub:protocol_data_unit}
+This section will discuss and show the design of the Protocol Data Unit (PDU), including the various commands and their specific payloads. 
+
+
 \begin{center}
 \begin{bytefield}{32}
 \bitheader{0,8,16,24,31}\\
 \bitbox{8}{src channel} & \bitbox{8}{dst channel} & \bitbox{8}{seqno} & \bitbox{8}{cmd} \\
-\bitbox{16}{len} & \bitbox[lrt]{16}{} \\
-\wordbox[lrb]{1}{Command specific payload}
+\bitbox{16}{len} & \bitbox{16}{packet checksum} \\
+\wordbox{2}{Command specific payload}
 \end{bytefield}
 \end{center}
 % subsection protocol_data_unit (end)
@@ -161,7 +232,7 @@ Data from sensors is usually of an ephemeral nature, thus recovery/retransmissio
 
 
 \section{Comparisons to other systems}
-This section will discuss and compare some of the key design features of this new system with the design of other pre-existing protocols and systems. 
+This section will compare and contrast some of the key design choices of this new system with the design of other pre-existing protocols and systems. 
 
 \subsubsection{Distributed vs Centralised} % (fold)
 \label{ssub:distributed_vs_centralised}
@@ -179,6 +250,11 @@ This section will discuss and compare some of the key design features of this ne
 \label{ssub:reliable_vs_unreliable}
 
 % subsubsection reliable_vs_unreliable (end)
+
+\subsubsection{Textual packet vs Encoded packet} % (fold)
+\label{ssub:textual_packet_vs_encoded_packet}
+
+% subsubsection textual_packet_vs_encoded_packet (end)
 \subsubsection{``Thing'' vs network of ``Things''} % (fold)
 \label{ssub:_thing_vs_network_of_things_}
 

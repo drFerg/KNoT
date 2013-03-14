@@ -58,6 +58,7 @@ typedef struct ph {
    uint8_t src_chan_num;
    uint8_t dst_chan_num;
    uint8_t cmd;	/* message type */
+   uint16_t chksum;
 } PayloadHeader;
 
 typedef struct dh {
@@ -79,7 +80,6 @@ typedef struct dp {		/* template for data payload */
 typedef struct query{
    uint8_t type; 
    char name[NAME_SIZE];
-   //PAD BYTE
 }QueryMsg;
 
 typedef struct query_response{
