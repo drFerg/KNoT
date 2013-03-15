@@ -74,6 +74,9 @@ void cack_handler(ChannelState *state, DataPayload *dp){
 		return;
 	}
 	ConnectACKMsg *ck = (ConnectACKMsg*)dp->data;
+	if (ck->accept == 0){
+		PRINTF("SCREAM! THEY DIDN'T EXCEPT!!")}
+	}
 	PRINTF("%s accepts connection request on channel %d\n",ck->name,dp->hdr.src_chan_num);
 	state->remote_chan_num = dp->hdr.src_chan_num;
 
