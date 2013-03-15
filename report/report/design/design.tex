@@ -59,7 +59,7 @@ The protocol is designed to fulfil several key requirements:
 	\item Minimalistic protocol, reliability for critical data, no reliability for non-critical data
 	\item Minimal header overhead, reduce transmission and receiving cost of data
 	\item Device discovery, use of broadcast to discover devices
-	\item Reliability, reliable set-up of connections and assurance of correct data
+	\item Reliability, reliable set-up of connections and integrity of data
 	\item Fault tolerant, liveness checks and no central point of failure
 \end{itemize}
 % subsection features (end)
@@ -68,15 +68,17 @@ The protocol is designed to fulfil several key requirements:
 \label{sub:selective_multicast_unicast}
 The use of multicast in a network can be extremely expensive, both in terms of the bandwidth consumed on the network as well as the time and energy cost of every device being forced to receive and process the packet. Therefore multicast transmissions must be kept to a minimum and where they are necessary, ensure that it is not used excessively.
 
-In the case of device discovery, multicasting is required due to the distributed nature of the system, where no central name server exists. 
+In the case of device discovery, multicasting is required due to the distributed nature of the system, where no central name server exists and therefore the network needs to be queried in order to locate devices. In order for this to work, all devices on the network need to listen on a well known address (a UDP port), to which the discoverer can send multicast discovery packets to.
+Once a device receives a multicast discovery packet, it can decide whether or not to reply, based on if the query information, device type or name, matches its own. If it does match, then it replies using a unicast message to notify the sender of an available device matching its request. Because filtering is used at the receiving end, this further reduces the strain on the network resources, by stopping unnecessary packets from being transmitted.   
 % subsection selective_multicast_unicast (end)
 \subsection{Selective Reliability} % (fold)
 \label{sub:selective_reliability}
-In an effort to both reduce the cost of data transmission for devices and bandwidth consumption on the network, reliability will only be ensured for critical data transmissions, including connection set-up and tear-down.
+In an effort to both reduce the cost of data transmission for devices and bandwidth consumption on the network, reliability will only be ensured for critical data transmissions, including connection set-up, tear-down and actuator commands.
 
 Because of the unreliable nature of the underlying network, ensuring that connections are formed correctly is extremely important, otherwise a connection forming packet might be dropped, causing one device to believe the connection has been fully set-up whilst the other waits for the dropped packet which will never arrive. 
+Another case where this is important is when issuing commands to actuators, as it is necessary to ensure actions are in fact carried out and the command hasn't been lost on the network. This can achieved through at-least-once semantics, ensuring that the actuator receives at least one command, so that it performs the action, and any repeat requests can be ignored.
 
-Whereas, when sending data such as sensor readings the reliability of it arriving is not as important, this is largely attributed to the ephemeral nature of sensor readings, especially in a real-time environment like the ``Internet of Things''. For example, in a scenario where the current temperature is being displayed to the user, the need for old data which was lost in transmission becomes unnecessary as the user is only interested in the current temperature.
+Whereas, when sending data such as sensor readings the reliability of it arriving is not as important, this is largely attributed to the ephemeral nature of sensor readings, especially in a real-time environment like the ``Internet of Things''. For example, in a scenario where the current temperature is being displayed to the user, the need for old, out of sequence data, which may have been lost and retransmitted becomes unnecessary, as the user is only interested in the current temperature.
 % subsection selective_reliability (end)
 
 
@@ -91,6 +93,10 @@ In order to ensure the connections between devices are kept alive, the liveness 
 
 In order to ensure the network does not become congested by the retransmission of PINGs within a short period of time, an exponential back-off will be used. This will ensure that if a device were to disappear of the network, the rest of the network would not suffer. In a large network where multiple devices could fail at once, perhaps due to a common link, the network could become heavily congested if exponential back-off were not used.
 % subsection liveness_response (end)
+
+\subsection{Data integrity}
+Whilst most data sent in the ``Internet of Things'' network does not need to be sent reliably, due to it's ephemeral nature, it is important however that when it arrives it is consistent and accurate. Therefore, the use of a mechanism to ensure the integrity of the data is necessary, such as a Cyclic Redundancy Check, CRC.  
+
 
 \subsection{Sequence diagrams} % (fold)
 \label{sub:message_passing}
@@ -138,7 +144,7 @@ In order to ensure the network does not become congested by the retransmission o
 \newpage
 \section{Protocol Data Unit} % (fold)
 \label{sub:protocol_data_unit}
-This section will discuss and show the design of the Protocol Data Unit (PDU), including the various commands and their specific payloads. 
+This section will discuss and illustrate the design of the Protocol Data Unit (PDU), including the various commands and their specific payloads. 
 
 
 \begin{center}
