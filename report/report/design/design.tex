@@ -95,15 +95,19 @@ In order to ensure the network does not become congested by the retransmission o
 % subsection liveness_response (end)
 
 \subsection{Data integrity}
-Whilst most data sent in the ``Internet of Things'' network does not need to be sent reliably, due to it's ephemeral nature, it is important however that when it arrives it is consistent and accurate. Therefore, the use of a mechanism to ensure the integrity of the data is necessary, such as a Cyclic Redundancy Check, CRC.  
+Whilst most data sent in the ``Internet of Things'' network does not need to be sent reliably, due to it's ephemeral nature, it is important however that when it arrives it is consistent and accurate; if sensor readings were to become corrupt in transit, then unintended actions could result from inaccurate data. For example, a temperature sensor transmits the current temperature to a controller, which becomes corrupt in transit, as a result of the corrupt sensor reading, the controller believes the current temperature is too hot and the thermostat is commanded to turn off, when in fact the temperature was at an acceptable level.
 
+Therefore, the use of a mechanism to ensure the integrity of the data is necessary, such as a Cyclic Redundancy Check, CRC. In this protocol a 16bit CRC will be used to ensure that when data is sent from one device to another, that it is possible to discern whether or not it is accurate and consistent. If the integrity of the data is found to be compromised, then the packet will simply be dropped. If the packet was sent as reliable data (connection request or command), a timeout will occur in the sender device expecting an acknowledgement, and the packet will be resent. 
 
 \subsection{Sequence diagrams} % (fold)
 \label{sub:message_passing}
-
+\newpage
 % subsection message_passing (end)
 \subsection{Protocol state machines} % (fold)
 \label{sub:states}
+With the use of the message sequence diagrams to help understand the flow of messages within the network, the sequence of states each connection within a role can transition between can be discerned, and is shown in the following figures.
+
+Within these diagrams, a number of message types are show as labels on the transitions between the various states within each system, these message types are later described in the next section, \ref{sec:protocol_data_unit}
 
 \subsubsection{Sensor} % (fold)
 \label{ssub:sensor}
@@ -143,7 +147,7 @@ Whilst most data sent in the ``Internet of Things'' network does not need to be 
 
 \newpage
 \section{Protocol Data Unit} % (fold)
-\label{sub:protocol_data_unit}
+\label{sec:protocol_data_unit}
 This section will discuss and illustrate the design of the Protocol Data Unit (PDU), including the various commands and their specific payloads. 
 
 
@@ -160,7 +164,8 @@ This section will discuss and illustrate the design of the Protocol Data Unit (P
 \subsection{Payload Formats} % (fold)
 \label{sub:payload_formats}
 
-\subsubsection{Query} % (fold)
+\subsubsection{QUERY} % (fold)
+Before a controller can connect to any devices, it must first try to discover any matching devices on the local network. The QUERY message contains two data fields: the type of device the controller is searching for, light sensor, temperature sensor, informational display or otherwise, and the name of the device sending the QUERY message. This packet is sent as a broadcast transmission to all devices on the network.
 \label{ssub:query}
 \begin{center}
 \begin{bytefield}{32}
@@ -170,7 +175,8 @@ This section will discuss and illustrate the design of the Protocol Data Unit (P
 \end{center}
 % subsubsection query (end)
 
-\subsubsection{Query Response} % (fold)
+\subsubsection{QUERY Response} % (fold)
+After a device receives a QUERY message, it can decide whether or not to reply to it, if so it replies with the QUERY response message. The QUERY Response message contains 3 data fields: the type and name of the device which is responding and the rate, which either indicates the default rate that a sensor transmits readings at, or the rate at which an actuator will expect PING messages from a connected controller to confirm the connection is still alive.
 \label{ssub:query_response}
 \begin{center}
 \begin{bytefield}{32}
@@ -181,7 +187,8 @@ This section will discuss and illustrate the design of the Protocol Data Unit (P
 \end{center}
 % subsubsection query_response (end)
 
-\subsubsection{Connect} % (fold)
+\subsubsection{CONNECT} % (fold)
+Once a device has been located, either a priori or through querying, a controller needs to send a CONNECT message to start the process of forming a connection with the desired device. As shown in the message sequence diagrams, this uses a three-way handshake, of which this is the initial message. The CONNECT message contains 2 data fields: the rate at which the controller either wants to receive data readings from sensors, or the rate at which it will PING actuators, and the name of the controller.
 \label{ssub:connect}
 \begin{center}
 \begin{bytefield}{32}
@@ -191,7 +198,9 @@ This section will discuss and illustrate the design of the Protocol Data Unit (P
 \end{center}
 % subsubsection connect (end)
 
-\subsubsection{Connect ACK} % (fold)
+\subsubsection{CONNECT ACK} % (fold)
+Once a device receives a CONNECT message, unlike when receiving a QUERY message, it must respond with the second part of the three-way handshake with either a positive or negative acknowledgement.
+
 \label{ssub:connect_ack}
 \begin{center}
 \begin{bytefield}{32}
