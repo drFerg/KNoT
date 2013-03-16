@@ -141,10 +141,10 @@ In order to ensure that a channel is fully set up, it becomes necessary to intro
 \begin{itemize}
  	\item This covers most scenarios and allows for devices to recover from dropped packets during the exchange. For example, device A initiates setting up a channel,
  	\begin{itemize}
- 		\item if the initial message is dropped, acknowledgement timeout occurs on A, A resends message.
- 		\item if B's ACK is dropped, acknowledgement timeout occurs on A, A resends message with the same sequence number, B receives initial message again, its ACK message must have been dropped, B resends ACK message.
- 		\item if A's ACK message is dropped, acknowledgement timeout occurs on B, B resends second message with the same sequence number, A receives B's ACK message again, its ACK message must have been dropped, A resends ACK message.
- 		\item if no A receives no more ACK messages from B it knows the channel has been fully set up.
+ 		\item if the initial message is dropped, an acknowledgement timeout occurs on A, A then resends message.
+ 		\item if B's ACK is dropped, an acknowledgement timeout occurs on A, A then resends the message with the same sequence number, when B receives the initial message again, its ACK message must have been dropped, so B resends the ACK message.
+ 		\item if A's ACK message is dropped, an acknowledgement timeout occurs on B, then B resends the second message with the same sequence number, when A receives B's ACK message again, its ACK message must have been dropped, A then resends the ACK message.
+ 		\item if A receives no more ACK messages from B, it knows the channel has been fully set up.
  	\end{itemize}
  \end{itemize} 
 % subsubsection set_up_channel (end)
@@ -152,34 +152,45 @@ In order to ensure that a channel is fully set up, it becomes necessary to intro
 \subsubsection{Send sensor data -- Sensor $\rightarrow$ Controller} % (fold)
 \label{ssub:send_sensor_data}
 Once a channel has been set up to a controller, a sensor then needs to send its sensor readings at the previously agreed upon frequency. 
-Due to the high frequency requirements and transient nature of the data, using reliability becomes an expensive overhead without providing much benefit, i.e., consuming twice the bandwidth, and if a packet is dropped and resent out of sequence it becomes useless in a real-time environment, link the ``Internet of Things''.  
+Due to the high frequency requirements and transient nature of the data, using reliability becomes an expensive overhead without providing much benefit, i.e., consuming twice the bandwidth, and if a packet is dropped and resent out of sequence it becomes useless in a real-time environment, like the ``Internet of Things''.  
 Without reliability, packets may be dropped, but because of the timeliness of the data it will usually go unnoticed to the user. For example, a dropped packet won't have noticeable effect on a real-time temperature display with a frequency granularity of 5 seconds.
 % subsubsection send_sensor_data (end)
 
 \subsubsection{Send command -- Controller $\rightarrow$ Actuator} % (fold)
 \label{ssub:send_command}
-Once a channel has been set up to an actuator, a controller needs to be able to send commands for the actuator to carry out. To ensure that an action is carried out, it becomes necessary to acknowledge the command. By using combinations in combination with message sequence numbers, it is possible to ensure that a command is carried out once per request.
+Once a channel has been set up to an actuator, a controller needs to be able to send it commands to carry out. To ensure that an action is carried out, it becomes necessary to acknowledge each command. By using acknowledgements in combination with message sequence numbers, it is possible to ensure that a command is carried out exactly once per request.
 
 \begin{itemize}
-	\item The following cases are covered via use of acknowledgements and sequence numbers
+	\item The following cases are covered via the use of acknowledgements and sequence numbers
 	\begin{itemize}
-		\item if command message is dropped, acknowledgement timeout on controller occurs, resend command
-		\item if ACK message is dropped, acknowledgement timeout on controller occurs, resend command with same sequence number, actuator receives repeat commmand, ignores command and resends ACK message.
+		\item if command message is dropped, an acknowledgement timeout occurs on the controller, controller then resends command.
+		\item if ACK message is dropped, an acknowledgement timeout occurs on the controller, controller then resends command with the same sequence number, when the actuator receives repeat commmand, it ignores command and resends ACK message.
 	\end{itemize}
 \end{itemize}
 
-
-
-
 % subsubsection send_command (end)
 
-\subsubsection{Ping} % (fold)
+\subsubsection{Ping -- All roles} % (fold)
 \label{ssub:ping}
+Once a channel has been set up between two devices, it is possible for one to disappear without closing the channel gracefully, which could be due to various reasons e.g., loss of battery power, failed network link, device failure, etc. Therefore it becomes necessary to test the channel and see if the other participant is still alive, terminating it and cleaning up the channel if not.
 
+Other cases for its use in this protocol are the following: for the controller to check that the channel to the actuator is still alive, and for the sensor to check that the controller is still alive to receive its data, ensuring network resources are being wasted sending data to a disconnected controller.
+
+To test the channel a PING is sent from one device to the other, with the expectation of receiving a PING ACK to signify the channel is alive.
 % subsubsection ping (end)
 
-\subsubsection{Close channel} % (fold)
+\subsubsection{Close channel -- All roles} % (fold)
 \label{ssub:close_channel}
+Once a channel has been set up between two devices, one of the devices may decide at a later time that it either no longer needs the services provide by the channel, or is unable to support it, perhaps due to limited power. Therefore, it becomes necessary to close the channel gracefully, ensuring the both ends understand the channel is closed and all associated state destroyed. In order to ensure the channel is closed on both sides correctly, an acknowledgement must be used to signify the other side received the command.
+
+\begin{itemize}
+	\item The following cases are covered via the use of acknowledgements between devices A and B:
+	\begin{itemize}
+		\item if the close channel message sent from A is dropped, an acknowledgement timeout occurs on A, A then resends the message.
+		\item if B's ACK message is dropped, an acknowledgement timeout occurs on A, A resends the close channel message, when B receives the message it checks for any channel associated to A and closes it (if not done already), then resends the ACK message to A.
+	\end{itemize}
+\end{itemize}
+
 
 % subsubsection close_channel (end)
 \begin{figure}[h!]
