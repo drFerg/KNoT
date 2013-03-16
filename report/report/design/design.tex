@@ -64,10 +64,24 @@ The protocol is designed to fulfil several key requirements:
 \end{itemize}
 % subsection features (end)
 
+
+\subsection{Transport Layer}
+Due to the requirements of the protocol, allowing it to run on a variety of networks, and reducing necessary transmissions to save power, the design of the protocol is such that it only requires packets to be sent over a best effort link with no reliability guarantees; instead the protocol itself handles any problems with corrupt data or dropped packets, as discussed later in this section,\ref{sub:selective_reliability}, \ref{sub:data_integrity}. 
+
+The one significant requirement of the transport layer is that it must provide the capability to send both broadcast and unicast packets, due to the device discovery requirement.
+Therefore, a simple datagram transport layer can be used to provide the required functionality, such as the IPv4/6 User Datagram Protocol (UDP) or Contiki Rime stack\cite{RimeStack}.
+
 \subsection{Multiplexing devices, channels}
 In order to enable devices to communicate with more than one other device, a method for multiplexing a device's resources must be created. Within this system, each connection between two devices is called a channel, and each device can serve multiple channels, depending on its own resources, i.e., the more resources available, the more channels a device can serve, the more devices a single device can connect to. 
 
 Each device will contain at least two channels, one home channel (default) and one or more ephemeral channels. The purpose of the home channel is to enable devices to have a well known location they can be contacted at, this will be used for device discovery and to request to start a connection on one of the ephemeral channels.
+
+In order to uniquely identify each connection, a triple of identifiers is required:
+\begin{itemize}
+	\item transport layer address of each host the system is running on (IP address or Rime address).
+	\item transport layer multiplexing identifier associated with the running system process (UDP port or Rime channel).
+	\item a multiplexing identifier for each connection to a device, called a channel.
+\end{itemize}
 
 \subsection{Selective Multicast/Unicast} % (fold)
 \label{sub:selective_multicast_unicast}
@@ -102,9 +116,13 @@ If after an arbitrary number of PINGs, a PING ACK is not received, the connectio
 % subsection liveness_response (end)
 
 \subsection{Data integrity}
+\label{sub:data_integrity}
 Whilst most data sent in the ``Internet of Things'' network does not need to be sent reliably, due to it's ephemeral nature, it is important however that when it arrives it is consistent and accurate; if sensor readings were to become corrupt in transit, then unintended actions could result from inaccurate data. For example, a temperature sensor transmits the current temperature to a controller, which becomes corrupt in transit, as a result of the corrupt sensor reading, the controller believes the current temperature is too hot and the thermostat is commanded to turn off, when in fact the temperature was at an acceptable level.
 
 Therefore, the use of a mechanism to ensure the integrity of the data is necessary, such as a Cyclic Redundancy Check, CRC. In this protocol a 16bit CRC will be used to ensure that when data is sent from one device to another, that it is possible to discern whether or not it is accurate and consistent. If the integrity of the data is found to be compromised, then the packet will simply be dropped. If the packet was sent as reliable data (connection request or command), a timeout will occur in the sender device expecting an acknowledgement, and the packet will be resent. 
+
+
+
 
 \subsection{Sequence diagrams} % (fold)
 \label{sub:message_passing}
@@ -131,7 +149,7 @@ Within these diagrams, a number of message types are show as labels on the trans
 \centering
 \includegraphics[scale=0.7]{design/img/actuator_state.1}
 \caption{Actuator life cycle diagram}
-\label{fig:controllerstate}
+\label{fig:actuatorstate}
 \end{figure}
 % subsubsection actuator (end)
 
@@ -157,19 +175,23 @@ Within these diagrams, a number of message types are show as labels on the trans
 \label{sec:protocol_data_unit}
 This section will discuss and illustrate the design of the Protocol Data Unit (PDU).
 
+
 \subsection{Protocol Header} % (fold)
 \label{sub:protocol_header}
-The protocol header contains a minimal set of data fields, to reduce the strain on the network, which are essential for ensuring identifying channels, distinguishing message types and ensuring the integrity of the data sent.
+The design of the protocol header tries to minimise the overall size by only containing a minimal set of non-textual data fields, in an effort to reduce the strain on the network. The included fields are essential for identifying channels, distinguishing message types and ensuring the integrity of the data transmitted.
 
 % subsection protocol_header (end)
+\begin{figure}[h!]
 \begin{center}
 \begin{bytefield}{32}
 \bitheader{0,8,16,24,31}\\
-\bitbox{8}{src channel} & \bitbox{8}{dst channel} & \bitbox{8}{seqno} & \bitbox{8}{cmd} \\
-\bitbox{16}{len} & \bitbox{16}{packet checksum} \\
+\bitbox{8}{Src channel} & \bitbox{8}{Dest channel} & \bitbox{8}{SeqNo} & \bitbox{8}{Command} \\
+\bitbox{16}{Payload length} & \bitbox{16}{Checksum} \\
 \wordbox{2}{Command specific payload}
 \end{bytefield}
+\caption{Protocol header format}
 \end{center}
+\end{figure}
 % subsection protocol_data_unit (end)
 
 \section{Payload Message Types and Formats} % (fold)
@@ -194,13 +216,15 @@ Before a controller can connect to any devices, it must first try to discover an
 
 The QUERY message contains two data fields: the type of device the controller is searching for, light sensor, temperature sensor, informational display or otherwise, and the name of the device sending the QUERY message. This packet is sent as a broadcast transmission to all devices on the network.
 
-
+\begin{figure}[h!]
 \begin{center}
 \begin{bytefield}{32}
 \bitheader{0,8,16,24,31}\\
 \bitbox{8}{type} & \bitbox{24}{name...}
 \end{bytefield}
+\caption{QUERY message payload format}
 \end{center}
+\end{figure}
 % subsection query (end)
 
 \subsection{QUERY Response} % (fold)
@@ -216,14 +240,16 @@ After a device receives a QUERY message, it can decide whether or not to reply t
 \end{itemize}		
 		
 The QUERY Response message contains 3 data fields: the type and name of the device which is responding and the rate, which either indicates the default rate that a sensor transmits readings at, or the rate at which an actuator will expect PING messages from a connected controller to confirm the connection is still alive.
-
+\begin{figure}[h!]
 \begin{center}
 \begin{bytefield}{32}
 \bitheader{0,8,16,24,31}\\
 \bitbox{8}{type} & \bitbox{16}{rate} &\bitbox[lrt]{8}{}\\
 \wordbox[lrb]{1}{name...}
 \end{bytefield}
+\caption{QUERY Response message payload format}
 \end{center}
+\end{figure}
 % subsection query_response (end)
 
 \subsection{CONNECT} % (fold)
@@ -247,12 +273,15 @@ Once a device has been located, either a priori or through querying, a controlle
 
 The CONNECT message contains 2 data fields: the rate at which the controller either wants to receive data readings from sensors, or the rate at which it will PING actuators, and the name of the controller.
 
+\begin{figure}[h!]
 \begin{center}
 \begin{bytefield}{32}
 \bitheader{0,8,16,24,31}\\
 \bitbox{16}{rate} & \bitbox{16}{name}
 \end{bytefield}
+\caption{CONNECT message payload format}
 \end{center}
+\end{figure}
 % subsection connect (end)
 
 \subsection{CONNECT ACK} % (fold)
@@ -279,12 +308,15 @@ Once a device receives a CONNECT or CONNECT ACK message, unlike when receiving a
 \end{itemize}
 The CONNECT ACK message contains 2 data fields: accept, which declares whether or not the recipient accepts to create a channel, and the name of the device sending the message.
 
+\begin{figure}[h!]
 \begin{center}
 \begin{bytefield}{32}
 \bitheader{0,8,16,24,31}\\
 \bitbox{8}{accept} & \bitbox{16}{name} & \bitbox{8}{\color{lightgray}\rule{\width}{\height}}
 \end{bytefield}
+\caption{CONNECT ACK message payload format}
 \end{center}
+\end{figure}
 % subsubsection connect_ack (end)
 
 \subsection{RESPONSE} % (fold)
@@ -306,12 +338,15 @@ Once a channel has been set up and is in the connected state, the sensor connect
 
 The RESPONSE message contains 2 data fields: the data being sent, for example a temperature reading or a light reading, and the name of the sensor. 
 
+\begin{figure}[h!]
 \begin{center}
 \begin{bytefield}{32}
 \bitheader{0,8,16,24,31}\\
 \bitbox{16}{data} & \bitbox{16}{name}
 \end{bytefield}
+\caption{RESPONSE message payload format}
 \end{center}
+\end{figure}
 % subsection response (end)
 
 \subsection{PING} % (fold)
