@@ -64,6 +64,11 @@ The protocol is designed to fulfil several key requirements:
 \end{itemize}
 % subsection features (end)
 
+\subsection{Multiplexing devices, channels}
+In order to enable devices to communicate with more than one other device, a method for multiplexing a device's resources must be created. Within this system, each connection between two devices is called a channel, and each device can serve multiple channels, depending on its own resources, i.e., the more resources available, the more channels a device can serve, the more devices a single device can connect to. 
+
+Each device will contain at least two channels, one home channel (default) and one or more ephemeral channels. The purpose of the home channel is to enable devices to have a well known location they can be contacted at, this will be used for device discovery and to request to start a connection on one of the ephemeral channels.
+
 \subsection{Selective Multicast/Unicast} % (fold)
 \label{sub:selective_multicast_unicast}
 The use of multicast in a network can be extremely expensive, both in terms of the bandwidth consumed on the network as well as the time and energy cost of every device being forced to receive and process the packet. Therefore multicast transmissions must be kept to a minimum and where they are necessary, ensure that it is not used excessively.
@@ -87,11 +92,13 @@ Whereas, when sending data such as sensor readings the reliability of it arrivin
 In order to ensure the connections between devices are kept alive, the liveness of a connection needs to be kept track of, this is done differently depending on the device.
 \begin{itemize}
 	\item [Sensor -] Because sensors transmit data back to a controller at a set frequency, the controller can easily keep track of the liveness by simply monitoring incoming packets. If an arbitrary number of packets is not received after a multiple of the frequency period, then a time-out will occur and the connection can then be probed using a PING message to check if the packet loss is transient. If no responses are received in the form of PACKs, then the connection can be closed gracefully. 
-	\item [Actuator -] Because actuators just listen on the connection for any commands from a controller, it becomes necessary to regularly check at an arbitrary frequency that the connection is still alive using PINGs. Without PINGs, if a command was sent, it would initially be difficult to tell whether the packet was lost or the connection is dead. Instead, keeping track of the actuators liveness 
+	\item [Actuator -] Because actuators just listen on the connection for any commands from a controller, it becomes necessary to regularly check at an arbitrary frequency that the connection is still alive using PINGs. Without PINGs, if a command was sent, it would initially be difficult to tell whether the packet was lost or the connection is dead. By using PINGs, the status of the connection to the actuator can be regularly monitored, and if necessary, the associated channel closed when the actuator is persistently unresponsive.
 	\item [Controller -] Because controllers actively keep track of actuators, actuators therefore implicitly know that the controller is still alive. However, this is not the case for sensors, which are only liveness checked passively unless there is packet loss. Because of this, the sensor must therefore regularly send PINGs at an arbitrary frequency to check to see if the controller is still alive to receive the packets of data being transmitted. If this was not checked, then the sensor would be not only wasting its own resources by needlessly sending data, but it would also consume the resources of other devices if this was deployed on a low-power multi-hop mesh network, typical for ``Internet of Things'' networks.
 \end{itemize}
 
 In order to ensure the network does not become congested by the retransmission of PINGs within a short period of time, an exponential back-off will be used. This will ensure that if a device were to disappear of the network, the rest of the network would not suffer. In a large network where multiple devices could fail at once, perhaps due to a common link, the network could become heavily congested if exponential back-off were not used.
+
+If after an arbitrary number of PINGs, a PING ACK is not received, the connection is deemed dead and the associated channel closed.
 % subsection liveness_response (end)
 
 \subsection{Data integrity}
@@ -101,7 +108,7 @@ Therefore, the use of a mechanism to ensure the integrity of the data is necessa
 
 \subsection{Sequence diagrams} % (fold)
 \label{sub:message_passing}
-\newpage
+
 % subsection message_passing (end)
 \subsection{Protocol state machines} % (fold)
 \label{sub:states}
@@ -148,9 +155,13 @@ Within these diagrams, a number of message types are show as labels on the trans
 \newpage
 \section{Protocol Data Unit} % (fold)
 \label{sec:protocol_data_unit}
-This section will discuss and illustrate the design of the Protocol Data Unit (PDU), including the various commands and their specific payloads. 
+This section will discuss and illustrate the design of the Protocol Data Unit (PDU).
 
+\subsection{Protocol Header} % (fold)
+\label{sub:protocol_header}
+The protocol header contains a minimal set of data fields, to reduce the strain on the network, which are essential for ensuring identifying channels, distinguishing message types and ensuring the integrity of the data sent.
 
+% subsection protocol_header (end)
 \begin{center}
 \begin{bytefield}{32}
 \bitheader{0,8,16,24,31}\\
@@ -161,23 +172,51 @@ This section will discuss and illustrate the design of the Protocol Data Unit (P
 \end{center}
 % subsection protocol_data_unit (end)
 
-\subsection{Payload Formats} % (fold)
-\label{sub:payload_formats}
+\section{Payload Message Types and Formats} % (fold)
+\label{sec:payload_formats}
+This section will discuss the various payload message types which can be sent, and the associated actions taken upon receiving a message.
+For each message type the payload format is described and illustrated.
+\subsection{QUERY} % (fold)
+\label{sub:query}
+Before a controller can connect to any devices, it must first try to discover any matching devices on the local network. To do this, the device's home channel sends a QUERY message to the home channel on every other device in the network.
 
-\subsubsection{QUERY} % (fold)
-Before a controller can connect to any devices, it must first try to discover any matching devices on the local network. The QUERY message contains two data fields: the type of device the controller is searching for, light sensor, temperature sensor, informational display or otherwise, and the name of the device sending the QUERY message. This packet is sent as a broadcast transmission to all devices on the network.
-\label{ssub:query}
+\begin{itemize}
+	\item []The receiving state machine does the following on receipt of a QUERY message:
+	\begin{itemize}
+		\item if the destined channel is the home channel, it checks the type field, 
+		\begin{itemize}
+			\item if it matches its own type then transmits a unicast QUERY Response message back to the sender.
+			\item if the type does not match, message is dropped and device does not respond.
+		\end{itemize}
+		\item if the destined channel is not the home channel, the message is dropped as the requesting channel is confused.
+	\end{itemize}
+\end{itemize}
+
+The QUERY message contains two data fields: the type of device the controller is searching for, light sensor, temperature sensor, informational display or otherwise, and the name of the device sending the QUERY message. This packet is sent as a broadcast transmission to all devices on the network.
+
+
 \begin{center}
 \begin{bytefield}{32}
 \bitheader{0,8,16,24,31}\\
 \bitbox{8}{type} & \bitbox{24}{name...}
 \end{bytefield}
 \end{center}
-% subsubsection query (end)
+% subsection query (end)
 
-\subsubsection{QUERY Response} % (fold)
-After a device receives a QUERY message, it can decide whether or not to reply to it, if so it replies with the QUERY response message. The QUERY Response message contains 3 data fields: the type and name of the device which is responding and the rate, which either indicates the default rate that a sensor transmits readings at, or the rate at which an actuator will expect PING messages from a connected controller to confirm the connection is still alive.
-\label{ssub:query_response}
+\subsection{QUERY Response} % (fold)
+\label{sub:query_response}
+After a device receives a QUERY message, it can decide whether or not to reply to it, based on a type match and if there are resources resources, if so it replies with the QUERY response message. 
+
+\begin{itemize}
+	\item []The receiving state machine does the following on receipt of a QUERY Response message:
+	\begin{itemize}
+		\item if destined for the home channel, it accepts all messages and passes them up to any application on top.
+		\item if not destined for the home channel, then the message is dropped as the requesting channel is confused.
+	\end{itemize}
+\end{itemize}		
+		
+The QUERY Response message contains 3 data fields: the type and name of the device which is responding and the rate, which either indicates the default rate that a sensor transmits readings at, or the rate at which an actuator will expect PING messages from a connected controller to confirm the connection is still alive.
+
 \begin{center}
 \begin{bytefield}{32}
 \bitheader{0,8,16,24,31}\\
@@ -185,23 +224,61 @@ After a device receives a QUERY message, it can decide whether or not to reply t
 \wordbox[lrb]{1}{name...}
 \end{bytefield}
 \end{center}
-% subsubsection query_response (end)
+% subsection query_response (end)
 
-\subsubsection{CONNECT} % (fold)
-Once a device has been located, either a priori or through querying, a controller needs to send a CONNECT message to start the process of forming a connection with the desired device. As shown in the message sequence diagrams, this uses a three-way handshake, of which this is the initial message. The CONNECT message contains 2 data fields: the rate at which the controller either wants to receive data readings from sensors, or the rate at which it will PING actuators, and the name of the controller.
-\label{ssub:connect}
+\subsection{CONNECT} % (fold)
+\label{sub:connect}
+Once a device has been located, either a priori or through querying, a controller needs to send a CONNECT message to start the process of creating a channel with the desired device. As shown in the message sequence diagrams, this uses a three-way handshake, of which this is the initial message. 
+
+\begin{itemize}
+	\item []The receiving state machine does the following on receipt of a CONNECT message:
+	\begin{itemize}
+		\item if destined for the home channel, and if it does have a channel previously allocated for requesting channel, it checks if the rate is compatible with its own,
+		\begin{itemize}
+			\item if compatible, it creates a new channel for this connection, sets it to the CONNECT sent state and responds with an accepting CONNECT ACK from the new channel.
+			\item if not, respond with a declining CONNECT ACK.
+		\end{itemize}
+		\item if it has already allocated a channel for the requesting device and is in the CONNECT sent state, then the CONNECT ACK must have been lost, CONNECT ACK is resent.
+		\item if it has allocated a channel for the requesting channel and is in the CONNECTED state, then the requesting device state machine is confused.
+		\item if not destined for the home channel, then the requesting channel state machine is confused.
+	\end{itemize}
+\end{itemize}	
+
+
+The CONNECT message contains 2 data fields: the rate at which the controller either wants to receive data readings from sensors, or the rate at which it will PING actuators, and the name of the controller.
+
 \begin{center}
 \begin{bytefield}{32}
 \bitheader{0,8,16,24,31}\\
 \bitbox{16}{rate} & \bitbox{16}{name}
 \end{bytefield}
 \end{center}
-% subsubsection connect (end)
+% subsection connect (end)
 
-\subsubsection{CONNECT ACK} % (fold)
-Once a device receives a CONNECT message, unlike when receiving a QUERY message, it must respond with the second part of the three-way handshake with either a positive or negative acknowledgement.
+\subsection{CONNECT ACK} % (fold)
+\label{sub:connect_ack}
+Once a device receives a CONNECT or CONNECT ACK message, unlike when receiving a QUERY message, it must respond with the second or third part of the three-way handshake with either a positive or negative acknowledgement in order to ensure the connection has been set-up fully. When responding to a CONNECT or CONNECT ACK message, the device can either accept the connection or decline it, which could be based on device being unable to match the demands from the controller or due to a lack of available resources needed to support the connection.
 
-\label{ssub:connect_ack}
+\begin{itemize}
+	\item []The receiving state machine does the following on receipt of a CONNECT ACK message:
+	\begin{itemize}
+		\item if destined for an ephemeral channel which is in the CONNECT sent state,
+		\begin{itemize}
+		 	\item check if the connection has been accepted, if so reply with another CONNECT ACK.
+		 	\item otherwise, close the newly opened channel.
+		\end{itemize} 
+		\item if destined for an ephemeral channel which is in the CONNECT ACK sent state,
+		\begin{itemize}
+		  	\item check the accept field to confirm the connection has been fully accepted, if so move to the CONNECTED state
+		  	\item otherwise, close the newly opened channel.
+		\end{itemize} 
+		\item if destined for an ephemeral channel which is in the CONNECTED state, third handshake (CONNECT ACK) must have been lost, resend CONNECT ACK.
+		\item if destined for an ephemeral channel which has not been allocated or does not exist, requesting channel must be confused.
+		\item if destined for home channel, requesting channel is confused.
+	\end{itemize}
+\end{itemize}
+The CONNECT ACK message contains 2 data fields: accept, which declares whether or not the recipient accepts to create a channel, and the name of the device sending the message.
+
 \begin{center}
 \begin{bytefield}{32}
 \bitheader{0,8,16,24,31}\\
@@ -210,36 +287,97 @@ Once a device receives a CONNECT message, unlike when receiving a QUERY message,
 \end{center}
 % subsubsection connect_ack (end)
 
-\subsubsection{Response} % (fold)
-\label{ssub:response}
+\subsection{RESPONSE} % (fold)
+\label{sub:response}
+Once a channel has been set up and is in the connected state, the sensor connected to the channel can then send RESPONSE messages containing its sensor readings at the previously agreed upon rate.
+
+\begin{itemize}
+	\item []The receiving state machine does the following on receipt of a RESPONSE message:
+	\begin{itemize}
+		\item if destined for an ephemeral channel which is associated with the sender channel and in the CONNECTED state
+		\begin{itemize}
+			\item accept the data and pass to application on top
+		\end{itemize}
+		\item if destined for an ephemeral channel which is not associated with the sender channel, then sender is confused.
+		\item if destined for home channel, then sender is confused.
+	\end{itemize}
+\end{itemize}
+
+
+The RESPONSE message contains 2 data fields: the data being sent, for example a temperature reading or a light reading, and the name of the sensor. 
+
 \begin{center}
 \begin{bytefield}{32}
 \bitheader{0,8,16,24,31}\\
 \bitbox{16}{data} & \bitbox{16}{name}
 \end{bytefield}
 \end{center}
-% subsubsection response (end)
+% subsection response (end)
 
-\subsubsection{Ping} % (fold)
-\label{ssub:ping}
+\subsection{PING} % (fold)
+\label{sub:ping}
+Once a connection has been made between two devices, a channel is created within each device to handle this connection. Due to the nature of devices, especially those on wireless networks or battery powered, devices can disappear off the network without gracefully closing the connection. If this occurs, then the connected devices must be able to detect if the connection is still alive, if not then clean up after it. To do this PING and PING ACKs are used to create a failure detector.
 
-% subsubsection ping (end)
+\begin{itemize}
+	\item []The receiving state machine does the following on receipt of a PING message:
+	\begin{itemize}
+		\item if destined for an ephemeral channel which is associated with the PINGing channel then respond with a PING ACK
+		\item if destined for an ephemeral channel which is not associated with the PINGing channel, then drop message as PINGing channel is confused.
+		\item if destined for the home channel, drop packet as PINGing channel is confused.
+	\end{itemize}
+\end{itemize}
 
-\subsubsection{Ping ACK} % (fold)
-\label{ssub:ping_ack}
+These is no payload specific data for the PING message.
+% subsection ping (end)
 
-% subsubsection ping_ack (end)
+\subsection{PING ACK} % (fold)
+\label{sub:ping_ack}
+The PING ACK is the response to the PING message for use in detecting failures in the network.
 
-\subsubsection{Disconnect} % (fold)
-\label{ssub:disconnect}
+\begin{itemize}
+	\item []The receiving state machine does the following on receipt of a PING ACK message:
+	\begin{itemize}
+		\item if destined for an ephemeral channel which is associated with the responding channel then reset the PING timeout as well as the deletion timeout, to stop any further PINGs and ensure the channel is not deleted. 
+		\item if destined for an ephemeral channel which is not associated with the responding channel, drop the message as the responding channel is confused.
+		\item if destined for the home channel, drop packet as responding channel is confused.
+	\end{itemize}
+\end{itemize}
 
-% subsubsection disconnect (end)
+There is no payload specific data for the PING ACK message.
+% subsection ping_ack (end)
 
-\subsubsection{Disconnect ACK} % (fold)
-\label{ssub:disconnect_ack}
+\subsection{DISCONNECT} % (fold)
+\label{sub:disconnect}
+When a device has already formed a connection to another device and wishes to disconnect, perhaps due to either power concerns, the device is no longer needed or otherwise, a method for gracefully disconnecting the two devices and cleaning up the channels is necessary.
 
-% subsubsection disconnect_ack (end)
-% subsection payload_formats (end)
+ \begin{itemize}
+	\item []The receiving state machine does the following on receipt of a DISCONNECT message:
+	\begin{itemize}
+		\item always send the DISCONNECT ACK message back to the sender (otherwise ignoring it will likely cause another to be sent).
+		\item if the destined channel is an ephemeral channel which is associated with the DISCONNECTing channel, then close the channel.
+		\item otherwise drop message. 
+	\end{itemize}
+\end{itemize}
+
+There is no payload specific data for the DISCONNECT message.
+% subsection disconnect (end)
+
+\subsection{DISCONNECT ACK} % (fold)
+\label{sub:disconnect_ack}
+The DISCONNECT ACK is the response to the DISCONNECT message used to disconnect two devices gracefully.
+
+\begin{itemize}
+	\item []The receiving state machine does the following on receipt of a DISCONNECT ACK message:
+	\begin{itemize}
+		\item if destined for an ephemeral channel which is associated with the responding channel, then close the channel.
+		\item if destined for an ephemeral channel which is not associated with the responding channel, drop the message as the responding channel is confused. 
+		\item if destined for the home channel, drop the message as the responding channel is confused. 
+	\end{itemize}
+\end{itemize}
+
+There is no payload specific data for the DISCONNECT message.
+% subsection disconnect_ack (end)
+% section payload_formats (end)
 
 
 % section protocol_design (end)

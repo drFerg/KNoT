@@ -49,6 +49,7 @@
 /* =======================*/
 
 #define MAX_DATA_SIZE 32
+#define RESPONSE_DATA_SIZE 16
 #define NAME_SIZE     16
 
 extern char *cmdnames[15];
