@@ -11,13 +11,13 @@
 
 
 % Design of system independent of hardware implementation.
-This chapter will discuss and illustrate the design of the new protocol, independent of any hardware and software platforms, as set out by the requirements gathered in the previous chapter. Towards the end of the chapter, some of the key design choices for this protocol will be compared to decisions made by other pre-existing protocols, to highlight and discuss their differences and/or similarities.
+This chapter describes and illustrates the design of the new protocol, independent of any hardware and software platforms, as set out by the requirements gathered in the previous chapter. This chapter will discuss the different roles of devices to be used, the fundamental features necessary to meet the requirements, the types and flow of messages between the different roles, the protocol data unit and command formats defined and finally some of the key design choices for this protocol will be compared to decisions made by other pre-existing protocols, to highlight and discuss their differences and/or similarities.
 
 \section{The 3 device roles} % (fold)
 \label{sec:the_3_classifications_of_devices}
 In order to understand and design the system correctly the three basic device roles in the ``Internet of Things'' must be explicitly defined; these roles will ultimately dictate the core communication model between devices in the network. However, whilst these roles are distinct in nature, a single device may take on one or more roles, i.e., a light sensing its state, and offering a command to turn it on/off.
 
-By separating out functionality into distinct roles, it enables each to device to offer individual, context-less services which can be offered to many different devices, to create a powerful, rich and adaptable ``Internet of Things''.
+By separating out functionality into distinct roles, it enables each to device to offer individual, context-less services which can be offered to many different devices and combined to create a powerful, rich and adaptable ``Internet of Things''.
 
 \subsection{Sensor} % (fold)
 \label{sub:sensor}
@@ -56,9 +56,9 @@ This section will discuss the design of the protocol based on the formal require
 \label{sub:features}
 The protocol is designed to fulfil several key requirements:
 \begin{itemize}
-	\item Minimalistic protocol, reliability for critical data, no reliability for non-critical data
+	\item Minimalistic protocol, reliability for critical data only
 	\item Minimal header overhead, reduce transmission and receiving cost of data
-	\item Device discovery, use of broadcast to discover devices
+	\item Distributed device discovery, use of broadcast to discover devices
 	\item Reliability, reliable set-up of connections and integrity of data
 	\item Fault tolerant, liveness checks and no central point of failure
 \end{itemize}
@@ -90,6 +90,7 @@ The use of multicast in a network can be extremely expensive, both in terms of t
 In the case of device discovery, multicasting is required due to the distributed nature of the system, where no central name server exists and therefore the network needs to be queried in order to locate devices. In order for this to work, all devices on the network need to listen on a well known address (a UDP port), to which the discoverer can send multicast discovery packets to.
 Once a device receives a multicast discovery packet, it can decide whether or not to reply, based on if the query information, device type or name, matches its own. If it does match, then it replies using a unicast message to notify the sender of an available device matching its request. Because filtering is used at the receiving end, this further reduces the strain on the network resources, by stopping unnecessary packets from being transmitted.   
 % subsection selective_multicast_unicast (end)
+
 \subsection{Selective Reliability} % (fold)
 \label{sub:selective_reliability}
 In an effort to both reduce the cost of data transmission for devices and bandwidth consumption on the network, reliability will only be ensured for critical data transmissions, including connection set-up, tear-down and actuator commands.
@@ -125,7 +126,7 @@ Therefore, the use of a mechanism to ensure the integrity of the data is necessa
 
 \subsection{Flow of messages} % (fold)
 \label{sub:message_passing}
-Based upon the use cases described in the Requirements section, the following sequence diagram illustrates the flow of messages between the different roles of devices within the network.
+Based upon the use cases described in the Requirements section, a set of messages are described and demonstrated in the sequence diagram contained in figure \ref{fig:sequence_diagram}, which illustrates the flow of messages between the different roles of devices within the network.
 
 \subsubsection{Device discovery -- Controller $\rightarrow$ Sensors/Acutators} % (fold)
 \label{ssub:subsubsection_name}
@@ -197,7 +198,7 @@ Once a channel has been set up between two devices, one of the devices may decid
 \centering
 \includegraphics[scale=0.6]{design/img/sequence_diagram.1}
 \caption{Controller - Sensor message diagram}
-\label{fig:sensorsequence}
+\label{fig:sequence_diagram}
 \end{figure}
 % subsection message_passing (end)
 \newpage
@@ -245,16 +246,24 @@ Within these diagrams, a number of message types are show as labels on the trans
 
 
 
-\newpage
+
 \section{Protocol Data Unit} % (fold)
 \label{sec:protocol_data_unit}
-This section will discuss and illustrate the design of the Protocol Data Unit (PDU).
-
+This section will discuss and illustrate the design of the Protocol Data Unit (PDU), starting with the protocol header format and followed by the various message types and their respective payload formats. Where appropriate for each message type, a short pseudo code analysis will be discussed to illustrate the various scenarios that could occur in the relevant state machine, as a result of receiving these messages.
 
 \subsection{Protocol Header} % (fold)
 \label{sub:protocol_header}
 The design of the protocol header tries to minimise the overall size by only containing a minimal set of non-textual data fields, in an effort to reduce the strain on the network. The included fields are essential for identifying channels, distinguishing message types and ensuring the integrity of the data transmitted.
 
+The protocol header contains 6 data fields:
+\vspace{-5mm}  
+\begin{itemize}
+	\item source and destination channel fields to identify the connection (used with lower layer addressing to uniquely identify each connection),
+	\item a sequence number field to detect duplicates and out of order packets,
+	\item a command field to distinguish what type the payload is,
+	\item a payload length field which contains the size of the payload,
+	\item and a checksum to detect any errors within the whole packet that might have occurred during in transmission.  
+\end{itemize}    
 % subsection protocol_header (end)
 \begin{figure}[h!]
 \begin{center}
@@ -499,26 +508,29 @@ This section will compare and contrast some of the key design choices of this ne
 
 \subsubsection{Distributed vs Centralised} % (fold)
 \label{ssub:distributed_vs_centralised}
+java jms centralised, good to reliably find devices, costly service, if it fails network fails, yet all other devices are active
+not a good fit with distributed mesh nature of IoT
 
 \subsubsection{Cloud vs Local} % (fold)
 \label{ssub:cloud_vs_local}
+SmartThings taking cloud first approach, wiring all devices in the cloud, provides user access from anywhere instantly but poses risks to security and creates a single point of failure, not unlikely(list failures of amazon and other cloud), what happens then? knot approach, wire locally and control from anywhere through appropriate abstractions and applications
 
 % subsubsection cloud_vs_local (end)
 % subsubsection distributed_vs_centralised (end)
 \subsubsection{Selective Unicast/Multicast vs Multicast} % (fold)
 \label{ssub:selective_unicast_multicast_vs_multicast}
-
+xAP, fully multicast network, everything broadcasts, every device picks up messages, allows for easy adding on to network, but creates high cost for every device on the network, especially as traffic increases. unscalable
 % subsubsection selective_unicast_multicast_vs_multicast (end)
 \subsubsection{Reliable vs Unreliable} % (fold)
 \label{ssub:reliable_vs_unreliable}
-
+TCP/RPC - always provide reliability, can be costly, double the bandwidth but ephemeral data means out of sequence pointless
 % subsubsection reliable_vs_unreliable (end)
 
 \subsubsection{Textual packet vs Encoded packet} % (fold)
 \label{ssub:textual_packet_vs_encoded_packet}
-
+xAP, use of textual encoding for packet header and payload ala JSON, costly to transport, inefficient store of data, easy to read but how often will user need to read un-processed data
 % subsubsection textual_packet_vs_encoded_packet (end)
 \subsubsection{``Thing'' vs network of ``Things''} % (fold)
 \label{ssub:_thing_vs_network_of_things_}
-
+Twine, idea of internet of thing, connecting device by itself and then connecting to other services, limited functionality. instead create a local internet of things which link up, providing much richer local experience with possibility to utilise online services etc.
 % subsubsection _thing_vs_network_of_things_ (end)
