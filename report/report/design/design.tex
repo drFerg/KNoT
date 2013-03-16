@@ -123,11 +123,73 @@ Therefore, the use of a mechanism to ensure the integrity of the data is necessa
 
 
 
-
-\subsection{Sequence diagrams} % (fold)
+\subsection{Flow of messages} % (fold)
 \label{sub:message_passing}
+Based upon the use cases described in the Requirements section, the following sequence diagram illustrates the flow of messages between the different roles of devices within the network.
 
+\subsubsection{Device discovery -- Controller $\rightarrow$ Sensors/Acutators} % (fold)
+\label{ssub:subsubsection_name}
+In order for a controller to locate devices on the network, a device query must be broadcast across the network; any devices which match the request and have resources available can reply with an acknowledgement, otherwise they ignore the message, signalling an implicit no.
+If a controller receives no responses from the initial query, it could be a result of either, no devices on the network matching the request, or the packet was lost/corrupted on the network. Because it's not possible to distinguish between an implicit no and a network failure, it may be necessary to retransmit a query multiple times, perhaps with an exponential back-off, so not to congest the network whilst still achieving a confident scan of the available devices on the network.
+
+% subsubsection subsubsection_name (end)
+
+\subsubsection{Set up channel -- Controller $\rightarrow$ Sensors/Actuators} % (fold)
+\label{ssub:set_up_channel}
+In order to ensure that a channel is fully set up, it becomes necessary to introduce reliability, via acknowledgement messages. Similar to TCP, a three-way handshake is used to ensure the channel is fully opened on both sides.
+
+\begin{itemize}
+ 	\item This covers most scenarios and allows for devices to recover from dropped packets during the exchange. For example, device A initiates setting up a channel,
+ 	\begin{itemize}
+ 		\item if the initial message is dropped, acknowledgement timeout occurs on A, A resends message.
+ 		\item if B's ACK is dropped, acknowledgement timeout occurs on A, A resends message with the same sequence number, B receives initial message again, its ACK message must have been dropped, B resends ACK message.
+ 		\item if A's ACK message is dropped, acknowledgement timeout occurs on B, B resends second message with the same sequence number, A receives B's ACK message again, its ACK message must have been dropped, A resends ACK message.
+ 		\item if no A receives no more ACK messages from B it knows the channel has been fully set up.
+ 	\end{itemize}
+ \end{itemize} 
+% subsubsection set_up_channel (end)
+
+\subsubsection{Send sensor data -- Sensor $\rightarrow$ Controller} % (fold)
+\label{ssub:send_sensor_data}
+Once a channel has been set up to a controller, a sensor then needs to send its sensor readings at the previously agreed upon frequency. 
+Due to the high frequency requirements and transient nature of the data, using reliability becomes an expensive overhead without providing much benefit, i.e., consuming twice the bandwidth, and if a packet is dropped and resent out of sequence it becomes useless in a real-time environment, link the ``Internet of Things''.  
+Without reliability, packets may be dropped, but because of the timeliness of the data it will usually go unnoticed to the user. For example, a dropped packet won't have noticeable effect on a real-time temperature display with a frequency granularity of 5 seconds.
+% subsubsection send_sensor_data (end)
+
+\subsubsection{Send command -- Controller $\rightarrow$ Actuator} % (fold)
+\label{ssub:send_command}
+Once a channel has been set up to an actuator, a controller needs to be able to send commands for the actuator to carry out. To ensure that an action is carried out, it becomes necessary to acknowledge the command. By using combinations in combination with message sequence numbers, it is possible to ensure that a command is carried out once per request.
+
+\begin{itemize}
+	\item The following cases are covered via use of acknowledgements and sequence numbers
+	\begin{itemize}
+		\item if command message is dropped, acknowledgement timeout on controller occurs, resend command
+		\item if ACK message is dropped, acknowledgement timeout on controller occurs, resend command with same sequence number, actuator receives repeat commmand, ignores command and resends ACK message.
+	\end{itemize}
+\end{itemize}
+
+
+
+
+% subsubsection send_command (end)
+
+\subsubsection{Ping} % (fold)
+\label{ssub:ping}
+
+% subsubsection ping (end)
+
+\subsubsection{Close channel} % (fold)
+\label{ssub:close_channel}
+
+% subsubsection close_channel (end)
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=0.6]{design/img/sensor_sequence_diagram.1}
+\caption{Controller - Sensor message diagram}
+\label{fig:sensorsequence}
+\end{figure}
 % subsection message_passing (end)
+\newpage
 \subsection{Protocol state machines} % (fold)
 \label{sub:states}
 With the use of the message sequence diagrams to help understand the flow of messages within the network, the sequence of states each connection within a role can transition between can be discerned, and is shown in the following figures.
@@ -138,16 +200,18 @@ Within these diagrams, a number of message types are show as labels on the trans
 \label{ssub:sensor}
 \begin{figure}[h!]
 \centering
-\includegraphics[scale=0.7]{design/img/sensor_state.1}
+\includegraphics[scale=0.65]{design/img/sensor_state.1}
 \caption{Sensor life cycle diagram}
 \label{fig:sensorstate}
 \end{figure}
+
+
 % subsubsection sensor (end)
 \subsubsection{Actuator} % (fold)
 \label{ssub:actuator}
 \begin{figure}[h!]
 \centering
-\includegraphics[scale=0.7]{design/img/actuator_state.1}
+\includegraphics[scale=0.65]{design/img/actuator_state.1}
 \caption{Actuator life cycle diagram}
 \label{fig:actuatorstate}
 \end{figure}
@@ -157,7 +221,7 @@ Within these diagrams, a number of message types are show as labels on the trans
 \label{ssub:controller}
 \begin{figure}[h!]
 \centering
-\includegraphics[scale=0.7]{design/img/controller_state.1}
+\includegraphics[scale=0.65]{design/img/controller_state.1}
 \caption{Controller life cycle diagram}
 \label{fig:controllerstate}
 \end{figure}
