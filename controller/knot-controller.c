@@ -212,6 +212,7 @@ void check_timer(ChannelState *s){
 		}
 		s->ticks --;
 }
+
 void cleaner(){
 	int i;
 	ChannelState *s;
@@ -242,15 +243,7 @@ int knot_register_controller(struct process *client_proc, knot_callback callback
 		PROCESS_CONTEXT_END();		
 		started = 1;
 	}
-	/* Enter context to call local function */
-	// PROCESS_CONTEXT_BEGIN(&knot_controller_process);
-	// state = new_channel();
-	// PROCESS_CONTEXT_END(&knot_controller_process);
 
-	// if (state == NULL) {
-	// 	PRINTF("No more free channels\n");
-	// 	return -1;
-	// }
 	strcpy(controller_name, controller_name);
 	if (callback != NULL){
 		state->ccb.callback = callback;
@@ -260,8 +253,7 @@ int knot_register_controller(struct process *client_proc, knot_callback callback
 
 	state->rate = rate;
 	service_search(state, device_type);
-	/* Asnchronously kickstart channel to do a service search */
-	//process_post(&knot_controller_process,PROCESS_EVENT_CONTINUE, state);
+
 	return 1;
 }
 
