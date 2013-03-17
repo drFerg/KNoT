@@ -1,0 +1,85 @@
+Following on from the design, this chapter will discuss the process of taking the protocol from design to implementation on constrained devices. The chapter discusses the challenges faced throughout the implementation process, and the development on the event based operating system, Contiki, for the TelosB mote. 
+
+
+\section{Software engineering} % (fold)
+\label{sec:software_engineering}
+\subsection{Agile approach} % (fold)
+\label{sub:agile_approach}
+
+% subsection agile_approach (end)
+\subsection{Implementation break-down} % (fold)
+\label{sub:implementation_break_down}
+In order to manage the implementation of the protocol, the development was broken down into functional components; these components could then be implemented individually and tested, ensuring the system functions correctly before developing the next.
+
+Because of the functional similarities between the sensor and actuator, the initial development focused upon the communication model betweet the sensor and controller, with the sensor later modified to support the actuator functionality.
+
+The implementation was broken down into the following:
+\vspace{-5mm} 
+\begin{enumerate}
+	\item Test basic broadcast and unicast communication between two devices.
+	\item Define packet structure, payload structures and device types.
+	\item Implement broadcast device discovery and unicast response mechanism.
+	\item Implement single channel device connections between devices after discovery.
+	\item Implement sending sensor data and pings between connected devices.
+	\item Implement multiple channel support for devices.
+	\item Implement channel closing.
+	\item Implement API bindings for application support.
+	\item Implement mock applications on top of API.
+\end{enumerate}
+% subsection implementation_break_down (end)
+\subsection{Testing and Simulation} % (fold)
+\label{sub:testing_and_simulation}
+Throughout the implementation it was absolutely necessary to test the code as often as possible to ensure that it functioned correctly and as expected. Tests were performed both on real devices and within the provided simulator, Cooja, for the platform developed on, Contiki on TelosB motes. The simulator provided the ability to test scenarios which wouldn't be possible with the real devices, including testing with 10's of devices and with varying conditions such as radio strength and interference.
+
+% subsection testing_and_simulation (end)
+% section software_engineering (end)
+
+
+
+
+\section{Initial challenges} % (fold)
+\label{sec:initial_challenges}
+This section will discuss the challenges faced which initial choice of available hardware and software platforms.
+\subsection{Arduino} % (fold)
+\label{sec:arduino}
+As described in the background chapter, \ref{sub:Arduino}, the Arduino is unanimously the most popular open source constrained device available for consumers; thus developing an implementation of the protocol for it would allow it to be used with all the Arduino compatible devices currently available.
+
+However, after much research into the platform, it was discovered that the Arduino did not natively support hardware interrupts from the available Ethernet network board.\cite{ArduinoEthernet} Instead any program expecting data from the network would be forced to poll the Ethernet driver to check if any packets have arrived, resulting in a busy-wait. This busy-wait method of acquiring data from the network is extremely inefficient and directly opposite to what the protocol requirements and design aims to achieve, thus the Arduino was not chosen to develop for.
+% section arduino (end)
+
+\subsection{TelosB and operating system choice}
+After deciding not to develop for the Arduino platform, the alternative platform available, due to the resources available in the School of Computing Science, was the TelosB mote. As described in section \ref{sub:TelosB}, the TelosB mote is a widely used device within academia for research into wireless sensor networks and constrained operating systems. Because of this research, there are several operating systems to choose from when developing for the device, including TinyOS and Contiki.
+
+Between TinyOS and Contiki there are some considerable differences, both in the programming model, event based vs hybrid, and the structuring of the operating system, discussed previously in section \ref{sub:TelosB}. Because of Contiki's programming model and language assimilation to native C, it was chosen over TinyOS, in hope that it would prove to be considerably easier to develop for.
+% section initial_challenges (end)
+
+
+\section{Telos B Mote and Contiki implementation} % (fold)
+\label{sec:contiki}
+After choosing to develop for the TelosB mote with Contiki, the next step involved getting to grips with how to best implement the system on the platform. This section discusses the process of implementing the system on the chosen platform, the various issues encountered, the overall structure dictated by the platform choice and the resulting system created. 
+
+\subsection{Event driven system} % (fold)
+\label{sub:event_driven_system}
+
+% subsection event_driven_system (end)
+
+\subsection{Protocol system architecture} % (fold)
+\label{sub:protocol_system_architecture}
+Pretty picture
+% subsection protocol_system_architecture (end)
+
+\subsection{Choosing the transport layer:IP4 vs IPv6 vs Rime} % (fold)
+\label{sub:ip4_vs_ipv6_vs_rime}
+yes no no
+% subsection ip4_vs_ipv6_vs_rime (end)
+
+\subsection{Problems Encountered} % (fold)
+\label{sub:problems_encountered}
+
+\subsubsection{IPv4 Broadcast support} % (fold)
+\label{sub:ipv4_broadcast_support}
+
+% subsubsection ipv4_broadcast_support (end)
+% subsection problems_encountered (end)
+
+% section contiki (end)

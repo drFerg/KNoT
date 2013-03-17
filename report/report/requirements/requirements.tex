@@ -153,7 +153,7 @@ This section describes the non-functional requirements based on the expectations
 
 % subsection system_requirements (end)
 
-\subsection{Development Requirements} % (fold)
+\subsection{Development Constraints} % (fold)
 \label{sub:development_requirements}
 \begin{itemize}
 	\item The system must be researched, designed and developed within a limited time frame, about 20 weeks.
@@ -161,6 +161,15 @@ This section describes the non-functional requirements based on the expectations
 	\item The choice of operating system for the constrained device is based on prior experience with similar systems and platform languages available to the OS. The Contiki OS uses a minor variation of the C programming language, making it quicker and simpler to get started based on the author's experience with C, as well as simpler to keep the system (mostly) platform independent.
 \end{itemize}
 % subsection development_requirements (end)
+\subsection{Development Assumption} % (fold)
+\label{sub:development_assumption}
+In order to design and implement the proposed system, the scope of the problem needs to the limited, therefore it becomes necessary to define several assumptions.
+\begin{itemize}
+	\item The number of possible devices types is limited, no more than 255.
+	\item Sensor data is not critically important, so packet loss is acceptable.
+	\item The system will be used in an environment where security is a non-issue (but MUST be considered as future work before deployment).
+\end{itemize}
+% subsection development_assumption (end)
 
 % section non_functional_requirements (end)
 

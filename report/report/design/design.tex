@@ -56,7 +56,7 @@ This section will discuss the design of the protocol based on the formal require
 \label{sub:features}
 The protocol is designed to fulfil several key requirements:
 \begin{itemize}
-	\item Minimalistic protocol, reliability for critical data only
+	\item Minimalistic protocol, reliability for critical data only, no fragmenting
 	\item Minimal header overhead, reduce transmission and receiving cost of data
 	\item Distributed device discovery, use of broadcast to discover devices
 	\item Reliability, reliable set-up of connections and integrity of data
@@ -201,6 +201,9 @@ Once a channel has been set up between two devices, one of the devices may decid
 \label{fig:sequence_diagram}
 \end{figure}
 % subsection message_passing (end)
+
+
+
 \newpage
 \subsection{Protocol state machines} % (fold)
 \label{sub:states}
@@ -249,11 +252,11 @@ Within these diagrams, a number of message types are show as labels on the trans
 
 \section{Protocol Data Unit} % (fold)
 \label{sec:protocol_data_unit}
-This section will discuss and illustrate the design of the Protocol Data Unit (PDU), starting with the protocol header format and followed by the various message types and their respective payload formats. Where appropriate for each message type, a short pseudo code analysis will be discussed to illustrate the various scenarios that could occur in the relevant state machine, as a result of receiving these messages.
+This section will discuss and illustrate the design of the Protocol Data Unit (PDU), starting with the protocol header format and followed by the various message types and their respective payload formats. Where appropriate, for each message type, a short pseudo code analysis will be discussed to illustrate the various scenarios that could occur in the relevant state machine, as a result of receiving the respective messages.
 
 \subsection{Protocol Header} % (fold)
 \label{sub:protocol_header}
-The design of the protocol header tries to minimise the overall size by only containing a minimal set of non-textual data fields, in an effort to reduce the strain on the network. The included fields are essential for identifying channels, distinguishing message types and ensuring the integrity of the data transmitted.
+The design of the protocol header tries to minimise the overall size by only containing a minimal set of non-textual data fields, with the purpose of reducing the power consumption for transmitting and receiving packets. The included fields are essential for identifying channels, distinguishing message types and ensuring the integrity of the data transmitted.
 
 The protocol header contains 6 data fields:
 \vspace{-5mm}  
@@ -501,34 +504,74 @@ There is no payload specific data for the DISCONNECT message.
 
 % section protocol_design (end)
 
-
-
 \section{Comparisons to other systems}
 This section will compare and contrast some of the key design choices of this new system with the design of other pre-existing protocols and systems. 
 
 \subsubsection{Distributed vs Centralised} % (fold)
 \label{ssub:distributed_vs_centralised}
-java jms centralised, good to reliably find devices, costly service, if it fails network fails, yet all other devices are active
-not a good fit with distributed mesh nature of IoT
+One of the fundamental design decisions in creating the protocol, was to create a distributed system, which would relieve the system of a single point of failure, but in turn increase the complexity in discovering new devices. In contrast to this, the Java Messaging System (JMS) adopts a centralised approach, using a central name server to discover and locate devices on the network. Whilst JMS is not directly targeted towards ``Internet of Things'' networks, it does provide adequate abstractions that could be used in an ``Internet of Things'' network, such as the Subscribe - Publish model.
 
+Because of the centralised name server, which is known a priori, it becomes very simple to join the network, by just querying the server for any devices or services that it is interested in.  To contact the server it only requires a single unicast message, in contrast to the broadcast message sent to every device on the network for the proposed distributed system. 
+
+However, the centralised approach assumes that the network and devices used are reliable and are unlikely to fail, which is incompatible with the assumed traits of an ``Internet of Things'' network implemented on constrained devices. In the case where the central server fails, the new devices entering the network would no longer be able to connect, and if the central server was used to facilitate the communication via publish - subscribe, then the whole system would be rendered inoperable. In the constrained devices environment where resources are limited and wireless links are susceptible to interference, this becomes a significant problem.
+
+Therefore, although the cost of device discovery does increase with the use of a distributed system, it offers far more fault tolerance than a centralised system.
+
+% subsubsection distributed_vs_centralised (end)
+
+\subsubsection{Selective Unicast/Multicast vs Multicast} % (fold)
+\label{ssub:selective_unicast_multicast_vs_multicast}
+The xAP system chooses to use a multicast medium to interconnect all devices, where every device broadcasts its events/commands to every other device on the local network. This provides the benefit that devices don't need to explicitly set up connections between themselves and instead just listen for broadcasted packets on the network. Whilst this is truly distributed in nature, it does come at a considerable cost as the network scales to large quantities of devices. The core problem with this approach is that every device on the network is forced to receive and process every packet that is transmitted, regardless of whether it's relevant information or not. For constrained devices this is highly undesirable, as resources are severely constrained, especially battery life and processor speed. Using the radio on a constrained device is the most expensive operation, therefore by forcing all messages to be received, the power consumption on such a device becomes a significant problem. 
+
+Hence, the need to reduce the use of broadcast is necessary, but due to the distributed architecture its use is still necessary to discover devices. In the proposed protocol a compromise is made, in order to discover devices broadcast queries are used, but every other message in the protocol is unicast. This ensures that devices can still easily join and discover other devices on the network, but without the continual cost of each device receiving every devices data.
+
+% subsubsection selective_unicast_multicast_vs_multicast (end)
 \subsubsection{Cloud vs Local} % (fold)
 \label{ssub:cloud_vs_local}
 SmartThings taking cloud first approach, wiring all devices in the cloud, provides user access from anywhere instantly but poses risks to security and creates a single point of failure, not unlikely(list failures of amazon and other cloud), what happens then? knot approach, wire locally and control from anywhere through appropriate abstractions and applications
 
 % subsubsection cloud_vs_local (end)
-% subsubsection distributed_vs_centralised (end)
-\subsubsection{Selective Unicast/Multicast vs Multicast} % (fold)
-\label{ssub:selective_unicast_multicast_vs_multicast}
-xAP, fully multicast network, everything broadcasts, every device picks up messages, allows for easy adding on to network, but creates high cost for every device on the network, especially as traffic increases. unscalable
-% subsubsection selective_unicast_multicast_vs_multicast (end)
+
+
 \subsubsection{Reliable vs Unreliable} % (fold)
 \label{ssub:reliable_vs_unreliable}
 TCP/RPC - always provide reliability, can be costly, double the bandwidth but ephemeral data means out of sequence pointless
 % subsubsection reliable_vs_unreliable (end)
 
-\subsubsection{Textual packet vs Encoded packet} % (fold)
+\subsubsection{Textual encoded packet vs Integer encoded packet} % (fold)
 \label{ssub:textual_packet_vs_encoded_packet}
-xAP, use of textual encoding for packet header and payload ala JSON, costly to transport, inefficient store of data, easy to read but how often will user need to read un-processed data
+As one of the requirements, the new protocol must ensure an efficient use of resources, in which minimising the size of the packet is most important, because the protocol centres around sending, receiving and processing these packets. In order to achieve this, the packet header only contains a minimal set of fields, all of which are non-textual.
+
+However, if the type of a device was described using a string representation, such as ``Light Sensor'', it which would consume 12 bytes of data, not including any associated fields such as text length to allow for variable length identifiers. Instead, by using a integer encoding, whereby the types are predefined integers within the protocol, given the assumption that there are no more than 255 devices, the size of the field can be reduced to a single byte. Applying this to the rest of the header results in a total size of 12 bytes (not including the payload). This not only considerably reduces the cost of sending and receiving packets, but also reduces the complexity in parsing the data.
+
+Comparing this to xAP, which based on the requirement of human readable messages, exclusively uses a textually formatted packet header and payload. To illustrate xAP's textual format, an example header is shown in figure \ref{fig:xapHeader}
+\begin{figure}[h!]
+\begin{minipage}{.5\textwidth}
+\begin{verbatim}
+xap-header
+{
+v=12
+hop=1
+uid=FF123400
+class=xap-temp.notification
+source=ACME.thermostat.lounge
+}
+\end{verbatim}
+\end{minipage}%
+\begin{minipage}{.5\textwidth}
+$\leftarrow$ signals block is header\\
+\\
+$\leftarrow$ defines protocol version\\
+$\leftarrow$ how many hops left\\
+$\leftarrow$ a unique identifier for the source\\
+$\leftarrow$ the type of payload the message contains\\
+$\leftarrow$ text representation of source of the message\\
+\end{minipage}
+\caption{xAP packet header}
+\label{fig:xapHeader}
+\end{figure}
+In total, 87 bytes are used to represent a similar array of information to that contained within in the designed system's header. In contrast, xAP consumes almost 8 times more bytes. This can a large impact on the potential transmission cost and processing complexity if used on constrained devices, such as the TelosB mote.
+
 % subsubsection textual_packet_vs_encoded_packet (end)
 \subsubsection{``Thing'' vs network of ``Things''} % (fold)
 \label{ssub:_thing_vs_network_of_things_}
