@@ -264,7 +264,7 @@ The protocol header contains 6 data fields:
 	\item source and destination channel fields to identify the connection (used with lower layer addressing to uniquely identify each connection),
 	\item a sequence number field to detect duplicates and out of order packets,
 	\item a command field to distinguish what type the payload is,
-	\item a payload length field which contains the size of the payload,
+	\item a payload length field which contains the size of the payload, maximum size = 32 bytes
 	\item and a checksum to detect any errors within the whole packet that might have occurred during in transmission.  
 \end{itemize}    
 % subsection protocol_header (end)
@@ -307,7 +307,8 @@ The QUERY message contains two data fields: the type of device the controller is
 \begin{center}
 \begin{bytefield}{32}
 \bitheader{0,8,16,24,31}\\
-\bitbox{8}{type} & \bitbox{24}{name...}
+\bitbox{8}{type} & \bitbox[lrt]{24}{}\\
+\wordbox[lrb]{1}{name}
 \end{bytefield}
 \caption{QUERY message payload format}
 \end{center}
@@ -332,7 +333,7 @@ The QUERY Response message contains 3 data fields: the type and name of the devi
 \begin{bytefield}{32}
 \bitheader{0,8,16,24,31}\\
 \bitbox{8}{type} & \bitbox{16}{rate} &\bitbox[lrt]{8}{}\\
-\wordbox[lrb]{1}{name...}
+\wordbox[lrb]{1}{name = 16 bytes}
 \end{bytefield}
 \caption{QUERY Response message payload format}
 \end{center}
@@ -364,7 +365,8 @@ The CONNECT message contains 2 data fields: the rate at which the controller eit
 \begin{center}
 \begin{bytefield}{32}
 \bitheader{0,8,16,24,31}\\
-\bitbox{16}{rate} & \bitbox{16}{name}
+\bitbox{16}{rate} & \bitbox[lrt]{16}{}\\
+\wordbox[lrb]{1}{name =16 bytes}
 \end{bytefield}
 \caption{CONNECT message payload format}
 \end{center}
@@ -399,7 +401,8 @@ The CONNECT ACK message contains 2 data fields: accept, which declares whether o
 \begin{center}
 \begin{bytefield}{32}
 \bitheader{0,8,16,24,31}\\
-\bitbox{8}{accept} & \bitbox{16}{name} & \bitbox{8}{\color{lightgray}\rule{\width}{\height}}
+\bitbox{8}{accept} & \bitbox[lrt]{24}{}\\
+\wordbox[lrb]{1}{name = 16 bytes}
 \end{bytefield}
 \caption{CONNECT ACK message payload format}
 \end{center}
@@ -429,7 +432,8 @@ The RESPONSE message contains 2 data fields: the data being sent, for example a 
 \begin{center}
 \begin{bytefield}{32}
 \bitheader{0,8,16,24,31}\\
-\bitbox{16}{data} & \bitbox{16}{name}
+\bitbox{16}{data} & \bitbox[lrt]{16}{}\\
+\wordbox[lrb]{1}{name = 16 bytes}
 \end{bytefield}
 \caption{RESPONSE message payload format}
 \end{center}
@@ -526,17 +530,14 @@ The xAP system chooses to use a multicast medium to interconnect all devices, wh
 Hence, the need to reduce the use of broadcast is necessary, but due to the distributed architecture its use is still necessary to discover devices. In the proposed protocol a compromise is made, in order to discover devices broadcast queries are used, but every other message in the protocol is unicast. This ensures that devices can still easily join and discover other devices on the network, but without the continual cost of each device receiving every devices data.
 
 % subsubsection selective_unicast_multicast_vs_multicast (end)
+
 \subsubsection{Cloud vs Local} % (fold)
 \label{ssub:cloud_vs_local}
-SmartThings taking cloud first approach, wiring all devices in the cloud, provides user access from anywhere instantly but poses risks to security and creates a single point of failure, not unlikely(list failures of amazon and other cloud), what happens then? knot approach, wire locally and control from anywhere through appropriate abstractions and applications
+SmartThings, unlike the proposed design, chose a cloud-first approach in connecting the different devices on the network together. In comparison the the proposed design it does pose some benefits, such as instant and easy connectivity to other cloud services and making the devices accessible from anywhere with an Internet connection. But as previously discussed, this also poses several risks as well, these include security risks of the data both in transit and storage (who has control and access to the data or control devices, is it being intercepted?) and reliability risks (what happens if the cloud fails? Will all the doors unlock and the sprinklers not stop?). In regards to both risks, there have been various failures in the industry relating to both the security of data,\cite{Playstation}, and the reliance of cloud services / online services \cite{Amazon, Google}. 
+
+Adopting the alternative,  the proposed system uses a local-first approach, which gives user has complete control and access to the data, enables the system to function without Internet connectivity and if wanted can be expanded by by connecting it. This provides the safety and assurance of a local system without compromising the possibility of upgrading it to support the cloud based features.
 
 % subsubsection cloud_vs_local (end)
-
-
-\subsubsection{Reliable vs Unreliable} % (fold)
-\label{ssub:reliable_vs_unreliable}
-TCP/RPC - always provide reliability, can be costly, double the bandwidth but ephemeral data means out of sequence pointless
-% subsubsection reliable_vs_unreliable (end)
 
 \subsubsection{Textual encoded packet vs Integer encoded packet} % (fold)
 \label{ssub:textual_packet_vs_encoded_packet}
@@ -575,5 +576,15 @@ In total, 87 bytes are used to represent a similar array of information to that 
 % subsubsection textual_packet_vs_encoded_packet (end)
 \subsubsection{``Thing'' vs network of ``Things''} % (fold)
 \label{ssub:_thing_vs_network_of_things_}
-Twine, idea of internet of thing, connecting device by itself and then connecting to other services, limited functionality. instead create a local internet of things which link up, providing much richer local experience with possibility to utilise online services etc.
+DRAFT: Twine, idea of internet of thing, connecting device by itself and then connecting to other services, limited functionality. instead create a local internet of things which link up, providing much richer local experience with possibility to utilise online services etc.
 % subsubsection _thing_vs_network_of_things_ (end)
+
+\subsubsection{Reliable vs Unreliable} % (fold)
+\label{ssub:reliable_vs_unreliable}
+TCP/RPC - always provide reliability, can be costly, double the bandwidth but ephemeral data means out of sequence pointless
+% subsubsection reliable_vs_unreliable (end)
+
+\subsubsection{CoAP} % (fold)
+\label{ssub:coap}
+DRAFT: Discuss the similarities and differences between design, RESTful, almost exactly the same device discovery technique but no distinct device types, just a general protocol.
+% subsubsection coap (end)

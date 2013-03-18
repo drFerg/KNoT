@@ -84,13 +84,13 @@ Whilst Contiki is a well developed and established operating system for constrai
 
 \subsubsection{Constrained resources} % (fold)
 \label{ssub:constrained_resources}
-Using the Contiki OS, which provides a significant amount of the standard C libraries that C programmers are familiar with, can provide some initial problems. An example of this is the inclusion of malloc, which in a normal x86 pc environment is very useful to enable run time allocation of data structures. But when used in a constrained environment where RAM is extremely limited, it becomes useless due to the limited heap space and the fragmentation of memory. Because of this it is necessary to use static allocation to ensure memory is allocated correctly, but with this comes another problem. Because statically allocated memory is allocated at compile time, the size of the memory required needs to be known at compile time. When allocating fixed data structures this is not a problem, as the size of the data is known at compile time as well. Whereas, when allocating memory for the packets in the proposed protocol it becomes difficult, this is due to the varying payload lengths. In order to resolve this, the size to allocate for a packet must be the size of the packet header + the size of the largest payload. Doing this ensures that memory is always available for any packet, but at the same time for packets which don't have any payload the overallocation can waste a significant portion of the limited memory.  
+Using the Contiki OS, which provides a significant amount of the standard C libraries that C programmers are familiar with, can provide some initial problems. An example of this is the inclusion of malloc, which in a normal x86 pc environment is very useful to enable run time allocation of data structures. But when used in a constrained environment where RAM is extremely limited, it becomes useless due to the limited heap space and the fragmentation of memory. Because of this, it is necessary to use static allocation to ensure memory is allocated correctly, but with this comes another problem. Because statically allocated memory is allocated at compile time, the size of the memory required needs to be known at compile time as well. When allocating fixed data structures this is not a problem, as the size of the data is already defined and known at compile time. Whereas, when allocating memory for the packets in the proposed protocol it becomes difficult, due to the varying payload lengths. In order to resolve this, the size to allocate for a packet must be the size of the packet header + the size of the largest payload. Doing this ensures that memory is always available for any packet, but at the same time for packets which don't have any payload the overallocation can waste a significant portion of the limited memory.  
 
 % subsubsection constrained_resources (end)
 \subsubsection{IPv4 Broadcast support} % (fold)
 \label{sub:ipv4_broadcast_support}
 After having chosen to use the uIPv4 UDP stack for communication, it was later discovered that the broadcast mechanism was just a stub.
-The uIPv4 stack is implemented on top of the native Rime stack, so all IP packets are routed around using the Rime primitives for messages. Through much investigation it was found that when a broadcast packet is sent, it is given the normal all ones broadcast address, 255.255.255.255, but when the uIP layer is passed the packet to send it detects the destination is outside of the local network and tries to find a gateway to send it over. Instead the address should be recognised as a broadcast destination and then broadcast over the network.
+The uIPv4 stack is implemented on top of the native Rime stack, so all IP packets are routed around using the Rime primitives for messages. Through much investigation it was found that when a broadcast packet is sent, it is given the normal ``all ones'' broadcast address, 255.255.255.255, but when the uIP layer is passed the packet to send, it detects the destination is outside of the local network and tries to find a gateway to send it over. Instead, the address should be recognised as a broadcast destination and then broadcast over the network.
 
 After many attempts at contacting the Contiki developers community, no answer or solution was found; so instead a fix had to be created. As mentioned previously the uIPv4 stack is run over the Rime stack, and as discovered, using only a unicast Rime connection. In order to allow for broadcast packets to be sent, a new broadcast Rime connection needed to be created and correctly set up without breaking the existing code base. Once the broadcast code was in place, the system was tested to ensure it worked correctly and as expected for both unicast and broadcast packets.
 % subsubsection ipv4_broadcast_support (end)
@@ -125,10 +125,14 @@ Throughout the implementation it was absolutely necessary to test the code as of
 
 \begin{figure}[h!]
 \centering
-%\includegraphics[scale=0.5]{implementation/img/cooja.jpg}
+\includegraphics[scale=0.5]{implementation/img/cooja.jpg}
 \caption{Cooja Simulator}
 \label{fig:simulator}
 \end{figure}
+
+To test the implementation, unit tests were performed on each component of the system as it was developed, this was done to ensure that that each component functioned correctly before being integrated into the rest of the system. After which, the system was tested to see if the new component functioned correctly and did not break the existing code base. Using the Cooja simulator made it extremely easy to perform these tests and see how any changes effected the operation, without the need to reprogram each mote individually. 
+
+
 % subsection testing_and_simulation (end)
 
 
