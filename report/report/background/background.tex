@@ -8,7 +8,7 @@ This section describes the concept of the ``Internet of Things'', its slow devel
 % subsection past_present_and_future (end)
 The standard model of how we use computers and the Internet today revolves around the idea of an interconnected network of servers, routers and data centres around which users connect using their personal computers to access, input, manipulate and retrieve data. 
 
-This model heavily relies upon the users to provide the data from which the Internet is powered. Without this data the Internet would be a barren place, with nothing to search for, sell, buy, share, watch, listen to, play, analyse or learn from.
+This model heavily relies upon the users to provide the data by which the Internet is powered. Without this data the Internet would be a barren place, with nothing to search for, sell, buy, share, watch, listen to, play, analyse or learn from.
 Users from all around the world have contributed to make the Internet \textit{the} single biggest resource in the world by snapping photos, capturing videos, writing blogs, creating websites, commenting, discussing, reviewing, buying, selling and inputting data. So much data in fact that the estimated size of the Internet in 2009 was 500 exabytes (that's 500 BILLION gigabytes), of which 70\% was contributed to by users.\cite{Size}   
 
 % INSERT DIAGRAM HERE
@@ -20,7 +20,7 @@ Sadly, at that time the idea progressed little and didn't garner much support.
 
 Fast forward to 2013, the ``Year of the Internet of Things'' as declared by the MIT Technology Review\cite{2013IoT} and observed in the Consumer Electronics Show 2013 (CES) with manufacturers introducing everything from smart fridges to smart weighing scales. Concurrently, low power devices have become increasingly affordable and small enough to embed into other devices, making it much more possible to create a truly autonomous system, either in the home, office or car, wherein the user doesn't have to interact directly with any of the devices but instead just go about daily life, which, in the background, is enhanced by these ubiquitous devices operating together.
 
-With all the possible ``Things'' that can exist, the core functionality in the ``Internet of Things'' can be simply modelled as closed loop system in which a ``Thing'' can sense, process and interact with the real world as well as other devices and services. This system is represented at its simplest by an if statement, \textit{if \textbf{event occurs} then \textbf{do action}}, which provides developers and users alike an easy to understand yet powerful model to create rules for autonomous interaction.i.e.,
+With all the possible ``Things'' that can exist, the core functionality in the ``Internet of Things'' can be simply modelled as a closed loop system in which a ``Thing'' can sense, process and interact with the real world as well as other devices and services. This system is represented at its simplest by an if statement, \textit{if \textbf{event occurs} then \textbf{do action}}, which provides developers and users alike an easy to understand yet powerful model to create rules for autonomous interaction.i.e.,
 \begin{center}
 	\textit{if \textbf{temp \textless  20C} then \textbf{Turn ON heating}}
 
@@ -308,7 +308,7 @@ As mentioned previously, the protocol also supports service discovery, to allow 
 
 To combat one of the problems normally associated with constrained devices, power, CoAP supports the ability for nodes to subscribe to one another. This means that instead of a node being repeatedly polled for any changes, the node instead notifies all subscribed nodes when the resource of interest has changed. This reduces the amount of packets received by the receiving node, in turn helping to reduce its power consumption.
 
-Lastly, because CoAP is so similar to HTTP in the commands that it uses (GET, PUT, DELETE, etc.), it makes it simple translate messages between protocols, and therefore allow these constrained devices to send and receive data to and from the WWW.\cite{IETF_COAP_HTTP} 
+Lastly, because CoAP is so similar to HTTP in the commands that it uses (GET, PUT, DELETE, etc.), it makes it simple to translate messages between protocols, and therefore allow these constrained devices to send and receive data to and from the WWW.\cite{IETF_COAP_HTTP} 
 
 At the time of writing, the protocol is still being developed and finalised, although there have been a variety of implementations (of some degree) \cite{COAP_1}\cite{COAP_2}\cite{COAP_3}, it's yet to see if the protocol will be fully adopted both commercially and in the open source community.
 
@@ -321,7 +321,7 @@ Launched in 2012, the SmartThings platform aims to allow the user to turn any or
 
 Whilst providing easy to set-up pre-made SmartThings, the developer also provides the open-source Arduino kits to let hobbyists create their own SmartThings utilising the already well supported Arduino platform.
 
-Currently, there is no information on how the underlying protocol for connecting the SmartThings to the hub works, but at the time of writing, the current implementation uses a ``cloud first'' approach. This means that rather than hub wiring all devices together based on the rules and schedules set up by the user, all the intelligence of the network is being handled in the cloud. This brings about the problem of Internet connectivity, with two points of failure, either the user or the cloud. From the user's standpoint, an Internet connection might not be available where the hub is located, or the user could have a faulty, slow or non-permanent connection, which renders all the SmartThings devices into dumb devices. In contrast to this, because of the reliance on the cloud, if the cloud service provider experiences downtime then all SmartThings users devices become dumb devices. In cases where these devices are used for security and safety, dire consequences could result.
+Currently, there is no information on how the underlying protocol for connecting the SmartThings to the hub works, but at the time of writing, the current implementation uses a ``cloud first'' approach. This means that rather than the hub wiring all devices together based on the rules and schedules set up by the user, all the intelligence of the network is being handled in the cloud. This brings about the problem of Internet connectivity, with two points of failure, either the user or the cloud. From the user's standpoint, an Internet connection might not be available where the hub is located, or the user could have a faulty, slow or non-permanent connection, which renders all the SmartThings devices into dumb devices. In contrast to this, because of the reliance on the cloud, if the cloud service provider experiences downtime then all SmartThings users devices become dumb devices. In cases where these devices are used for security and safety, dire consequences could result.
   
 
 
