@@ -73,41 +73,7 @@ A level 4 project which explores the current use of protocols for the Internet o
 
 \chapter{Implementation} % (fold)
 \label{cha:implementation}
-% Describe the problems encountered in the implementation of arduino and then contiki
-
-\section{Arduino} % (fold)
-\label{sec:arduino}
-Whilst given its user base and ideology makes it a great platform to build for, the immediate lack of compatible hardware and lack of certain expectations leaves it difficult to develop an efficient implementation of the system.
-
-No interrupts
-% section arduino (end)
-
-
-\section{Telos B Motes and Contiki} % (fold)
-\label{sec:contiki}
-Great, well defined and established hardware.
-Contiki is a comprehensive and well devised OS which provides a simple learning curve for a C programmer with only some event magic thrown in.
-
-\subsection{Choosing the transport layer:IP4 vs IPv6 vs Rime} % (fold)
-\label{sub:ip4_vs_ipv6_vs_rime}
-
-% subsection ip4_vs_ipv6_vs_rime (end)
-
-\subsection{Problems Encountered} % (fold)
-\label{sub:problems_encountered}
-
-\subsubsection{Event driven system} % (fold)
-\label{sub:event_driven_system}
-
-% subsubsection event_driven_system (end)
-
-\subsubsection{IPv4 Broadcast support} % (fold)
-\label{sub:ipv4_broadcast_support}
-
-% subsubsection ipv4_broadcast_support (end)
-% subsection problems_encountered (end)
-
-% section contiki (end)
+\input{implementation/implementation.tex}
 % chapter implementation (end)
 %==============================================================================
 
@@ -117,7 +83,7 @@ Contiki is a comprehensive and well devised OS which provides a simple learning 
 
 \chapter{Evaluation} % (fold)
 \label{cha:evaluation}
-
+\input{evaluation/evaluation.tex}
 % chapter evaluation (end)
 
 %==============================================================================
@@ -128,7 +94,7 @@ Contiki is a comprehensive and well devised OS which provides a simple learning 
 
 \chapter{Conclusion} % (fold)
 \label{cha:conclusion}
-
+\input{conclusion/conclusion.tex}
 
 % chapter conclusion (end)
 %==============================================================================
@@ -140,7 +106,21 @@ Contiki is a comprehensive and well devised OS which provides a simple learning 
 %              %
 %%%%%%%%%%%%%%%%
 \begin{appendices}
-
+\begin{verbatim}
+xap-header
+{
+v=12
+hop=1
+uid=FF123400
+class=xap-temp.notification
+source=ACME.thermostat.lounge
+}
+temp.current
+{
+temp=25
+units=C
+}
+\end{verbatim}
 
 \end{appendices}
 

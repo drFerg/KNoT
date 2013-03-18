@@ -11,13 +11,13 @@
 
 
 % Design of system independent of hardware implementation.
-This chapter will discuss and illustrate the design of the new protocol, independent of any hardware and software platforms, as set out by the requirements gathered in the previous chapter. Towards the end of the chapter, some of the key design choices for this protocol will be compared to decisions made by other pre-existing protocols, to highlight and discuss their differences and/or similarities.
+This chapter describes and illustrates the design of the new protocol, independent of any hardware and software platforms, as set out by the requirements gathered in the previous chapter. This chapter will discuss the different roles of devices to be used, the fundamental features necessary to meet the requirements, the types and flow of messages between the different roles, the protocol data unit and command formats defined and finally some of the key design choices for this protocol will be compared to decisions made by other pre-existing protocols, to highlight and discuss their differences and/or similarities.
 
 \section{The 3 device roles} % (fold)
 \label{sec:the_3_classifications_of_devices}
 In order to understand and design the system correctly the three basic device roles in the ``Internet of Things'' must be explicitly defined; these roles will ultimately dictate the core communication model between devices in the network. However, whilst these roles are distinct in nature, a single device may take on one or more roles, i.e., a light sensing its state, and offering a command to turn it on/off.
 
-By separating out functionality into distinct roles, it enables each to device to offer individual, context-less services which can be offered to many different devices, to create a powerful, rich and adaptable ``Internet of Things''.
+By separating out functionality into distinct roles, it enables each to device to offer individual, context-less services which can be offered to many different devices and combined to create a powerful, rich and adaptable ``Internet of Things''.
 
 \subsection{Sensor} % (fold)
 \label{sub:sensor}
@@ -56,13 +56,32 @@ This section will discuss the design of the protocol based on the formal require
 \label{sub:features}
 The protocol is designed to fulfil several key requirements:
 \begin{itemize}
-	\item Minimalistic protocol, reliability for critical data, no reliability for non-critical data
+	\item Minimalistic protocol, reliability for critical data only, no fragmenting
 	\item Minimal header overhead, reduce transmission and receiving cost of data
-	\item Device discovery, use of broadcast to discover devices
+	\item Distributed device discovery, use of broadcast to discover devices
 	\item Reliability, reliable set-up of connections and integrity of data
 	\item Fault tolerant, liveness checks and no central point of failure
 \end{itemize}
 % subsection features (end)
+
+
+\subsection{Transport Layer}
+Due to the requirements of the protocol, allowing it to run on a variety of networks, and reducing necessary transmissions to save power, the design of the protocol is such that it only requires packets to be sent over a best effort link with no reliability guarantees; instead the protocol itself handles any problems with corrupt data or dropped packets, as discussed later in this section,\ref{sub:selective_reliability}, \ref{sub:data_integrity}. 
+
+The one significant requirement of the transport layer is that it must provide the capability to send both broadcast and unicast packets, due to the device discovery requirement.
+Therefore, a simple datagram transport layer can be used to provide the required functionality, such as the IPv4/6 User Datagram Protocol (UDP) or Contiki Rime stack\cite{RimeStack}.
+
+\subsection{Multiplexing devices, channels}
+In order to enable devices to communicate with more than one other device, a method for multiplexing a device's resources must be created. Within this system, each connection between two devices is called a channel, and each device can serve multiple channels, depending on its own resources, i.e., the more resources available, the more channels a device can serve, the more devices a single device can connect to. 
+
+Each device will contain at least two channels, one home channel (default) and one or more ephemeral channels. The purpose of the home channel is to enable devices to have a well known location they can be contacted at, this will be used for device discovery and to request to start a connection on one of the ephemeral channels.
+
+In order to uniquely identify each connection, a triple of identifiers is required:
+\begin{itemize}
+	\item transport layer address of each host the system is running on (IP address or Rime address).
+	\item transport layer multiplexing identifier associated with the running system process (UDP port or Rime channel).
+	\item a multiplexing identifier for each connection to a device, called a channel.
+\end{itemize}
 
 \subsection{Selective Multicast/Unicast} % (fold)
 \label{sub:selective_multicast_unicast}
@@ -71,6 +90,7 @@ The use of multicast in a network can be extremely expensive, both in terms of t
 In the case of device discovery, multicasting is required due to the distributed nature of the system, where no central name server exists and therefore the network needs to be queried in order to locate devices. In order for this to work, all devices on the network need to listen on a well known address (a UDP port), to which the discoverer can send multicast discovery packets to.
 Once a device receives a multicast discovery packet, it can decide whether or not to reply, based on if the query information, device type or name, matches its own. If it does match, then it replies using a unicast message to notify the sender of an available device matching its request. Because filtering is used at the receiving end, this further reduces the strain on the network resources, by stopping unnecessary packets from being transmitted.   
 % subsection selective_multicast_unicast (end)
+
 \subsection{Selective Reliability} % (fold)
 \label{sub:selective_reliability}
 In an effort to both reduce the cost of data transmission for devices and bandwidth consumption on the network, reliability will only be ensured for critical data transmissions, including connection set-up, tear-down and actuator commands.
@@ -87,40 +107,128 @@ Whereas, when sending data such as sensor readings the reliability of it arrivin
 In order to ensure the connections between devices are kept alive, the liveness of a connection needs to be kept track of, this is done differently depending on the device.
 \begin{itemize}
 	\item [Sensor -] Because sensors transmit data back to a controller at a set frequency, the controller can easily keep track of the liveness by simply monitoring incoming packets. If an arbitrary number of packets is not received after a multiple of the frequency period, then a time-out will occur and the connection can then be probed using a PING message to check if the packet loss is transient. If no responses are received in the form of PACKs, then the connection can be closed gracefully. 
-	\item [Actuator -] Because actuators just listen on the connection for any commands from a controller, it becomes necessary to regularly check at an arbitrary frequency that the connection is still alive using PINGs. Without PINGs, if a command was sent, it would initially be difficult to tell whether the packet was lost or the connection is dead. Instead, keeping track of the actuators liveness 
+	\item [Actuator -] Because actuators just listen on the connection for any commands from a controller, it becomes necessary to regularly check at an arbitrary frequency that the connection is still alive using PINGs. Without PINGs, if a command was sent, it would initially be difficult to tell whether the packet was lost or the connection is dead. By using PINGs, the status of the connection to the actuator can be regularly monitored, and if necessary, the associated channel closed when the actuator is persistently unresponsive.
 	\item [Controller -] Because controllers actively keep track of actuators, actuators therefore implicitly know that the controller is still alive. However, this is not the case for sensors, which are only liveness checked passively unless there is packet loss. Because of this, the sensor must therefore regularly send PINGs at an arbitrary frequency to check to see if the controller is still alive to receive the packets of data being transmitted. If this was not checked, then the sensor would be not only wasting its own resources by needlessly sending data, but it would also consume the resources of other devices if this was deployed on a low-power multi-hop mesh network, typical for ``Internet of Things'' networks.
 \end{itemize}
 
 In order to ensure the network does not become congested by the retransmission of PINGs within a short period of time, an exponential back-off will be used. This will ensure that if a device were to disappear of the network, the rest of the network would not suffer. In a large network where multiple devices could fail at once, perhaps due to a common link, the network could become heavily congested if exponential back-off were not used.
+
+If after an arbitrary number of PINGs, a PING ACK is not received, the connection is deemed dead and the associated channel closed.
 % subsection liveness_response (end)
 
 \subsection{Data integrity}
-Whilst most data sent in the ``Internet of Things'' network does not need to be sent reliably, due to it's ephemeral nature, it is important however that when it arrives it is consistent and accurate. Therefore, the use of a mechanism to ensure the integrity of the data is necessary, such as a Cyclic Redundancy Check, CRC.  
+\label{sub:data_integrity}
+Whilst most data sent in the ``Internet of Things'' network does not need to be sent reliably, due to it's ephemeral nature, it is important however that when it arrives it is consistent and accurate; if sensor readings were to become corrupt in transit, then unintended actions could result from inaccurate data. For example, a temperature sensor transmits the current temperature to a controller, which becomes corrupt in transit, as a result of the corrupt sensor reading, the controller believes the current temperature is too hot and the thermostat is commanded to turn off, when in fact the temperature was at an acceptable level.
+
+Therefore, the use of a mechanism to ensure the integrity of the data is necessary, such as a Cyclic Redundancy Check, CRC. In this protocol a 16bit CRC will be used to ensure that when data is sent from one device to another, that it is possible to discern whether or not it is accurate and consistent. If the integrity of the data is found to be compromised, then the packet will simply be dropped. If the packet was sent as reliable data (connection request or command), a timeout will occur in the sender device expecting an acknowledgement, and the packet will be resent. 
 
 
-\subsection{Sequence diagrams} % (fold)
+
+\subsection{Flow of messages} % (fold)
 \label{sub:message_passing}
+Based upon the use cases described in the Requirements section, a set of messages are described and demonstrated in the sequence diagram contained in figure \ref{fig:sequence_diagram}, which illustrates the flow of messages between the different roles of devices within the network.
 
+\subsubsection{Device discovery -- Controller $\rightarrow$ Sensors/Acutators} % (fold)
+\label{ssub:subsubsection_name}
+In order for a controller to locate devices on the network, a device query must be broadcast across the network; any devices which match the request and have resources available can reply with an acknowledgement, otherwise they ignore the message, signalling an implicit no.
+If a controller receives no responses from the initial query, it could be a result of either, no devices on the network matching the request, or the packet was lost/corrupted on the network. Because it's not possible to distinguish between an implicit no and a network failure, it may be necessary to retransmit a query multiple times, perhaps with an exponential back-off, so not to congest the network whilst still achieving a confident scan of the available devices on the network.
+
+% subsubsection subsubsection_name (end)
+
+\subsubsection{Set up channel -- Controller $\rightarrow$ Sensors/Actuators} % (fold)
+\label{ssub:set_up_channel}
+In order to ensure that a channel is fully set up, it becomes necessary to introduce reliability, via acknowledgement messages. Similar to TCP, a three-way handshake is used to ensure the channel is fully opened on both sides.
+
+\begin{itemize}
+ 	\item This covers most scenarios and allows for devices to recover from dropped packets during the exchange. For example, device A initiates setting up a channel,
+ 	\begin{itemize}
+ 		\item if the initial message is dropped, an acknowledgement timeout occurs on A, A then resends message.
+ 		\item if B's ACK is dropped, an acknowledgement timeout occurs on A, A then resends the message with the same sequence number, when B receives the initial message again, its ACK message must have been dropped, so B resends the ACK message.
+ 		\item if A's ACK message is dropped, an acknowledgement timeout occurs on B, then B resends the second message with the same sequence number, when A receives B's ACK message again, its ACK message must have been dropped, A then resends the ACK message.
+ 		\item if A receives no more ACK messages from B, it knows the channel has been fully set up.
+ 	\end{itemize}
+ \end{itemize} 
+% subsubsection set_up_channel (end)
+
+\subsubsection{Send sensor data -- Sensor $\rightarrow$ Controller} % (fold)
+\label{ssub:send_sensor_data}
+Once a channel has been set up to a controller, a sensor then needs to send its sensor readings at the previously agreed upon frequency. 
+Due to the high frequency requirements and transient nature of the data, using reliability becomes an expensive overhead without providing much benefit, i.e., consuming twice the bandwidth, and if a packet is dropped and resent out of sequence it becomes useless in a real-time environment, like the ``Internet of Things''.  
+Without reliability, packets may be dropped, but because of the timeliness of the data it will usually go unnoticed to the user. For example, a dropped packet won't have noticeable effect on a real-time temperature display with a frequency granularity of 5 seconds.
+% subsubsection send_sensor_data (end)
+
+\subsubsection{Send command -- Controller $\rightarrow$ Actuator} % (fold)
+\label{ssub:send_command}
+Once a channel has been set up to an actuator, a controller needs to be able to send it commands to carry out. To ensure that an action is carried out, it becomes necessary to acknowledge each command. By using acknowledgements in combination with message sequence numbers, it is possible to ensure that a command is carried out exactly once per request.
+
+\begin{itemize}
+	\item The following cases are covered via the use of acknowledgements and sequence numbers
+	\begin{itemize}
+		\item if command message is dropped, an acknowledgement timeout occurs on the controller, controller then resends command.
+		\item if ACK message is dropped, an acknowledgement timeout occurs on the controller, controller then resends command with the same sequence number, when the actuator receives repeat commmand, it ignores command and resends ACK message.
+	\end{itemize}
+\end{itemize}
+
+% subsubsection send_command (end)
+
+\subsubsection{Ping -- All roles} % (fold)
+\label{ssub:ping}
+Once a channel has been set up between two devices, it is possible for one to disappear without closing the channel gracefully, which could be due to various reasons e.g., loss of battery power, failed network link, device failure, etc. Therefore it becomes necessary to test the channel and see if the other participant is still alive, terminating it and cleaning up the channel if not.
+
+Other cases for its use in this protocol are the following: for the controller to check that the channel to the actuator is still alive, and for the sensor to check that the controller is still alive to receive its data, ensuring network resources are being wasted sending data to a disconnected controller.
+
+To test the channel a PING is sent from one device to the other, with the expectation of receiving a PING ACK to signify the channel is alive.
+% subsubsection ping (end)
+
+\subsubsection{Close channel -- All roles} % (fold)
+\label{ssub:close_channel}
+Once a channel has been set up between two devices, one of the devices may decide at a later time that it either no longer needs the services provide by the channel, or is unable to support it, perhaps due to limited power. Therefore, it becomes necessary to close the channel gracefully, ensuring the both ends understand the channel is closed and all associated state destroyed. In order to ensure the channel is closed on both sides correctly, an acknowledgement must be used to signify the other side received the command.
+
+\begin{itemize}
+	\item The following cases are covered via the use of acknowledgements between devices A and B:
+	\begin{itemize}
+		\item if the close channel message sent from A is dropped, an acknowledgement timeout occurs on A, A then resends the message.
+		\item if B's ACK message is dropped, an acknowledgement timeout occurs on A, A resends the close channel message, when B receives the message it checks for any channel associated to A and closes it (if not done already), then resends the ACK message to A.
+	\end{itemize}
+\end{itemize}
+
+
+% subsubsection close_channel (end)
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=0.6]{design/img/sequence_diagram.1}
+\caption{Controller - Sensor message diagram}
+\label{fig:sequence_diagram}
+\end{figure}
 % subsection message_passing (end)
+
+
+
+\newpage
 \subsection{Protocol state machines} % (fold)
 \label{sub:states}
+With the use of the message sequence diagrams to help understand the flow of messages within the network, the sequence of states each connection within a role can transition between can be discerned, and is shown in the following figures.
+
+Within these diagrams, a number of message types are show as labels on the transitions between the various states within each system, these message types are later described in the next section, \ref{sec:protocol_data_unit}
 
 \subsubsection{Sensor} % (fold)
 \label{ssub:sensor}
 \begin{figure}[h!]
 \centering
-\includegraphics[scale=0.7]{design/img/sensor_state.1}
+\includegraphics[scale=0.65]{design/img/sensor_state.1}
 \caption{Sensor life cycle diagram}
 \label{fig:sensorstate}
 \end{figure}
+
+
 % subsubsection sensor (end)
 \subsubsection{Actuator} % (fold)
 \label{ssub:actuator}
 \begin{figure}[h!]
 \centering
-\includegraphics[scale=0.7]{design/img/actuator_state.1}
+\includegraphics[scale=0.65]{design/img/actuator_state.1}
 \caption{Actuator life cycle diagram}
-\label{fig:controllerstate}
+\label{fig:actuatorstate}
 \end{figure}
 % subsubsection actuator (end)
 
@@ -128,7 +236,7 @@ Whilst most data sent in the ``Internet of Things'' network does not need to be 
 \label{ssub:controller}
 \begin{figure}[h!]
 \centering
-\includegraphics[scale=0.7]{design/img/controller_state.1}
+\includegraphics[scale=0.65]{design/img/controller_state.1}
 \caption{Controller life cycle diagram}
 \label{fig:controllerstate}
 \end{figure}
@@ -141,127 +249,342 @@ Whilst most data sent in the ``Internet of Things'' network does not need to be 
 
 
 
-\newpage
+
 \section{Protocol Data Unit} % (fold)
-\label{sub:protocol_data_unit}
-This section will discuss and illustrate the design of the Protocol Data Unit (PDU), including the various commands and their specific payloads. 
+\label{sec:protocol_data_unit}
+This section will discuss and illustrate the design of the Protocol Data Unit (PDU), starting with the protocol header format and followed by the various message types and their respective payload formats. Where appropriate, for each message type, a short pseudo code analysis will be discussed to illustrate the various scenarios that could occur in the relevant state machine, as a result of receiving the respective messages.
 
+\subsection{Protocol Header} % (fold)
+\label{sub:protocol_header}
+The design of the protocol header tries to minimise the overall size by only containing a minimal set of non-textual data fields, with the purpose of reducing the power consumption for transmitting and receiving packets. The included fields are essential for identifying channels, distinguishing message types and ensuring the integrity of the data transmitted.
 
+The protocol header contains 6 data fields:
+\vspace{-5mm}  
+\begin{itemize}
+	\item source and destination channel fields to identify the connection (used with lower layer addressing to uniquely identify each connection),
+	\item a sequence number field to detect duplicates and out of order packets,
+	\item a command field to distinguish what type the payload is,
+	\item a payload length field which contains the size of the payload, maximum size = 32 bytes
+	\item and a checksum to detect any errors within the whole packet that might have occurred during in transmission.  
+\end{itemize}    
+% subsection protocol_header (end)
+\begin{figure}[h!]
 \begin{center}
 \begin{bytefield}{32}
 \bitheader{0,8,16,24,31}\\
-\bitbox{8}{src channel} & \bitbox{8}{dst channel} & \bitbox{8}{seqno} & \bitbox{8}{cmd} \\
-\bitbox{16}{len} & \bitbox{16}{packet checksum} \\
+\bitbox{8}{Src channel} & \bitbox{8}{Dest channel} & \bitbox{8}{SeqNo} & \bitbox{8}{Command} \\
+\bitbox{16}{Payload length} & \bitbox{16}{Checksum} \\
 \wordbox{2}{Command specific payload}
 \end{bytefield}
+\caption{Protocol header format}
 \end{center}
+\end{figure}
 % subsection protocol_data_unit (end)
 
-\subsection{Payload Formats} % (fold)
-\label{sub:payload_formats}
+\section{Payload Message Types and Formats} % (fold)
+\label{sec:payload_formats}
+This section will discuss the various payload message types which can be sent, and the associated actions taken upon receiving a message.
+For each message type the payload format is described and illustrated.
+\subsection{QUERY} % (fold)
+\label{sub:query}
+Before a controller can connect to any devices, it must first try to discover any matching devices on the local network. To do this, the device's home channel sends a QUERY message to the home channel on every other device in the network.
 
-\subsubsection{Query} % (fold)
-\label{ssub:query}
+\begin{itemize}
+	\item []The receiving state machine does the following on receipt of a QUERY message:
+	\begin{itemize}
+		\item if the destined channel is the home channel, it checks the type field, 
+		\begin{itemize}
+			\item if it matches its own type then transmits a unicast QUERY Response message back to the sender.
+			\item if the type does not match, message is dropped and device does not respond.
+		\end{itemize}
+		\item if the destined channel is not the home channel, the message is dropped as the requesting channel is confused.
+	\end{itemize}
+\end{itemize}
+
+The QUERY message contains two data fields: the type of device the controller is searching for, light sensor, temperature sensor, informational display or otherwise, and the name of the device sending the QUERY message. This packet is sent as a broadcast transmission to all devices on the network.
+
+\begin{figure}[h!]
 \begin{center}
 \begin{bytefield}{32}
 \bitheader{0,8,16,24,31}\\
-\bitbox{8}{type} & \bitbox{24}{name...}
+\bitbox{8}{type} & \bitbox[lrt]{24}{}\\
+\wordbox[lrb]{1}{name}
 \end{bytefield}
+\caption{QUERY message payload format}
 \end{center}
-% subsubsection query (end)
+\end{figure}
+% subsection query (end)
 
-\subsubsection{Query Response} % (fold)
-\label{ssub:query_response}
+\subsection{QUERY Response} % (fold)
+\label{sub:query_response}
+After a device receives a QUERY message, it can decide whether or not to reply to it, based on a type match and if there are resources resources, if so it replies with the QUERY response message. 
+
+\begin{itemize}
+	\item []The receiving state machine does the following on receipt of a QUERY Response message:
+	\begin{itemize}
+		\item if destined for the home channel, it accepts all messages and passes them up to any application on top.
+		\item if not destined for the home channel, then the message is dropped as the requesting channel is confused.
+	\end{itemize}
+\end{itemize}		
+		
+The QUERY Response message contains 3 data fields: the type and name of the device which is responding and the rate, which either indicates the default rate that a sensor transmits readings at, or the rate at which an actuator will expect PING messages from a connected controller to confirm the connection is still alive.
+\begin{figure}[h!]
 \begin{center}
 \begin{bytefield}{32}
 \bitheader{0,8,16,24,31}\\
 \bitbox{8}{type} & \bitbox{16}{rate} &\bitbox[lrt]{8}{}\\
-\wordbox[lrb]{1}{name...}
+\wordbox[lrb]{1}{name = 16 bytes}
 \end{bytefield}
+\caption{QUERY Response message payload format}
 \end{center}
-% subsubsection query_response (end)
+\end{figure}
+% subsection query_response (end)
 
-\subsubsection{Connect} % (fold)
-\label{ssub:connect}
+\subsection{CONNECT} % (fold)
+\label{sub:connect}
+Once a device has been located, either a priori or through querying, a controller needs to send a CONNECT message to start the process of creating a channel with the desired device. As shown in the message sequence diagrams, this uses a three-way handshake, of which this is the initial message. 
+
+\begin{itemize}
+	\item []The receiving state machine does the following on receipt of a CONNECT message:
+	\begin{itemize}
+		\item if destined for the home channel, and if it does have a channel previously allocated for requesting channel, it checks if the rate is compatible with its own,
+		\begin{itemize}
+			\item if compatible, it creates a new channel for this connection, sets it to the CONNECT sent state and responds with an accepting CONNECT ACK from the new channel.
+			\item if not, respond with a declining CONNECT ACK.
+		\end{itemize}
+		\item if it has already allocated a channel for the requesting device and is in the CONNECT sent state, then the CONNECT ACK must have been lost, CONNECT ACK is resent.
+		\item if it has allocated a channel for the requesting channel and is in the CONNECTED state, then the requesting device state machine is confused.
+		\item if not destined for the home channel, then the requesting channel state machine is confused.
+	\end{itemize}
+\end{itemize}	
+
+
+The CONNECT message contains 2 data fields: the rate at which the controller either wants to receive data readings from sensors, or the rate at which it will PING actuators, and the name of the controller.
+
+\begin{figure}[h!]
 \begin{center}
 \begin{bytefield}{32}
 \bitheader{0,8,16,24,31}\\
-\bitbox{16}{rate} & \bitbox{16}{name}
+\bitbox{16}{rate} & \bitbox[lrt]{16}{}\\
+\wordbox[lrb]{1}{name =16 bytes}
 \end{bytefield}
+\caption{CONNECT message payload format}
 \end{center}
-% subsubsection connect (end)
+\end{figure}
+% subsection connect (end)
 
-\subsubsection{Connect ACK} % (fold)
-\label{ssub:connect_ack}
+\subsection{CONNECT ACK} % (fold)
+\label{sub:connect_ack}
+Once a device receives a CONNECT or CONNECT ACK message, unlike when receiving a QUERY message, it must respond with the second or third part of the three-way handshake with either a positive or negative acknowledgement in order to ensure the connection has been set-up fully. When responding to a CONNECT or CONNECT ACK message, the device can either accept the connection or decline it, which could be based on device being unable to match the demands from the controller or due to a lack of available resources needed to support the connection.
+
+\begin{itemize}
+	\item []The receiving state machine does the following on receipt of a CONNECT ACK message:
+	\begin{itemize}
+		\item if destined for an ephemeral channel which is in the CONNECT sent state,
+		\begin{itemize}
+		 	\item check if the connection has been accepted, if so reply with another CONNECT ACK.
+		 	\item otherwise, close the newly opened channel.
+		\end{itemize} 
+		\item if destined for an ephemeral channel which is in the CONNECT ACK sent state,
+		\begin{itemize}
+		  	\item check the accept field to confirm the connection has been fully accepted, if so move to the CONNECTED state
+		  	\item otherwise, close the newly opened channel.
+		\end{itemize} 
+		\item if destined for an ephemeral channel which is in the CONNECTED state, third handshake (CONNECT ACK) must have been lost, resend CONNECT ACK.
+		\item if destined for an ephemeral channel which has not been allocated or does not exist, requesting channel must be confused.
+		\item if destined for home channel, requesting channel is confused.
+	\end{itemize}
+\end{itemize}
+The CONNECT ACK message contains 2 data fields: accept, which declares whether or not the recipient accepts to create a channel, and the name of the device sending the message.
+
+\begin{figure}[h!]
 \begin{center}
 \begin{bytefield}{32}
 \bitheader{0,8,16,24,31}\\
-\bitbox{8}{accept} & \bitbox{16}{name} & \bitbox{8}{\color{lightgray}\rule{\width}{\height}}
+\bitbox{8}{accept} & \bitbox[lrt]{24}{}\\
+\wordbox[lrb]{1}{name = 16 bytes}
 \end{bytefield}
+\caption{CONNECT ACK message payload format}
 \end{center}
+\end{figure}
 % subsubsection connect_ack (end)
 
-\subsubsection{Response} % (fold)
-\label{ssub:response}
+\subsection{RESPONSE} % (fold)
+\label{sub:response}
+Once a channel has been set up and is in the connected state, the sensor connected to the channel can then send RESPONSE messages containing its sensor readings at the previously agreed upon rate.
+
+\begin{itemize}
+	\item []The receiving state machine does the following on receipt of a RESPONSE message:
+	\begin{itemize}
+		\item if destined for an ephemeral channel which is associated with the sender channel and in the CONNECTED state
+		\begin{itemize}
+			\item accept the data and pass to application on top
+		\end{itemize}
+		\item if destined for an ephemeral channel which is not associated with the sender channel, then sender is confused.
+		\item if destined for home channel, then sender is confused.
+	\end{itemize}
+\end{itemize}
+
+
+The RESPONSE message contains 2 data fields: the data being sent, for example a temperature reading or a light reading, and the name of the sensor. 
+
+\begin{figure}[h!]
 \begin{center}
 \begin{bytefield}{32}
 \bitheader{0,8,16,24,31}\\
-\bitbox{16}{data} & \bitbox{16}{name}
+\bitbox{16}{data} & \bitbox[lrt]{16}{}\\
+\wordbox[lrb]{1}{name = 16 bytes}
 \end{bytefield}
+\caption{RESPONSE message payload format}
 \end{center}
-% subsubsection response (end)
+\end{figure}
+% subsection response (end)
 
-\subsubsection{Ping} % (fold)
-\label{ssub:ping}
+\subsection{PING} % (fold)
+\label{sub:ping}
+Once a connection has been made between two devices, a channel is created within each device to handle this connection. Due to the nature of devices, especially those on wireless networks or battery powered, devices can disappear off the network without gracefully closing the connection. If this occurs, then the connected devices must be able to detect if the connection is still alive, if not then clean up after it. To do this PING and PING ACKs are used to create a failure detector.
 
-% subsubsection ping (end)
+\begin{itemize}
+	\item []The receiving state machine does the following on receipt of a PING message:
+	\begin{itemize}
+		\item if destined for an ephemeral channel which is associated with the PINGing channel then respond with a PING ACK
+		\item if destined for an ephemeral channel which is not associated with the PINGing channel, then drop message as PINGing channel is confused.
+		\item if destined for the home channel, drop packet as PINGing channel is confused.
+	\end{itemize}
+\end{itemize}
 
-\subsubsection{Ping ACK} % (fold)
-\label{ssub:ping_ack}
+These is no payload specific data for the PING message.
+% subsection ping (end)
 
-% subsubsection ping_ack (end)
+\subsection{PING ACK} % (fold)
+\label{sub:ping_ack}
+The PING ACK is the response to the PING message for use in detecting failures in the network.
 
-\subsubsection{Disconnect} % (fold)
-\label{ssub:disconnect}
+\begin{itemize}
+	\item []The receiving state machine does the following on receipt of a PING ACK message:
+	\begin{itemize}
+		\item if destined for an ephemeral channel which is associated with the responding channel then reset the PING timeout as well as the deletion timeout, to stop any further PINGs and ensure the channel is not deleted. 
+		\item if destined for an ephemeral channel which is not associated with the responding channel, drop the message as the responding channel is confused.
+		\item if destined for the home channel, drop packet as responding channel is confused.
+	\end{itemize}
+\end{itemize}
 
-% subsubsection disconnect (end)
+There is no payload specific data for the PING ACK message.
+% subsection ping_ack (end)
 
-\subsubsection{Disconnect ACK} % (fold)
-\label{ssub:disconnect_ack}
+\subsection{DISCONNECT} % (fold)
+\label{sub:disconnect}
+When a device has already formed a connection to another device and wishes to disconnect, perhaps due to either power concerns, the device is no longer needed or otherwise, a method for gracefully disconnecting the two devices and cleaning up the channels is necessary.
 
-% subsubsection disconnect_ack (end)
-% subsection payload_formats (end)
+ \begin{itemize}
+	\item []The receiving state machine does the following on receipt of a DISCONNECT message:
+	\begin{itemize}
+		\item always send the DISCONNECT ACK message back to the sender (otherwise ignoring it will likely cause another to be sent).
+		\item if the destined channel is an ephemeral channel which is associated with the DISCONNECTing channel, then close the channel.
+		\item otherwise drop message. 
+	\end{itemize}
+\end{itemize}
+
+There is no payload specific data for the DISCONNECT message.
+% subsection disconnect (end)
+
+\subsection{DISCONNECT ACK} % (fold)
+\label{sub:disconnect_ack}
+The DISCONNECT ACK is the response to the DISCONNECT message used to disconnect two devices gracefully.
+
+\begin{itemize}
+	\item []The receiving state machine does the following on receipt of a DISCONNECT ACK message:
+	\begin{itemize}
+		\item if destined for an ephemeral channel which is associated with the responding channel, then close the channel.
+		\item if destined for an ephemeral channel which is not associated with the responding channel, drop the message as the responding channel is confused. 
+		\item if destined for the home channel, drop the message as the responding channel is confused. 
+	\end{itemize}
+\end{itemize}
+
+There is no payload specific data for the DISCONNECT message.
+% subsection disconnect_ack (end)
+% section payload_formats (end)
 
 
 % section protocol_design (end)
-
-
 
 \section{Comparisons to other systems}
 This section will compare and contrast some of the key design choices of this new system with the design of other pre-existing protocols and systems. 
 
 \subsubsection{Distributed vs Centralised} % (fold)
 \label{ssub:distributed_vs_centralised}
+One of the fundamental design decisions in creating the protocol, was to create a distributed system, which would relieve the system of a single point of failure, but in turn increase the complexity in discovering new devices. In contrast to this, the Java Messaging System (JMS) adopts a centralised approach, using a central name server to discover and locate devices on the network. Whilst JMS is not directly targeted towards ``Internet of Things'' networks, it does provide adequate abstractions that could be used in an ``Internet of Things'' network, such as the Subscribe - Publish model.
+
+Because of the centralised name server, which is known a priori, it becomes very simple to join the network, by just querying the server for any devices or services that it is interested in.  To contact the server it only requires a single unicast message, in contrast to the broadcast message sent to every device on the network for the proposed distributed system. 
+
+However, the centralised approach assumes that the network and devices used are reliable and are unlikely to fail, which is incompatible with the assumed traits of an ``Internet of Things'' network implemented on constrained devices. In the case where the central server fails, the new devices entering the network would no longer be able to connect, and if the central server was used to facilitate the communication via publish - subscribe, then the whole system would be rendered inoperable. In the constrained devices environment where resources are limited and wireless links are susceptible to interference, this becomes a significant problem.
+
+Therefore, although the cost of device discovery does increase with the use of a distributed system, it offers far more fault tolerance than a centralised system.
+
+% subsubsection distributed_vs_centralised (end)
+
+\subsubsection{Selective Unicast/Multicast vs Multicast} % (fold)
+\label{ssub:selective_unicast_multicast_vs_multicast}
+The xAP system chooses to use a multicast medium to interconnect all devices, where every device broadcasts its events/commands to every other device on the local network. This provides the benefit that devices don't need to explicitly set up connections between themselves and instead just listen for broadcasted packets on the network. Whilst this is truly distributed in nature, it does come at a considerable cost as the network scales to large quantities of devices. The core problem with this approach is that every device on the network is forced to receive and process every packet that is transmitted, regardless of whether it's relevant information or not. For constrained devices this is highly undesirable, as resources are severely constrained, especially battery life and processor speed. Using the radio on a constrained device is the most expensive operation, therefore by forcing all messages to be received, the power consumption on such a device becomes a significant problem. 
+
+Hence, the need to reduce the use of broadcast is necessary, but due to the distributed architecture its use is still necessary to discover devices. In the proposed protocol a compromise is made, in order to discover devices broadcast queries are used, but every other message in the protocol is unicast. This ensures that devices can still easily join and discover other devices on the network, but without the continual cost of each device receiving every devices data.
+
+% subsubsection selective_unicast_multicast_vs_multicast (end)
 
 \subsubsection{Cloud vs Local} % (fold)
 \label{ssub:cloud_vs_local}
+SmartThings, unlike the proposed design, chose a cloud-first approach in connecting the different devices on the network together. In comparison the the proposed design it does pose some benefits, such as instant and easy connectivity to other cloud services and making the devices accessible from anywhere with an Internet connection. But as previously discussed, this also poses several risks as well, these include security risks of the data both in transit and storage (who has control and access to the data or control devices, is it being intercepted?) and reliability risks (what happens if the cloud fails? Will all the doors unlock and the sprinklers not stop?). In regards to both risks, there have been various failures in the industry relating to both the security of data,\cite{Playstation}, and the reliance of cloud services / online services \cite{Amazon, Google}. 
+
+Adopting the alternative,  the proposed system uses a local-first approach, which gives user has complete control and access to the data, enables the system to function without Internet connectivity and if wanted can be expanded by by connecting it. This provides the safety and assurance of a local system without compromising the possibility of upgrading it to support the cloud based features.
 
 % subsubsection cloud_vs_local (end)
-% subsubsection distributed_vs_centralised (end)
-\subsubsection{Selective Unicast/Multicast vs Multicast} % (fold)
-\label{ssub:selective_unicast_multicast_vs_multicast}
 
-% subsubsection selective_unicast_multicast_vs_multicast (end)
-\subsubsection{Reliable vs Unreliable} % (fold)
-\label{ssub:reliable_vs_unreliable}
-
-% subsubsection reliable_vs_unreliable (end)
-
-\subsubsection{Textual packet vs Encoded packet} % (fold)
+\subsubsection{Textual encoded packet vs Integer encoded packet} % (fold)
 \label{ssub:textual_packet_vs_encoded_packet}
+As one of the requirements, the new protocol must ensure an efficient use of resources, in which minimising the size of the packet is most important, because the protocol centres around sending, receiving and processing these packets. In order to achieve this, the packet header only contains a minimal set of fields, all of which are non-textual.
+
+However, if the type of a device was described using a string representation, such as ``Light Sensor'', it which would consume 12 bytes of data, not including any associated fields such as text length to allow for variable length identifiers. Instead, by using a integer encoding, whereby the types are predefined integers within the protocol, given the assumption that there are no more than 255 devices, the size of the field can be reduced to a single byte. Applying this to the rest of the header results in a total size of 12 bytes (not including the payload). This not only considerably reduces the cost of sending and receiving packets, but also reduces the complexity in parsing the data.
+
+Comparing this to xAP, which based on the requirement of human readable messages, exclusively uses a textually formatted packet header and payload. To illustrate xAP's textual format, an example header is shown in figure \ref{fig:xapHeader}
+\begin{figure}[h!]
+\begin{minipage}{.5\textwidth}
+\begin{verbatim}
+xap-header
+{
+v=12
+hop=1
+uid=FF123400
+class=xap-temp.notification
+source=ACME.thermostat.lounge
+}
+\end{verbatim}
+\end{minipage}%
+\begin{minipage}{.5\textwidth}
+$\leftarrow$ signals block is header\\
+\\
+$\leftarrow$ defines protocol version\\
+$\leftarrow$ how many hops left\\
+$\leftarrow$ a unique identifier for the source\\
+$\leftarrow$ the type of payload the message contains\\
+$\leftarrow$ text representation of source of the message\\
+\end{minipage}
+\caption{xAP packet header}
+\label{fig:xapHeader}
+\end{figure}
+In total, 87 bytes are used to represent a similar array of information to that contained within in the designed system's header. In contrast, xAP consumes almost 8 times more bytes. This can a large impact on the potential transmission cost and processing complexity if used on constrained devices, such as the TelosB mote.
 
 % subsubsection textual_packet_vs_encoded_packet (end)
 \subsubsection{``Thing'' vs network of ``Things''} % (fold)
 \label{ssub:_thing_vs_network_of_things_}
-
+DRAFT: Twine, idea of internet of thing, connecting device by itself and then connecting to other services, limited functionality. instead create a local internet of things which link up, providing much richer local experience with possibility to utilise online services etc.
 % subsubsection _thing_vs_network_of_things_ (end)
+
+\subsubsection{Reliable vs Unreliable} % (fold)
+\label{ssub:reliable_vs_unreliable}
+TCP/RPC - always provide reliability, can be costly, double the bandwidth but ephemeral data means out of sequence pointless
+% subsubsection reliable_vs_unreliable (end)
+
+\subsubsection{CoAP} % (fold)
+\label{ssub:coap}
+DRAFT: Discuss the similarities and differences between design, RESTful, almost exactly the same device discovery technique but no distinct device types, just a general protocol.
+% subsubsection coap (end)

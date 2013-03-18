@@ -123,6 +123,7 @@ void connect_handler(ChannelState *state,DataPayload *dp){
 	DataPayload *new_dp = &(state->packet);
 	ConnectACKMsg ck;
 	strcpy(ck.name,sensor_name); // copy name
+	ck.accept = 1;
 	new_dp->hdr.src_chan_num = state->chan_num;
 	new_dp->hdr.dst_chan_num = state->remote_chan_num;
 
