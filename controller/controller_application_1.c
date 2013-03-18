@@ -7,10 +7,36 @@ static int found = 0;
 PROCESS(application1,"Controller APP");
 AUTOSTART_PROCESSES(&application1);
 static ServiceRecord sc;
+static int actuator = 0;
+static char *act = "LightSwitch";
+static int sentact = 0;
 void callback(void * data){
 	ResponseMsg * r = data;
+	int value = uip_ntohs((int)r->data);
+	printf(">>APP: %s sensor = %d\n", r->name, value);
+	if (actuator){
+		command_actuator(actuator);
+	}
 
-	printf(">>APP: %s sensor = %d\n", r->name, uip_ntohs((int)r->data));
+}
+
+void handle_new_device(void *data){
+	if (!sentact){
+		sentact = 1;
+		add_actuator();
+	}
+	DeviceInfo *di = (DeviceInfo *)data;
+	if (strcmp(di->name,act) == 0){
+		actuator = di->channelID;
+	}
+}
+
+void add_actuator(){
+	found = 0;
+	printf("LAUNCH SUCCESS: %d\n",
+		knot_register_controller(&application1,
+								 NULL, 
+								 rate, "BOSS", ACTUATOR, SWITCH));
 }
 
 
@@ -22,7 +48,7 @@ PROCESS_THREAD(application1,ev,data)
 	printf("LAUNCH SUCCESS: %d\n",
 		knot_register_controller(&application1,
 								 (knot_callback)&callback, 
-								 rate, "BOSS", LIGHT));
+								 rate, "BOSS", SENSOR, LIGHT));
 
 	
 	
@@ -33,12 +59,16 @@ PROCESS_THREAD(application1,ev,data)
 			memcpy(&sc,data,sizeof(ServiceRecord));
 			printf("Service found: %s\n", sc.name); 
 			if (!found){
-				connect_sensor(&sc);
+				connect_device(&sc);
 				found = 1;
+
 			}
 		}
 		else if (ev == KNOT_EVENT_DATA_READY){
 			callback(data);
+		}
+		else if (ev == KNOT_EVENT_CONNECTED_DEVICE){
+			handle_new_device(data);
 		}
 	}
 

@@ -24,4 +24,4 @@ int knot_register_sensor(struct process *client_proc,
 
 
 
-#endif /* KNOT_CONTROLLER */
+#endif /* KNOT_SENSOR */
