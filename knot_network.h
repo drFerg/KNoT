@@ -22,7 +22,8 @@ void clean_packet(DataPayload *dp);
 void ping(ChannelState *state);
 void pack_handler(ChannelState *state, DataPayload *dp);
 void ping_handler(ChannelState *state, DataPayload *dp);
-
+void close_graceful(ChannelState *state);
+void close_handler(ChannelState *state, DataPayload *dp);
 
 
 #endif /* KNOT_NETWORK_H */

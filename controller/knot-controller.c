@@ -24,11 +24,11 @@
 #endif
 
 #define PING_WAIT 3
-#define TIMER_INTERVAL 20
+#define TIMER_INTERVAL 3
 #define HOMECHANNEL 0
 
-char *state_names[7] = {"IDLE","QUERY","QACKED","CONNECTing",
-						"CONNECTED","DisCONNECTED", "PING"};
+char *state_names[10] = {"IDLE","QUERY","QACKED","CONNECTing",
+						"CONNECTED","DisCONNECTED", "PING", "ERROR", "EROR","COMMANDED"};
 
 PROCESS(knot_controller_process,"knot_controller");
 char controller_name[16];
@@ -36,7 +36,6 @@ static ChannelState home_channel_state;
 static process_event_t KNOT_EVENT_CONNECT;
 static process_event_t KNOT_EVENT_COMMAND;
 static uint8_t started = 0;
-
 
 void init_home_channel(){
 	  home_channel_state.chan_num = 0;
@@ -46,12 +45,21 @@ void init_home_channel(){
       KNOT_EVENT_CONNECT = process_alloc_event();
       KNOT_EVENT_COMMAND = process_alloc_event();
       KNOT_EVENT_CONNECTED_DEVICE = process_alloc_event();
+      printf("How many ticks in a sec: %d\n",CLOCK_CONF_SECOND );
 }
 
 void ping_callback(void * s){
 	ChannelState *state = (ChannelState *)s;
-	ping(state);
-	ctimer_restart(&(state->timer));
+	if (state->pingOUT < 3){
+		ping(state);
+		ctimer_restart(&(state->timer));
+		state->pingOUT++;
+	}
+	else {
+		close_graceful(state);
+		remove_channel(state->chan_num);
+		state->pingOUT =0;
+	}
 }
 
 void create_channel(ServiceRecord *sc){
@@ -131,6 +139,7 @@ void service_search(ChannelState* state, uint8_t type){
 	DataPayload *new_dp = &(state->packet);
 	clean_packet(new_dp);
 	//dp_complete(new_dp,10,QACK,1);
+	set_broadcast(&(home_channel_state.remote_addr));
 	new_dp->hdr.src_chan_num = state->chan_num;
 	new_dp->hdr.dst_chan_num = 0;
     (new_dp)->hdr.cmd = QUERY; 
@@ -160,6 +169,10 @@ void response_handler(ChannelState *state, DataPayload *dp){
 
 void send_actuator_command(int channelID){
 	ChannelState * state = get_channel_state(channelID);
+	if (state == NULL){
+		printf("Device disconnected\n");
+		return;
+	}
 	DataPayload *new_dp = &(state->packet);
 	clean_packet(new_dp);
 	new_dp->hdr.cmd = CMD;
@@ -167,7 +180,14 @@ void send_actuator_command(int channelID){
 	new_dp->hdr.dst_chan_num = state->remote_chan_num;
 	new_dp->dhdr.tlen = UIP_HTONS(0);
 	send_on_knot_channel(state, new_dp);
+	state->ticks = 10;
+	state->state = STATE_COMMANDED;
 
+}
+
+void command_ack_handler(ChannelState *state, DataPayload *dp){
+	state->state= STATE_CONNECTED;
+	printf("Command was successful\n");
 }
 
 void network_handler(ev, data){
@@ -188,8 +208,16 @@ void network_handler(ev, data){
 	cmd = dp->hdr.cmd;        // only a byte so no reordering :)
 	PRINTF("Received a %s command.\n", cmdnames[cmd]);
 	PRINTF("Message for channel %d\n",dp->hdr.dst_chan_num);
-	if (dp->hdr.dst_chan_num == HOMECHANNEL){
+	if (dp->hdr.dst_chan_num == HOMECHANNEL || cmd == DISCONNECT){
 		if (cmd == QACK){
+			state = &home_channel_state;
+			copy_link_address(state);
+  		}
+  		else if (cmd == DISCONNECT){
+  			state = get_channel_state(dp->hdr.dst_chan_num);
+			if (state){
+				remove_channel(state->chan_num);
+			}
 			state = &home_channel_state;
 			copy_link_address(state);
   		}
@@ -209,13 +237,17 @@ void network_handler(ev, data){
 		}
 	}
 	
+	// Received a message so reset pingOUT
+	state->pingOUT = 0;
 	if      (cmd == QUERY)    PRINTF("I'm a controller, Ignoring QUERY\n");
 	else if (cmd == CONNECT)  PRINTF("I'm a controller, Ignoring CONNECT\n");
 	else if (cmd == QACK)     qack_handler(state, dp);
 	else if (cmd == CACK)     cack_handler(state, dp);
 	else if (cmd == RESPONSE) response_handler(state, dp);
+	else if (cmd == CMDACK)   command_ack_handler(state,dp);
 	else if (cmd == PING)     ping_handler(state, dp);
 	else if (cmd == PACK)     pack_handler(state, dp);
+	else if (cmd == DISCONNECT) close_handler(state,dp);
 }
 
 void resend(ChannelState *s){
@@ -227,9 +259,18 @@ void check_timer(ChannelState *s){
 	if (s == NULL) return; 
 		if (s->state % 2 != 0){
 			if (s->ticks == 0){
-				PRINTF("Retrying\n");
-				resend(s);
-				s->ticks = 101;
+				if (s == &home_channel_state || s->pingOUT < 3){
+					PRINTF("Retrying\n");
+					resend(s);
+					s->pingOUT++;
+					s->ticks = s->pingOUT * 10;
+				} else {
+					printf("PING OUT = %d\n", s->pingOUT);
+					printf("CLOSING CHANNEL DUE TO TIMEOUT\n");
+					close_graceful(s);
+					remove_channel(s->chan_num);
+				}
+
 			}
 		}
 		s->ticks --;

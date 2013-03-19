@@ -23,7 +23,7 @@
 #define PRINTF(...)
 #endif
 
-#define TIMER_INTERVAL 20
+#define TIMER_INTERVAL 3
 #define DATA_RATE  5
 #define PING_RATE  15   // How many data intervals to wait before PING
 #define RATE_CHANGE 1
@@ -58,8 +58,16 @@ void init_home_channel(){
 
 void ping_callback(void * s){
 	ChannelState *state = (ChannelState *)s;
-	ping(state);
-	ctimer_reset(&(state->timer));
+	if (state->pingOUT < 3){
+		ping(state);
+		ctimer_restart(&(state->timer));
+		state->pingOUT++;
+	}
+	else {
+		close_graceful(state);
+		remove_channel(state);
+		state->pingOUT = 0;
+	}
 }
 
 void query_handler(ChannelState *state, DataPayload *dp){
