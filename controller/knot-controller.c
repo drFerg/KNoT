@@ -51,7 +51,7 @@ void init_home_channel(){
 void ping_callback(void * s){
 	ChannelState *state = (ChannelState *)s;
 	ping(state);
-	ctimer_reset(&(state->timer));
+	ctimer_restart(&(state->timer));
 }
 
 void create_channel(ServiceRecord *sc){
@@ -83,7 +83,7 @@ void cack_handler(ChannelState *state, DataPayload *dp){
 	}
 	ConnectACKMsg *ck = (ConnectACKMsg*)dp->data;
 	if (ck->accept == 0){
-		PRINTF("SCREAM! THEY DIDN'T EXCEPT!!")}
+		PRINTF("SCREAM! THEY DIDN'T EXCEPT!!");
 	}
 	PRINTF("%s accepts connection request on channel %d\n",ck->name,dp->hdr.src_chan_num);
 	state->remote_chan_num = dp->hdr.src_chan_num;
@@ -102,7 +102,8 @@ void cack_handler(ChannelState *state, DataPayload *dp){
 	strcpy(di.name, ck->name);
 	di.channelID = state->chan_num; 
 	process_post(state->ccb.client_process, KNOT_EVENT_CONNECTED_DEVICE, &di);
-	ctimer_set(&(state->timer),CLOCK_CONF_SECOND * state->rate * PING_WAIT ,ping_callback,state); 
+	printf("Timeout in %ds\n",state->rate * PING_WAIT );
+	ctimer_set(&(state->timer),CLOCK_CONF_SECOND * (state->rate * PING_WAIT) ,ping_callback, state); 
 }
 
 
@@ -157,8 +158,8 @@ void response_handler(ChannelState *state, DataPayload *dp){
 	process_post_synch(state->ccb.client_process, KNOT_EVENT_DATA_READY, rmsg);
 }
 
-void send_actuator_command(int *channelID){
-	ChannelState * state = get_channel_state(*channelID);
+void send_actuator_command(int channelID){
+	ChannelState * state = get_channel_state(channelID);
 	DataPayload *new_dp = &(state->packet);
 	clean_packet(new_dp);
 	new_dp->hdr.cmd = CMD;
@@ -200,9 +201,10 @@ void network_handler(ev, data){
 			PRINTF("Channel %d doesn't exist\n", dp->hdr.dst_chan_num);
 			return;
 		}
-		if (check_seqno(state, dp) == 0) 
+		if (check_seqno(state, dp) == 0) {
+			printf("OH NOES\n");
 			return;
-		else { //CHECK IF RIGHT CONNECTION
+		}else { //CHECK IF RIGHT CONNECTION
 			//copy_link_address(state);
 		}
 	}
@@ -251,8 +253,8 @@ int connect_device(ServiceRecord *sc){
 	return 1;
 }
 
-int command_actuator(int channelID){
-	process_post(&knot_controller_process, KNOT_EVENT_COMMAND, &channelID);
+int command_actuator(int *channelID){
+	process_post(&knot_controller_process, KNOT_EVENT_COMMAND, channelID);
 	return 1;
 }
 
@@ -270,11 +272,10 @@ int knot_register_controller(struct process *client_proc, knot_callback callback
 	}
 
 	strcpy(controller_name, controller_name);
-	if (device_role == SENSOR && callback != NULL){
+	if (client_proc){
 		state->ccb.callback = callback;
 		state->ccb.client_process = client_proc;
-	}
-	else if (device_role == SENSOR)return -2;
+	} else return -2;
 
 	state->rate = rate;
 	service_search(state, device_type);
@@ -305,7 +306,7 @@ PROCESS_THREAD(knot_controller_process, ev, data)
 			create_channel((ServiceRecord *)data);
 		}
 		else if(ev == KNOT_EVENT_COMMAND){
-			send_actuator_command((int*)data);
+			send_actuator_command(*((int *)data));
 		}
 		
 	}

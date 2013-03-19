@@ -1,14 +1,15 @@
 #include "knot-actuator.h"
 #include "contiki.h"
+#include "dev/leds.h"
 static uint16_t rate = 5;
 static int state = 0;
-PROCESS(application1,"Sensor App");
+PROCESS(application1,"Actuator App");
 AUTOSTART_PROCESSES(&application1);
 
 void callback(char name[],void * data){
 	state = !state;
 	printf(">>Actuator APP: %s\n", (state?"ON":"OFF"));
-
+	state?leds_on(LEDS_ALL):leds_off(LEDS_ALL);
 }
 
 

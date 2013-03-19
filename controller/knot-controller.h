@@ -41,7 +41,7 @@ int knot_register_controller(struct process *client_proc,
 
 
 int connect_device(ServiceRecord *sc);
-int command_actuator(int channelID);
+int command_actuator(int *channelID);
 
 
 #endif /* KNOT_CONTROLLER */

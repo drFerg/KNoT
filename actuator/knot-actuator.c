@@ -25,7 +25,7 @@
 
 #define TIMER_INTERVAL 20
 #define DATA_RATE  5
-#define PING_RATE  60   // How many data intervals to wait before PING
+#define PING_RATE  15   // How many data intervals to wait before PING
 #define RATE_CHANGE 1
 
 #define HOMECHANNEL 0
@@ -116,8 +116,9 @@ void cack_handler(ChannelState *state, DataPayload *dp){
 		return;
 	}
 	state->ticks = state->rate * PING_RATE;
-	ctimer_set(&(state->timer),CLOCK_CONF_SECOND * state->rate ,ping_callback,state); 
-	PRINTF(">>CONNECTION FULLY ESTABLISHED<<\n");
+
+	ctimer_set(&(state->timer),CLOCK_CONF_SECOND * state->rate ,ping_callback, state); 
+	PRINTF(">>CONNECTION FULLY ESTABLISHED<< %d\n", state->rate);
 	state->state = STATE_CONNECTED;
 }
 
@@ -240,7 +241,7 @@ int knot_register_actuator(struct process *client_proc, knot_callback actuator,
 		actuator_type = type;
 	}
 		
-	if (actuator != NULL){
+	if (client_proc){
 		home_channel_state.ccb.callback = actuator;
 		home_channel_state.ccb.client_process = client_proc;
 		PRINTF("Set callback\n");

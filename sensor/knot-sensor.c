@@ -24,7 +24,7 @@
 #endif
 
 #define TIMER_INTERVAL 20
-#define DATA_RATE  5
+#define DATA_RATE  1
 #define PING_RATE  5   // How many data intervals to wait before PING
 #define RATE_CHANGE 1
 
