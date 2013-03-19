@@ -440,6 +440,15 @@ The RESPONSE message contains 2 data fields: the data being sent, for example a 
 \end{figure}
 % subsection response (end)
 
+\subsection{COMMAND} % (fold)
+\label{sub:command}
+
+% subsection command (end)
+
+\subsection{COMMAND ACK} % (fold)
+\label{sub:command_ack}
+
+% subsection command_ack (end)
 \subsection{PING} % (fold)
 \label{sub:ping}
 Once a connection has been made between two devices, a channel is created within each device to handle this connection. Due to the nature of devices, especially those on wireless networks or battery powered, devices can disappear off the network without gracefully closing the connection. If this occurs, then the connected devices must be able to detect if the connection is still alive, if not then clean up after it. To do this PING and PING ACKs are used to create a failure detector.
