@@ -2,5 +2,5 @@
 
 char *cmdnames[15] = {"", "QUERY", "QACK","CONNECT", "CACK", 
                                  "RESPONSE", "RACK", "DISCONNECT", "DACK",
-                                 "ERROR", "ERROR", "PING", "PACK", "SEQNO",
+                                 "COMMAND", "COMMANDACK", "PING", "PACK", "SEQNO",
                                  "SACK"};

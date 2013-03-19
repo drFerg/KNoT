@@ -37,6 +37,7 @@
 #define DISCONNECT 7
 #define DACK     8
 #define CMD      9
+#define CMDACK  10
 #define PING    11
 #define PACK    12
 #define SEQNO   13

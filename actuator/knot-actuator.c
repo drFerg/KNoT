@@ -1,4 +1,4 @@
-#include "knot-sensor.h"
+#include "knot-actuator.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,8 +24,8 @@
 #endif
 
 #define TIMER_INTERVAL 20
-#define DATA_RATE  1
-#define PING_RATE  5   // How many data intervals to wait before PING
+#define DATA_RATE  5
+#define PING_RATE  15   // How many data intervals to wait before PING
 #define RATE_CHANGE 1
 
 #define HOMECHANNEL 0
@@ -41,16 +41,11 @@
                                   (cp)->hdr.seqno=uip_htonl(sn); \
                                 }
 
-PROCESS(knot_sensor_process,"knot_sensor_process");
-char sensor_name[16];
-uint8_t sensor_type;
+PROCESS(knot_actuator_process,"knot_actuator_process");
+char actuator_name[16];
+uint8_t actuator_type;
 uint8_t started = 0;
-/*
-&(UIP_IP_BUF->srcipaddr),
-UIP_HTONS(UIP_IP_BUF->srcport),
-&(UIP_IP_BUF->destipaddr)
-UIP_HTONS(UIP_IP_BUF->destport),
-*/
+
 
 static ChannelState home_channel_state;
 
@@ -61,42 +56,22 @@ void init_home_channel(){
       set_broadcast(&(home_channel_state.remote_addr));
 }
 
-
-void send_handler(ChannelState* state){
-    DataPayload *new_dp = &(state->packet);
-	ResponseMsg rmsg;
-	uint16_t data = 0;
-	state->ccb.callback(NULL, &data);
-	rmsg.data = uip_htons(data);
-	strcpy(rmsg.name,sensor_name);
-
-	new_dp->hdr.src_chan_num = state->chan_num;
-	new_dp->hdr.dst_chan_num = state->remote_chan_num;
-    new_dp->hdr.cmd = RESPONSE; 
-    new_dp->dhdr.tlen = uip_htons(sizeof(ResponseMsg));
-    memcpy(&(new_dp->data),&rmsg,sizeof(ResponseMsg));
-
-    send_on_knot_channel(state,new_dp);
+void ping_callback(void * s){
+	ChannelState *state = (ChannelState *)s;
+	ping(state);
 	ctimer_reset(&(state->timer));
-
 }
-
-void send_callback(void * s){
-	send_handler((ChannelState *)s);
-}
-
 
 void query_handler(ChannelState *state, DataPayload *dp){
 	QueryMsg *q = (QueryMsg* )dp->data;
-	if (q->type != sensor_type) {PRINTF("Not the right type %d \n", q->type);return;} /* PUT IN DYNAMIC TYPE TO BE CHECKED */
+	if (q->type != actuator_type) {PRINTF("Not the right type %d \n", q->type);return;} /* PUT IN DYNAMIC TYPE TO BE CHECKED */
 	uip_ipaddr_copy(&(state->remote_addr) , &(UDP_HDR->srcipaddr));
   	state->remote_port = UDP_HDR->srcport;	
 	DataPayload *new_dp = &(state->packet);
-	
 	QueryResponseMsg qr;
 	
-	qr.type = sensor_type;
-	strcpy(qr.name,sensor_name); // copy name
+	qr.type = actuator_type;
+	strcpy(qr.name,actuator_name); // copy name
 	qr.rate = uip_htons(5);
 	//dp_complete(new_dp,uip_htons(10),1,(1));
 	new_dp->hdr.dst_chan_num = dp->hdr.src_chan_num; 
@@ -114,16 +89,15 @@ void connect_handler(ChannelState *state,DataPayload *dp){
 	/* Request src must be saved to message back */
 	state->ccb.callback = home_channel_state.ccb.callback;
 	state->remote_chan_num = dp->hdr.src_chan_num;
-	if (uip_ntohs(cm->rate) > DATA_RATE){
+	if (uip_ntohs(cm->rate) > PING_RATE){
 		state->rate = uip_ntohs(cm->rate);
 	}else{
-		state->rate = DATA_RATE;
+		state->rate = PING_RATE;
 		printf("%d\n", uip_ntohs(cm->rate));
 	}
 	DataPayload *new_dp = &(state->packet);
 	ConnectACKMsg ck;
-	strcpy(ck.name,sensor_name); // copy name
-	ck.accept = 1;
+	strcpy(ck.name,actuator_name); // copy name
 	new_dp->hdr.src_chan_num = state->chan_num;
 	new_dp->hdr.dst_chan_num = state->remote_chan_num;
 
@@ -142,13 +116,29 @@ void cack_handler(ChannelState *state, DataPayload *dp){
 		return;
 	}
 	state->ticks = state->rate * PING_RATE;
-	printf("%d\n", state->rate);
-	ctimer_set(&(state->timer),CLOCK_CONF_SECOND * state->rate, send_callback, state); 
-	PRINTF(">>CONNECTION FULLY ESTABLISHED<<\n");
+
+	ctimer_set(&(state->timer),CLOCK_CONF_SECOND * state->rate ,ping_callback, state); 
+	PRINTF(">>CONNECTION FULLY ESTABLISHED<< %d\n", state->rate);
 	state->state = STATE_CONNECTED;
 }
 
-
+void command_handler(ChannelState *state, DataPayload *dp){
+	if (state->state != STATE_CONNECTED){
+		PRINTF("Not in Connected state");
+		return;
+	}
+	DataPayload *new_dp = &(state->packet);
+	clean_packet(new_dp);
+	new_dp->hdr.src_chan_num = state->chan_num;
+	new_dp->hdr.dst_chan_num = state->remote_chan_num;
+	new_dp->hdr.cmd = CMDACK;
+	(new_dp)->dhdr.tlen = UIP_HTONS(0);
+	send_on_knot_channel(state,new_dp);
+	/*RESET PING TIMER*/
+	ctimer_restart(&(state->timer));
+	/*Activate action */
+	state->ccb.callback(NULL, NULL);
+}
 
 
 void network_handler(ev, data){
@@ -178,7 +168,7 @@ void network_handler(ev, data){
   		}
   		else if (cmd == CONNECT){
   			state = new_channel();
-  			PRINTF("Sensor: New Channel\n");
+  			PRINTF("actuator: New Channel\n");
   			copy_link_address(state);
   		}
   	}else {
@@ -187,7 +177,7 @@ void network_handler(ev, data){
 			PRINTF("Channel doesn't exist\n");
 			return;
 		}
-		//copy_link_address(state); // CHECK IF RIGHT CONNECTION
+		//CHECK IF RIGHT CONNECTION
 		if (check_seqno(state, dp) == 0) 
 		return;
 	}
@@ -201,6 +191,7 @@ void network_handler(ev, data){
 	else if (cmd == CACK)    cack_handler(state, dp);
 	else if (cmd == PING)    ping_handler(state, dp);
 	else if (cmd == PACK)    pack_handler(state, dp);
+	else if (cmd == CMD)	 command_handler(state,dp);
 }
 
 
@@ -235,23 +226,23 @@ void cleaner(){
 
 
 
-int knot_register_sensor(struct process *client_proc, knot_callback sensor, 
+int knot_register_actuator(struct process *client_proc, knot_callback actuator, 
 						 uint16_t rate, char name[], 
 						 uint8_t type){
 	if (started == 0){
-		process_start(&knot_sensor_process,NULL);
-		PROCESS_CONTEXT_BEGIN(&knot_sensor_process);
+		process_start(&knot_actuator_process,NULL);
+		PROCESS_CONTEXT_BEGIN(&knot_actuator_process);
 		init_table();
 		init_knot_network();
 		init_home_channel();
 		PROCESS_CONTEXT_END();		
 		started = 1;
-		strcpy(sensor_name,name);
-		sensor_type = type;
+		strcpy(actuator_name,name);
+		actuator_type = type;
 	}
 		
-	if (sensor != NULL){
-		home_channel_state.ccb.callback = sensor;
+	if (client_proc){
+		home_channel_state.ccb.callback = actuator;
 		home_channel_state.ccb.client_process = client_proc;
 		PRINTF("Set callback\n");
 	}
@@ -263,7 +254,7 @@ int knot_register_sensor(struct process *client_proc, knot_callback sensor,
 
 
 
-PROCESS_THREAD(knot_sensor_process, ev, data)
+PROCESS_THREAD(knot_actuator_process, ev, data)
 {
 
 	PROCESS_BEGIN();

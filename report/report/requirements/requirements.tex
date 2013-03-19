@@ -68,7 +68,7 @@ This section describes the functional requirements which were gathered and are b
 	\end{itemize}
 	\item Closing connections to devices
 	\begin{itemize}
-		\item Devices need to be able to gracefully close any formed connections, which could be due to limited power constraints or no longer needing the resources that the connection offers. These connections also must be closed gracefully, in contrast to just not responding/dissappearing off the network, in order to ensure that a device's resources are not wasted by keeping state for a terminated connection, which could be confused for temporary interference.
+		\item Devices need to be able to gracefully close any formed connections, which could be due to limited power constraints or no longer needing the resources that the connection offers. These connections also must be closed gracefully, in contrast to just not responding/dissappearing off the network, in order to ensure that a device's resources are not wasted by keeping state for a terminated connection, which could be confused for transient communication loss.
 	\end{itemize}
 	\item Sensors must be able to send data to controllers
 	\begin{itemize}
@@ -116,15 +116,15 @@ This section describes the non-functional requirements based on the expectations
 	\end{itemize}
 	\item Cross platform compatibility
 	\begin{itemize}
-		\item Because the heterogeneous nature of hardware and software platforms available today, the system must be designed in such a way so that it is both hardware and software independent, enabling it to be implemented on these platforms as well as across a variety of networks.
+		\item Due to the heterogeneous nature of hardware and software platforms available today, the system must be designed in such a way so that it is both hardware and software independent, enabling it to be implemented on these platforms as well as across a variety of networks.
 	\end{itemize}
 	\item Simple to extend
 	\begin{itemize}
-		\item Due to the constantly evolving nature of technology the system must be extendible in order to support new types of devices, and also be able to support new payloads specific to these devices.
+		\item Due to the constantly evolving nature of technology the system must be extensible in order to support new types of devices, and also be able to support new payloads specific to these devices.
 	\end{itemize}
 	\item Reliability of essential communications
 	\begin{itemize}
-		\item Because of the reliability concerns regarding underlying network, building in some reliability is necessary to ensure that critical communications are successful, such as forming connections between devices. 
+		\item Because of the reliability concerns regarding the underlying network, building in some reliability is necessary to ensure that critical communications are successful, such as forming connections between devices. 
 	\end{itemize}
 	\item Basic assurance of correct data
 	\begin{itemize}
