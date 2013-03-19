@@ -208,10 +208,13 @@ Contiki c like, event and thread driven
 \end{comment}
 % subsection telos_b_motes (end)
 % section open_source_constrained_devices (end)
-\section{Wireless Sensor Networks} % (fold)
+\subsection{Wireless Sensor Networks} % (fold)
 \label{sec:wireless_sensor_networks}
-(Discuss relation to wireless sensor networks, mesh networking topology, similar dissimilar
-Concerns which differ, align.)
+With computers becoming smaller, cheaper and more powerful every year, wireless sensor networks have become an area of rapid research. Wireless sensor networks allow the autonomous collection, aggregation and processing of data from hundreds if not thousands of devices, which before would have only been feasible through simulation. Use cases of such networks range from detecting forest fires\cite{FireDetection}, to monitoring the health of the Golden Gate bridge\cite{GoldenGate}.
+
+Many of the situations and environments these networks are deployed in can be extremely harsh, often subjected to adverse weather conditions and even animal wildlife. Because of this, reliability and fault tolerance are significant areas of research, ensuring the network of devices can react and adapt to changes in the environment to ensure correct operation, even in the case of device failures. Due to these often harsh and changing environments, standard architectures of networking aren't feasible, e.g., star topology, because of their reliance on central points or base stations to communicate, which may become out of range or fail entirely; instead a more ad-hoc approach is needed to ensure all devices can be connected to the network, even when devices move in the physical environment. To solve this problem, devices are networked together in a mesh topology, where each device connects to its neighbours and allows traffic to route through one another to reach the final destination.
+
+In some ways the ``Internet of Things'' can be interpreted as an extension or specialisation of wireless sensor networks, taking the autonomous network of hundreds of sensing devices and creating an autonomous closed-loop system, which can make intelligent decisions based on the environment, and placing it within a home, office or even city. Often the environments are a much less extreme and are more predictable than traditional wireless sensor network deployments, such as the home or office, reducing the concern for reliability. However, because of the pre-existing and often immutable nature of environments such as the home, installing traditional networking topologies ranging from the front door, to the second floor bedroom and all the way down to the bottom of the garden can pose problems; but like in wireless sensor networks, mesh topologies can help solve this by routing traffic through other nearby nodes, rather than trying to connect directly to the base station or router.
 
 % section wireless_sensor_networks (end)
 
@@ -293,9 +296,14 @@ BUT fails to deliver a system which can scale and do things efficiently
 
 \subsection{OpenWSN} % (fold)
 \label{sub:owsn_berkeley}
-Currently being developed at the University of California, Berkeley, the Open Wireless Sensor Network project is collection of open-source implementations of protocol stacks designed against to-be-finalised ``Internet of Things'' standards, for a range of different software and hardware platforms.
+Currently being developed at the University of California, Berkeley, the Open Wireless Sensor Network project is collection of open-source implementations of protocol stacks implemented against to-be-finalised ``Internet of Things'' standards, for a range of different software and hardware platforms.
 
-%TO BE CONTINUED
+The driving force behind such a project is to create an open source implementation protocols, which academia and industry can use to conduct further research, develop standardised products and contribute to an eco-system of ``Internet of Things'' devices, rather than researching and developing proprietary devices. In the long run this can also benefit consumers, increasing their choice of devices across many different and compatible brands/manufacturers.
+
+Whilst the OpenWSN project doesn't actually propose any new research or developments by itself, it does pursue the same idea as this very project, trying to create an open source method in which heterogeneous devices can communicate with one another to form and ``Internet of Things''.
+
+The OpenWSN ``Internet of Things'' stack consists of open source implementations of the proposed communications stack, ranging from the physical layer (IEEE802.15.4-2006), to the adaptation of IPv6 (IETF 6LoWPAN) all the way up to the application layer, of which is of most interest. The application layer implements not only HTTP, but also a currently in progress standard called Constrained Application Protocol, with the purpose of bringing RESTful communication to constrained devices.
+
 
 
 \subsection{CoAP} % (fold)

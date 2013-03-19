@@ -272,9 +272,13 @@ The protocol header contains 6 data fields:
 \begin{center}
 \begin{bytefield}{32}
 \bitheader{0,8,16,24,31}\\
-\bitbox{8}{Src channel} & \bitbox{8}{Dest channel} & \bitbox{8}{SeqNo} & \bitbox{8}{Command} \\
-\bitbox{16}{Payload length} & \bitbox{16}{Checksum} \\
-\wordbox{2}{Command specific payload}
+	\begin{rightwordgroup}{Header}
+		\bitbox{8}{Src channel} & \bitbox{8}{Dest channel} & \bitbox{8}{SeqNo} & \bitbox{8}{Command} \\
+		\bitbox{16}{Payload length} & \bitbox{16}{Checksum}
+	\end{rightwordgroup}\\
+	\wordbox[lrt]{1}{Command specific payload}\\
+	\skippedwords \\
+	\wordbox[lrb]{1}{}
 \end{bytefield}
 \caption{Protocol header format}
 \end{center}
@@ -420,6 +424,7 @@ Once a channel has been set up and is in the connected state, the sensor connect
 		\begin{itemize}
 			\item accept the data and pass to application on top
 		\end{itemize}
+		\item if destined for an ephemeral channel which is associated with the sender channel, but is not in the CONNECTED state, then sender is confused.
 		\item if destined for an ephemeral channel which is not associated with the sender channel, then sender is confused.
 		\item if destined for home channel, then sender is confused.
 	\end{itemize}
@@ -442,11 +447,40 @@ The RESPONSE message contains 2 data fields: the data being sent, for example a 
 
 \subsection{COMMAND} % (fold)
 \label{sub:command}
+Once a channel has been set up between a controller and actuator, the controller can then send COMMAND messages to the actuator indicating that it needs to perform its action. This is part of a reliable request-response sequence of messages and expects an acknowledgement in return to signify the command has been received, but not necessarily carried out.
+\begin{itemize}
+	\item []The receiving state machine does the following on receipt of a COMMAND message:
+	\begin{itemize}
+	\item if destined for an ephemeral channel which is associated with the sender channel and in the CONNECTED state
+	\begin{itemize}
+		\item executes command and replies to sender with a COMMAND ACK
+	\end{itemize}
+	\item if destined for an ephemeral channel which is associated with the sender channel, but is not in the CONNECTED state, then sender is confused.
+	\item if destined for an ephemeral channel which is not associated with the sender channel, then sender is confused.
+	\item if destined for home channel, then sender is confused.
+	\end{itemize}
+\end{itemize}
 
+These is no payload specific data for the COMMAND message.
 % subsection command (end)
 
 \subsection{COMMAND ACK} % (fold)
 \label{sub:command_ack}
+The COMMAND ACK is the response to a COMMAND message, which must be sent upon receipt of the COMMAND message.
+\begin{itemize}
+	\item [] The receiving state machine does the following on receipt of a COMMAND ACK message:
+	\begin{itemize}
+		\item if destined for an ephemeral channel which is associated with the sender channel and in the COMMANDSENT state
+		\begin{itemize}
+			\item cancels retry timer and changes to back to CONNECTED
+		\end{itemize}
+		\item if destined for an ephemeral channel which is associated with the sender channel, but is not in the COMMANDSENT state, then sender is confused.
+		\item if destined for an ephemeral channel which is not associated with the sender channel, then sender is confused.
+		\item if destined for home channel, then sender is confused.
+	\end{itemize}
+\end{itemize}
+
+These is no payload specific data for the COMMAND ACK message.
 
 % subsection command_ack (end)
 \subsection{PING} % (fold)
@@ -467,7 +501,7 @@ These is no payload specific data for the PING message.
 
 \subsection{PING ACK} % (fold)
 \label{sub:ping_ack}
-The PING ACK is the response to the PING message for use in detecting failures in the network.
+The PING ACK is the response to a PING message for use in detecting failures in the network.
 
 \begin{itemize}
 	\item []The receiving state machine does the following on receipt of a PING ACK message:
@@ -592,10 +626,15 @@ DRAFT: Twine, idea of internet of thing, connecting device by itself and then co
 
 \subsubsection{Reliable vs Unreliable} % (fold)
 \label{ssub:reliable_vs_unreliable}
-TCP/RPC - always provide reliability, can be costly, double the bandwidth but ephemeral data means out of sequence pointless
+The proposed protocol is designed to run on top of an unreliable link (e.g. UDP), enforcing reliability itself, but only when absolutely necessary. The reasons for this are related to power consumption, where reducing the number of packets both sent and received can have a significant impact on the overall battery life of constrained devices. 
+
+The reasons for not implementing the protocol on top of a reliable link, like TCP, is such that TCP requires an acknowledgement for each packet sent, therefore doubling the total packets sent and received. Not only this, but if packets are lost and resent, they will be received out of sequence; in the ``Internet of Things'' environment where most data sent is ephemeral, receiving packets late and out of sequence is pointless, as the interest in most cases is the present moment and not the past. 
+
+Therefore the choice to use an unreliable link, such as UDP, combined with building reliability on top for only absolutely necessary messages, such as connection handling, ensures that the overall sending and receiving of packets is reduced, reducing the overall power consumption, but without compromising the operation of the protocol.
+
 % subsubsection reliable_vs_unreliable (end)
 
 \subsubsection{CoAP} % (fold)
 \label{ssub:coap}
-DRAFT: Discuss the similarities and differences between design, RESTful, almost exactly the same device discovery technique but no distinct device types, just a general protocol.
+
 % subsubsection coap (end)
