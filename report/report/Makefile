@@ -5,7 +5,7 @@ slides: presentation/presentation.tex
 	pdflatex -output-directory tmp presentation/presentation.tex
 	mv tmp/presentation.pdf .
 
-diagrams:
+diagrams: evaluation/KNoT.dat
 	cd evaluation; gnuplot KNoT.gp
 	cd evaluation; gnuplot KNoT2.gp
 	cd evaluation; gnuplot xap.gp
