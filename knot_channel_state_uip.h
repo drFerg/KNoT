@@ -20,6 +20,7 @@ typedef struct channel_state{
    uint8_t remote_chan_num;
    uint16_t ticks;
    uint16_t rate;
+   uint8_t pingOUT;
    struct ctimer timer;
    DataPayload packet;
 }ChannelState;

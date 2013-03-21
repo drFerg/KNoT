@@ -23,6 +23,7 @@
 #define STATE_CONNECTED  4
 #define STATE_DCONNECTED 5
 #define STATE_PING       7
+#define STATE_COMMANDED  9
 /* ===================*/
 
 

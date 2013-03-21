@@ -23,7 +23,7 @@
 #define PRINTF(...)
 #endif
 
-#define TIMER_INTERVAL 20
+#define TIMER_INTERVAL 3
 #define DATA_RATE  1
 #define PING_RATE  5   // How many data intervals to wait before PING
 #define RATE_CHANGE 1
@@ -170,7 +170,7 @@ void network_handler(ev, data){
 	PRINTF("Received a %s command.\n", cmdnames[cmd]);
 
 	PRINTF("Message for channel %d\n",dp->hdr.dst_chan_num);
-	if (dp->hdr.dst_chan_num == HOMECHANNEL){
+	if (dp->hdr.dst_chan_num == HOMECHANNEL || cmd == DISCONNECT){
 		if (cmd == QUERY){
 			state = &home_channel_state;
 			copy_link_address(state);
@@ -180,6 +180,14 @@ void network_handler(ev, data){
   			state = new_channel();
   			PRINTF("Sensor: New Channel\n");
   			copy_link_address(state);
+  		}
+  		else if (cmd == DISCONNECT){
+  			state = get_channel_state(dp->hdr.dst_chan_num);
+			if (state){
+				remove_channel(state->chan_num);
+			}
+			state = &home_channel_state;
+			copy_link_address(state);
   		}
   	}else {
 		state = get_channel_state(dp->hdr.dst_chan_num);
@@ -201,6 +209,7 @@ void network_handler(ev, data){
 	else if (cmd == CACK)    cack_handler(state, dp);
 	else if (cmd == PING)    ping_handler(state, dp);
 	else if (cmd == PACK)    pack_handler(state, dp);
+	else if (cmd == DISCONNECT) close_handler(state,dp);
 }
 
 

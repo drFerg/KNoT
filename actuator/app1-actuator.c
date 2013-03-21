@@ -9,6 +9,7 @@ AUTOSTART_PROCESSES(&application1);
 void callback(char name[],void * data){
 	state = !state;
 	printf(">>Actuator APP: %s\n", (state?"ON":"OFF"));
+	
 	state?leds_on(LEDS_ALL):leds_off(LEDS_ALL);
 }
 
