@@ -10,7 +10,6 @@ diagrams:
 	cd evaluation; gnuplot KNoT2.gp
 	cd evaluation; gnuplot xap.gp
 	cd evaluation; gnuplot xap2.gp
-	cd ..
 
 report: diagrams report.tex bib.bib
 	mkdir -p tmp 

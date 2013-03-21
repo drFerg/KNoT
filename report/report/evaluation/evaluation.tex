@@ -1,34 +1,5 @@
-This chapter will evaluate and discuss how successful the design and implementation is at meeting the proposed requirements for the project. To do this, the chapter will discuss how the protocol performs in general followed by a comparison of the efficiency of the protocol and its implementation in comparison to other systems discussed in chapter \ref{cha:background}.
+This chapter evaluates and discusses how successful the design and implementation was at meeting the proposed requirements for the project. To do this, the chapter will discuss how the protocol was tested to satisfy the initial use cases, the implementation size, followed by a comparison of the efficiency of the protocol and its implementation to the eXtensible Application protocol (xAP) discussed in chapter \ref{cha:background}.
 
-\section{Implementation size and performance} % (fold)
-\label{sec:implementation_size_and_performance}
-
-\begin{figure}[h]
-\begin{center}
-    \begin{tabular}{| l | c | c | c | l |}
-    \hline
-    Setup & ROM (bytes) & RAM (bytes) & Channels & Notes \\ \hline
-    Hello world & 19,812 & 5,538 & n/a &... \\ \hline
-    Hello world & 29,494 & 6,764 & n/a & with uIP stack. \\ \hline
-    Sensor app & 31,922 & 7,708 & 10 & with uIP stack, IoT Protocol and light sensor\\ \hline
-    Actuator app & 32,032 & 7,750 & 10 & with uIP stack, IoT Protocol and LEDs \\ \hline
-    Controller app & 33,318 & 7,808 & 10 & with uIP stack, IoT Protocol \\ \hline
-    Sensor app & 31,922 & 7,318 & 5 & with uIP stack, IoT Protocol and light sensor\\ \hline
-    Actuator app & 32,032 & 7,320 & 5 & with uIP stack, IoT Protocol and LEDs \\ \hline
-    Controller app & 33,318 & 7,378 & 5 & with uIP stack, IoT Protocol \\ 
-    \hline
-    \end{tabular}
-\end{center}
-\caption{Table showing implementation sizes against stock Contiki}
-\label{tab:size}
-\end{figure}
-
-
-
-Discuss size of protocol implementation and general performance.
-
-currently frequencies limited to ints not floats, but could be upgraded to support finer time intervals without any problems.
-% section implementation_size_and_performance (end)
 
 \section{Testing} % (fold)
 \label{sec:testing}
@@ -65,11 +36,49 @@ In figure \ref{fig:lighttest}, the controller is labelled as mote 2, and can be 
 % subsection presence_detector (end)
 % section testing (end)
 
+\section{Implementation size} % (fold)
+\label{sec:implementation_size_and_performance}
+Creating a lightweight protocol is one of the primary requirements, thus ensuring that the protocol could be implemented on even the most constrained devices, such as the TelosB or Arduino. Because of this, each aspect in the protocol had to be made as low cost as possible, whilst still maintaining flexibility and upgradeability. With this in mind the TelosB implementation performs well in regards to consuming device resources, as show in figure \cite{size} when compared to a variety of other application.
+
+To demonstrate the amount of ROM and RAM occupied, a simple hello world program was created, which upon receiving an event, output ``Hello world'' to serial. This provided the baseline from which to compare the implementation against; also included as another baseline is the same hello world program with uIP included, which shows how much is added to the binary without any additional code being written.
+
+When comparing the Hello world app with the Hello world app with uIP included, a significant difference can be seen in the size of ROM consumed as well the RAM, leaving around 18,000 bytes ROM and around 3,300 bytes RAM left for an application and other libraries.
+
+Comparing the sensor implementation of the IoT protocol with uIP and a minimal sensor application to connect a sensor to the API and print out a message, consumes only an additional 2428 bytes ROM and 994 bytes RAM with 10 channels and 554 bytes RAM with 5 channels.
+Similarly the actuator implementation performs on par, only consuming a minimal amount more in both cases. Unlike the two other implementations, the controller implementation consumes a much higher, 3848 bytes of ROM but a minimal increase in RAM, due to the necessity to discover, communicate and connect to both of the other device roles.
+\begin{figure}[h]
+\begin{center}
+    \begin{tabular}{| l | c | c | c | l |}
+    \hline
+    Setup & ROM (bytes) & RAM (bytes) & Channels & Notes \\ \hline
+    Hello world & 19,812 & 5,538 & n/a &... \\ \hline
+    Hello world & 29,494 & 6,764 & n/a & with uIP stack. \\ \hline
+    Sensor app & 31,922 & 7,708 & 10 & with uIP stack, IoT Protocol and light sensor\\ \hline
+    Actuator app & 32,032 & 7,750 & 10 & with uIP stack, IoT Protocol and LEDs \\ \hline
+    Controller app & 33,318 & 7,808 & 10 & with uIP stack, IoT Protocol \\ \hline
+    Sensor app & 31,922 & 7,318 & 5 & with uIP stack, IoT Protocol and light sensor\\ \hline
+    Actuator app & 32,032 & 7,320 & 5 & with uIP stack, IoT Protocol and LEDs \\ \hline
+    Controller app & 33,318 & 7,378 & 5 & with uIP stack, IoT Protocol \\ 
+    \hline
+    \end{tabular}
+\end{center}
+\caption{Table showing implementation sizes against stock Contiki}
+\label{tab:size}
+\end{figure}
+
+
+
+Discuss size of protocol implementation and general performance.
+
+currently frequencies limited to ints not floats, but could be upgraded to support finer time intervals without any problems.
+% section implementation_size_and_performance (end)
+
 \section{Comparison to other systems} % (fold)
 \label{sec:comparison_to_other_systems}
-
+To better demonstrate the lightweight nature of the protocol and also the scalability which it can provide, two scenarios are demonstrated in figures \ref{graph:IoT1}\ref{graph:IoT2}
 \subsection{xAP - Receiving packets} % (fold)
 \label{sub:xap}
+
 calculate number of packets received by one node for both systems in a typical scenario, as the network expands to support 5, 10, 25 50, 100, 200 nodes.
 
 
