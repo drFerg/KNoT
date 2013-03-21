@@ -2,8 +2,68 @@ This chapter will evaluate and discuss how successful the design and implementat
 
 \section{Implementation size and performance} % (fold)
 \label{sec:implementation_size_and_performance}
+
+\begin{figure}[h]
+\begin{center}
+    \begin{tabular}{| l | c | c | c | l |}
+    \hline
+    Setup & ROM (bytes) & RAM (bytes) & Channels & Notes \\ \hline
+    Hello world & 19,812 & 5,538 & n/a &... \\ \hline
+    Hello world & 29,494 & 6,764 & n/a & with uIP stack. \\ \hline
+    Sensor app & 31,922 & 7,708 & 10 & with uIP stack, IoT Protocol and light sensor\\ \hline
+    Actuator app & 32,032 & 7,750 & 10 & with uIP stack, IoT Protocol and LEDs \\ \hline
+    Controller app & 33,318 & 7,808 & 10 & with uIP stack, IoT Protocol \\ \hline
+    Sensor app & 31,922 & 7,318 & 5 & with uIP stack, IoT Protocol and light sensor\\ \hline
+    Actuator app & 32,032 & 7,320 & 5 & with uIP stack, IoT Protocol and LEDs \\ \hline
+    Controller app & 33,318 & 7,378 & 5 & with uIP stack, IoT Protocol \\ 
+    \hline
+    \end{tabular}
+\end{center}
+\caption{Table showing implementation sizes against stock Contiki}
+\label{tab:size}
+\end{figure}
+
+
+
 Discuss size of protocol implementation and general performance.
+
+currently frequencies limited to ints not floats, but could be upgraded to support finer time intervals without any problems.
 % section implementation_size_and_performance (end)
+
+\section{Testing} % (fold)
+\label{sec:testing}
+To ensure the protocol worked throughout development, both the simulator and TelosB motes were used to test some of the scenarios described in the use cases contained in chapter \ref{cha:requirements_gathering}.
+\subsection{Sensor logging} % (fold)
+\label{sub:sensor_logging}
+In order to test the multiple channel support of devices, the scenario of sensor logging was set up; where one or more controllers search the network for available sensors and request data from them at regular intervals.
+To demonstrate this, the scenario was set up in the Cooja simulator, with one controller device, three light sensor devices and three actuators; the controller was set to locate and connect to three sensing devices which could sense light.
+
+In figure \ref{fig:logtest}, the controller is labelled as mote 1, and can be seen to receive messages from sensor motes 3, 5, 7. Motes 8, 9, 10 are actuators motes, listening for any broadcast queries which match their type. In the mote output box, each mote prints out its temperature locally, as designated by the Mote column, and sends it to the controller, where it also prints it.
+
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.5]{evaluation/img/logTest.jpg}
+\caption{Sensor logging scenario}
+\label{fig:logtest}
+\end{figure}  
+% subsection sensor_logging (end)
+
+\subsection{Light/Presence detector} % (fold)
+\label{sub:presence_detector}
+In order to ensure multiple types of devices could be connected, so that a closed loop system could be created, a scenario involving a controller, light sensor and light switch was created. The controller attempts to locate and connect to a light sensor and light switch actuator on the network, using the readings from the light sensor to decide when to turn the light switch on and off. The purpose of such a scenario is to demonstrate the possibility of the ``Internet of Things'' sensing either, the presence of a user by obscuring a sensor, or the change in lighting conditions, which would require a light to be turned on to assist the user.
+To test and demonstrate this, the scenario was set up using both real motes and the simulator, with one controller device, one light sensor device and one light switch actuator device.
+
+In figure \ref{fig:lighttest}, the controller is labelled as mote 2, and can be seen to receive messages from sensor mote 1 and send messages to actuator mote 3. In the Mote output box, the various print outs can be seen, displaying sensor readings received, decisions based on the sensor readings and the commands sent and received. In the network view box, it's possible to see the LEDs on mote 3 alight, due to the recent command to turn on the lights.
+
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.5]{evaluation/img/lightswitch.jpg}
+\caption{Light/Presence detector}
+\label{fig:lighttest}
+\end{figure}
+
+% subsection presence_detector (end)
+% section testing (end)
 
 \section{Comparison to other systems} % (fold)
 \label{sec:comparison_to_other_systems}
@@ -12,6 +72,38 @@ Discuss size of protocol implementation and general performance.
 \label{sub:xap}
 calculate number of packets received by one node for both systems in a typical scenario, as the network expands to support 5, 10, 25 50, 100, 200 nodes.
 
+
+\begin{figure}[h]
+\begin{center}
+\begin{minipage}{.5\textwidth}
+\input{evaluation/KNoT.tex}
+\caption{Packets received in 1 minute using IoT protocol}
+\label{graph:IoT1}
+\end{minipage}%
+\begin{minipage}{.5\textwidth}
+\input{evaluation/xap.tex}
+\caption{Packets received in 1 minute using xAP protocol}
+\label{graph:IoT1}
+\end{minipage}
+\end{center}
+\end{figure}
+
+
+
+\begin{figure}[h]
+\begin{center}
+\begin{minipage}{.5\textwidth}
+\input{evaluation/KNoT2.tex}
+\caption{Packets received in 1 minute using IoT protocol x 2}
+\label{graph:IoT2}
+\end{minipage}%
+\begin{minipage}{.5\textwidth}
+\input{evaluation/xap2.tex}
+\caption{Packets received in 1 minute using xAP protocol x 2}
+\label{graph:IoT2}
+\end{minipage}
+\end{center}
+\end{figure}
 % subsection xap (end)
 
 \subsection{JMS - Failure} % (fold)
