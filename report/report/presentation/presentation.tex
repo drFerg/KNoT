@@ -1,6 +1,8 @@
 \documentclass{beamer}
-
+\usepackage{gnuplot-lua-tikz}
+\usepackage{caption}
 \usetheme{Warsaw}
+\DeclareGraphicsRule{.1}{mps}{*}{}
 
 \title{Level 4 Project Presentation \\ A lightweight protocol for constrained devices for use in the Internet of
 Things paradigm}
@@ -20,6 +22,7 @@ Things paradigm}
 \section{What is the Internet of Things?} % (fold)
   \label{sec:introduction}
   \begin{frame}[t]\frametitle{What is the Internet of Things?}
+  \only<1>{
     \begin{itemize}
       \item [--] \textbf{1999: RFID}
       \begin{itemize}
@@ -27,18 +30,18 @@ Things paradigm}
         \item Never really took off.
       \end{itemize}
     \end{itemize}
+    }
   	\begin{itemize}
-      \item[--] \textbf{2013: Year of Internet of Things}
+      \item<2->[--] \textbf{2013: Year of Internet of Things}
       \begin{itemize}
         \item Advent of cheap, low-power and small constrained devices.
         \item Consumer Electronics Show 2013
-        \item Hobbyists + micro-controllers
         \item Smart fridges, Smart watches, Smart washing machines, Smart scales, Smart cars, Smart Things and Smart ... plants?
         \item Plug something into the Internet, it's now smart.
         \item Creates an Internet of Things which can notify you when your wash cycle has complete, your milk has gone off and your plants about to bite the dust.
       \end{itemize}
     \end{itemize}
-
+\only<2>{
     \begin{figure}[htb]
     \begin{minipage}{0.3\textwidth}
       \centering
@@ -53,7 +56,7 @@ Things paradigm}
           \includegraphics[scale=0.1]{presentation/img/smart-light.jpg}
       \end{minipage}
     \end{figure}
-  \end{frame}
+}  \end{frame}
 
   \begin{frame}[t]\frametitle{The bigger picture}
   \begin{itemize}
@@ -71,18 +74,16 @@ Things paradigm}
 
 \begin{frame}[t]\frametitle{Why?}
 \begin{itemize}
-  \item [--] \textbf{Not just a case of being lazy...}
-  \item [--] \textbf{The Internet of People}
+  \item<1-> [--] \textbf{Not just a case of being lazy...}
+  \item<2-> [--] \textbf{The Internet of People}
 \begin{itemize}
   \item Internet in 2009 was 500 exabytes (that's 500 BILLION gigabytes), of which 70\% was contributed to by users
   \item Users are bad at data entry.
   \item Devices are reliable and accurate.
 \end{itemize}
-\item [--] \textbf{Smarter decisions = Savings}
+\item<3-> [--] \textbf{Smarter decisions}
   \begin{itemize}
-    \item Complex decisions based on lots of data.
-    \item Efficient use of resources.
-    \item Saving the user money, and the world.
+      \item workload, complex decisions, saves resources, security
   \end{itemize}
 \end{itemize}
 \end{frame}
@@ -92,28 +93,23 @@ Things paradigm}
 \begin{frame}[t]\frametitle{What's wrong, hasn't this been solved already?}
 \label{sec:what_s_wrong_}
 \begin{itemize}
-  \item [--] \textbf{Eco-system is full of individual Things}
+  \item<1-> [--] \textbf{Eco-system is full of individual ``Things''}
   \begin{itemize}
-    \item Manufacturers' own standards, non-compliant
-    \item Heterogeneous devices, no easy way of connecting all devices efficiently
-    \item Simple devices, limited connectivity
+    \item Hobbyist's ``Things'' vs Manufacturer's ``Things''.
+    \item Simple, singular, heterogeneous network of devices.
+    \item Constrained resources: battery, 8/16MHz CPU, ~40K ROM, ~10K RAM.
+    \item Some open source efforts are trying...xAP, SmartThings.
+    \item Existing protocols are too heavyweight/un-suited to constrained devices: JMS, TCP, HTTP,etc.
+    \item IETF are pushing through new standards, CoRE \& CoAP, early days.
   \end{itemize}
-\item [--] \textbf{Not really...not yet}
-  \begin{itemize}
-    \item Manufacturers only creating proprietary tech.
-    \item Crowd-funding platform Kickstarter is full of ``Things''
-    \item Some open source efforts are trying...xAP, SmartThings
-    \item Existing protocols are too heavyweight/un-suited to constrained devices: JMS, TCP, HTTP,etc
-    \item IETF are pushing through new standards, CoRE \& CoAP, early days
-  \end{itemize}
-  \item [--] \textbf{No simple, scalable solution for connecting these cheap devices together}
+  \item<2-> [--] \textbf{No simple, scalable solution for connecting these different types of ``Things'' together}
 \end{itemize}
 \end{frame}
 
 \begin{frame}[t]\frametitle{Example attempts}
 
 \begin{itemize}
-    \item [--] \textbf{xAP: eXtensible Application Protocol}
+    \item<1-> [--] \textbf{xAP: eXtensible Application Protocol}
   \begin{itemize}
     \item Heterogeneous network of devices can easily join, listen in and respond to what they're interested in.
     \item Distributed architecture, no central point of failure.
@@ -121,9 +117,9 @@ Things paradigm}
     \item Built on top of a multicast unreliable network.
     \item Devices broadcast ALL data, limited scalability.
   \end{itemize}
-  \item [--] \textbf{SmartThings}
+  \item<2-> [--] \textbf{SmartThings}
   \begin{itemize}
-    \item Making existing objects smart by connecting them to a hub wirelessly (Zigbee)
+    \item Making existing objects smart by connecting them to a hub via low-power radio (Zigbee)
     \item Creating apps for your everyday things, user intervention.
     \item Cloud first, devices ``wired'' together in the cloud, hub just a gateway.
     \item Reliability \& Security...
@@ -137,35 +133,165 @@ Things paradigm}
 \label{sec:how_to_solve_it}
 \begin{frame}[t]\frametitle{A new protocol}
 \begin{itemize}
-  \item [--] \textbf{Create a lightweight protocol}
+  \item [--] \textbf{Create a lightweight scalable protocol}
   \item [--] \textbf{Break the Internet of Things down to three basic roles}
   \begin{itemize}
     \item Sensor, the see-er
     \item Actuator, the do-er
     \item Controller, the brains
   \end{itemize}
-  \item [--] \textbf{Distributed architecture with selective broadcasting. Why?}
+  \item [--] \textbf{Distributed architecture with selective broadcasting}
   \begin{itemize}
-    \item IoT is distributed, difficult to centralise.
-    \item No central point of failure.
+    \item IoT is distributed in nature, no central point of failure.
     \item Broadcast needed for discovering devices.
   \end{itemize}
-  \item [--] \textbf{Use an un-reliable connection and build reliability selectively on top. Why?}
+  \item [--] \textbf{Use an un-reliable connection and build reliability selectively on top}
   \begin{itemize}
-    \item Full reliability e.g., TCP, is heavyweight
+    \item Full reliability is heavyweight e.g., TCP
     \item Ephemeral data
+    \item Reliability of connection handling \& commands, timeouts \& PINGs for liveness
   \end{itemize}
 \end{itemize}
 \end{frame}
+
+\begin{frame}[t]\frametitle{Implementation Target Platform}
+\begin{itemize}
+  \item [--] \textbf{A variety of different platforms to target}
+  \begin{itemize}
+    \item Arduino, TelosB, Raspberry Pi, Netduino, MSP430 Launchpad,
+  \end{itemize}
+  \only<2>{
+  \item [--]\textbf{Original Platform: Arduino}
+  \begin{itemize}
+    \item 16MHz CPU, 2KB of RAM, 32KB ROM
+    \item Huge following, open source, lots of copies, great online resources
+    \item BUT no hardware interrupts from network interface...? Polling... 
+  \end{itemize}}
+  \only<3>{
+  \item [--] \textbf{Final Platform: TelosB}
+  \begin{itemize}
+    \item Wireless Network Sensor platform, well tested device in academia
+    \item 8MHz, 10KB RAM, 48KB ROM + low-power radio
+    \item Several OSs to choose from: Contiki \& TinyOS + more...
+    \item Contiki chosen, protothreads + events, uIP and Cooja
+  \end{itemize}}
+\end{itemize}
+\only<3>{
+\begin{figure}[htb]
+      \centering
+        \includegraphics[scale=0.25]{evaluation/img/logTest.jpg}
+    \end{figure}}
+\end{frame}
+
+\begin{frame}[t]\frametitle{Implementation overview}
 % section how_to_solve_it (end)
+\begin{itemize}
+  \item [--] \textbf{IoT Protocol}
+  \begin{itemize}
+    \item Run over UDP
+    \item 10 connections per device (due to RAM constraints)
+    \item Event based API of applications on top
+  \end{itemize}
+  \end{itemize}
+
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=0.2]{implementation/img/system_architecture.1}
+\caption{Overall system architecture}
+\label{fig:system_architecture}
+\end{figure}
+     
+\end{frame}
+
 
 \section{Comparison} % (fold)
 \label{sec:comparison}
+\begin{frame}[t]\frametitle{How does this measure up?}
+\begin{itemize}
+  \item Consumes around 1Kbyte ROM and RAM with 10 connections
+  \item Scales well as number of devices increases
+\end{itemize}
+\only<2>{
+\begin{itemize}
+  \item Comparison to xAP
+  \begin{itemize}
+    \item 2 scenarios
+      \begin{itemize}
+       \item 3 devices, 1 controller, 1 sensors, 1 actuators
+       \item 5 devices, 1 controller, 2 sensors, 2 actuators
+    \end{itemize} 
+    \item Sensors sense every 1 second and ping every 10 seconds
+    \item Controllers send commands to actuators every 15 seconds
+    \item One minute period
+  \end{itemize}
+\end{itemize}
+  }
+\end{frame}
 
+\begin{frame}
+\begin{center}
+\begin{figure}[h]
+\tikzstyle{every node}=[font=\scriptsize]
+\tikzset{every picture/.style={scale=0.67}}%
+\begin{minipage}{.5\textwidth}
+\input{evaluation/KNoT.tex}
+\caption{IoT}
+\label{graph:IoT2}
+\end{minipage}%
+\begin{minipage}{.5\textwidth}
+\input{evaluation/xap.tex}
+\caption{xAP}
+\label{graph:IoT2}
+\end{minipage}
+\end{figure}
+\end{center}
+\end{frame}
+
+
+\begin{frame}
+\begin{figure}[h]
+\centering
+\tikzstyle{every node}=[font=\scriptsize]
+\tikzset{every picture/.style={scale=0.67}}%
+\begin{minipage}{.5\textwidth}
+\input{evaluation/KNoT2.tex}
+\caption{IoT}
+\label{graph:IoT2}
+\end{minipage}%
+\begin{minipage}{.5\textwidth}
+\input{evaluation/xap2.tex}
+\caption{xAP}
+\label{graph:IoT2}
+\end{minipage}
+\end{figure}
+
+
+\end{frame}
 % section comparison (end)
 
 \section{Is this it?} % (fold)
 \label{sec:is_this_it_}
+\begin{frame}\frametitle{Getting there...}
+\begin{itemize}
+  \item[--] \textbf{Some great scalable ideas but}
+\begin{itemize}
+  \item Needs to be ported across platforms to really test it
+  \item Create applications for it
+  \item Other power saving ideas, sleepy motes, less transmissions, more readings
+\end{itemize}
+\item [--] \textbf{Internet of Things will be divided and slowly merge.}
+  
+\end{itemize}
 
+
+\end{frame}
+\begin{frame}[t]\frametitle{Questions?}
+
+\begin{figure}
+\includegraphics[scale=0.2]{presentation/img/internet-of-things.jpg}
+\caption{Connecting everything...\footnote{from http://scribbles-notes.blogspot.co.uk}}
+
+\end{figure}
+\end{frame}
 % section is_this_it_ (end)
 \end{document}

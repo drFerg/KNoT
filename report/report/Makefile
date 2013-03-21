@@ -5,13 +5,14 @@ slides: presentation/presentation.tex
 	pdflatex -output-directory tmp presentation/presentation.tex
 	mv tmp/presentation.pdf .
 
-
-report: report.tex bib.bib
+diagrams:
 	cd evaluation; gnuplot KNoT.gp
 	cd evaluation; gnuplot KNoT2.gp
 	cd evaluation; gnuplot xap.gp
 	cd evaluation; gnuplot xap2.gp
 	cd ..
+
+report: diagrams report.tex bib.bib
 	mkdir -p tmp 
 	pdflatex -output-directory tmp report.tex
 	bibtex report
