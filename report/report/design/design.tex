@@ -640,5 +640,11 @@ Therefore the choice to use an unreliable link, such as UDP, combined with build
 
 \subsubsection{CoAP} % (fold)
 \label{ssub:coap}
-Comparing the proposed protocol to the aforementioned CoAP, currently in development in the IETF, both try to tackle this problem of designing a protocol suitable for the constrained devices.
+Comparing the proposed protocol to the aforementioned CoAP, currently in development in the IETF, both try to tackle the problem of designing a protocol suitable for the constrained devices. Taking similar approaches both protocols are based on a distributed architecture, whereby no central server has to be used to locate devices. Instead both allow the device to either know the target device a priori or discovery it via broadcast queries. 
+
+One of the significant differences between the two, is that CoAP is designed around generic, non-specific devices; whereas the proposed protocol classifies devices into the three main roles, sensors, actuators and controllers. Because of this, CoAP doesn't impose certain functions on devices, in the same way that the proposed protocol enforces that a sensor must transmit data at a set rate to its connected devices. However, CoAP does support the possibility of such functionality; devices can subscribe to one another, by doing so they will be informed by the subscribed device when an event has occurred, after which the subscriber can then decide to pull the event data from the subscribed device. This functionality works similar to a controller and sensor forming a connection and sending data, however because of the additional step of notifying the subscriber, additional packets must be sent and received by both devices. 
+
+Lastly, One of the core goals of CoAP is to ensure that constrained devices can easily transition into the World Wide Web, which is enabled by the RESTful style protocol, where commands (GET, PUT, etc) are used that are very much like those used in HTTP. This ensures minimal translation of packets needs to be performed. However, this is not the case in the proposed protocol, whereby instead an application would need to be built on top of the protocol to support WWW integration, due to the unrelated packet format.
+
+
 % subsubsection coap (end)
