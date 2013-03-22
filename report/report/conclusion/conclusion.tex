@@ -1,43 +1,40 @@
 This chapter concludes the report, reviewing the initial objectives, assessing the successes and contributions resulting from it.
-The chapter ends discussing some future works which could follow on from the project.
+The chapter ends discussing some future work which could follow on from the project.
 
 \section{Summary of Project}
-The original purpose of this project was to try and solve the problem of creating a lightweight protocol for the ``Internet of Things'', by designing and implementing a new protocol which could run on the most constrained devices, scale up to the more powerful devices we use everyday and scale out to 10's and 100's of devices within an environment such as the home or office.
+The original purpose of this project was to try and solve the problem of creating a lightweight protocol for the ``Internet of Things'', by designing and implementing a new protocol which could run on the most constrained devices, scale up to the more powerful devices we use everyday and scale out to 10's / 100's of devices within an environment such as the home or office.
 
-%%%%
-referring back to the requirements, design and implementation meets them well,
-the conecpt of broadcasting and unicasting works well
-adequate reliability but needs to be tested thoroughly to fully understand if it's suitable in all cases or perhaps needs tweaking for selective reliability
-evaluation proves it scales well, its distributed nature offers many benefits and configurations and the overall size of the implementation is suitable and could possibly be improved with time due to learning curve with contiki
-%%%
+The design of the protocol was heavily influenced by existing systems currently available, and seeked to adapt their concepts to better fit the ``Internet of Things'', such as xAP's distributed broadcast architecture and TCP's reliability concepts. By doing so a protocol which could run efficiently on the most low-power devices, saving power and reducing the strain on the CPU, was created.
+
+Evaluating this against other implementations, the protocol proves its ability to scale across different network sizes, and withstand failures in a manageable fashion when they occur, with the possibility of distributing control across the network and even creating redundancy to further reduce the impact. The overall size of the protocol implementation shows that it has a minimal impact on the resources of the device, even whilst offering 5 to 10 connections per device, which on a small to medium network would prove sufficient for both the actuator and sensor roles. In the case of the controller, porting it across to a more powerful platform suits the role far better, given the quantity of connections and data it will usually handle and request.
+
+However, given the development constraints, including both the limited time and availability of different platforms, further work developing the protocol would be necessary to improve, test, port and validate its applicability in a real heterogeneous ``Internet of Things'' environment.
+
+Overall, the project has been very successful in designing and implementing a protocol which meets the initial requirements, surpassing existing implementations in its applicability to constrained devices within the ``Internet of Things'' paradigm.
 
 \section{Future Work}
 This section describes some of the possible future work for developing this protocol further, from improving its feature set to trying to maximise the use of available resources.
-
 \begin{itemize}
-	\item expanding the protocol to suit more complex sensors and actuators, query sensor/actuator specific abilities, deep queries
+	\item Applications
 	\begin{itemize}
-		\item Problem of limited devices available, cant possibly test or theorise about other devices unless known, but from further testing and device learning, new, better and more optimised payloads could be made
+		\item In order to fully understand the applicability of the protocol and to ensure it provides the correct abstractions, applications need to be developed for the protocol. Within the project timescale, only a subset of the original use cases could be implemented and tested, with more time the remaining use cases should be implemented at the very least to test the protocol's uses.
 	\end{itemize}
-	\item grouping packets into one, save on transmission,
+	\item Expanding the protocol
 	\begin{itemize}
-		\item Idea of reducing the number of packets transmitted but still maintain the same granularity of data when timing may not be as important
+		\item In the current protocol, sensors and actuators were only observed to be very primitive single function devices, when in reality the possibility of a device being able to sense or perform more than one action is a possibility. Therefore the need to be able to somehow store, search and interpret a devices functions is necessary. Perhaps a further step after discovering a device could be to investigate its different functionality available to it.
 	\end{itemize}
-	\item add optional reliability for data
+	\item Further power saving techniques
 	\begin{itemize}
-		\item Adding the previous point to this, builds upon idea of creating more reliable systems where data is in fact critical
+		\item In the current protocol, by reducing the number of unnecessary packets sent and received the battery life of the constrained devices can be significantly improved. To further this approach, compacting several high frequency sensor readings or actuator commands into one packet, which is then sent a lower frequency, could reduce the power consumption further, whilst still maintaining the same granularity as before when timing is not an issue.
 	\end{itemize}
-	\item adding security
+	\item Security
 	\begin{itemize}
-		\item before being able to be deploy in an internet connected environment, security features need to be implemented to prevent attacks and keep data and resources safe	
+		\item Before being able to truly connect to the Internet, the protocol needs to ensure adequate security measures are put in place; encryption and authentication need to be considered and implemented, to ensure that eavesdropping on the data is not possible, as well as the assurance devices are who they claim to be and can't be spoofed on the network. The Datagram Transport Layer Security (DTLS) protocol could be used for ensuring packets can't be eavesdropped or forged; currently there is support for DTLS on Contiki, \cite{DTLSContiki} .
 	\end{itemize}
-	\item providing functionality for controller to controller
+	\item Porting to different platforms
 	\begin{itemize}
-		\item Allowing controller to co-operate, spread the load, provide redundancy
-	\end{itemize}
-	\item porting to other devices, threaded architecture, raspberry pi
-	\begin{itemize}
-		\item Spread the protocol to multiple platforms, diffrerent archtitectues to see how it perfroms
+		\item Just as with applications, the protocol needs to be ported across a variety of platforms to really test its ability to perform and meet the requirements. By porting to other platforms, the true heterogeneous nature of the ``Internet of Things'' can be realised and utilised to the full extent of its capabilities; allowing not only constrained devices to interact but also smart phones, tablets, home pcs and even Internet services, providing a much more dense and rich ``Internet of Things''.
 	\end{itemize}
 \end{itemize}
+
 

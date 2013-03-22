@@ -14,12 +14,10 @@ diagrams: evaluation/KNoT.dat
 report: diagrams report.tex bib.bib
 	mkdir -p tmp 
 	pdflatex -output-directory tmp report.tex
-	bibtex report
+	bibtex tmp/report
 	pdflatex -output-directory tmp report.tex
 	pdflatex -output-directory tmp report.tex
 	mv tmp/report.pdf .
-	rm report.bbl
-	rm report.blg
 
 open:
 	evince report.pdf &

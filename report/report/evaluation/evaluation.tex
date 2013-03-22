@@ -1,4 +1,4 @@
-This chapter evaluates and discusses how successful the design and implementation was at meeting the proposed requirements for the project. To do this, the chapter will discuss how the protocol was tested to satisfy the initial use cases, the implementation size, followed by a comparison of the efficiency of the protocol and its implementation to the eXtensible Application protocol (xAP) discussed in chapter \ref{cha:background}.
+This chapter evaluates and discusses how successful the design and implementation was at meeting the proposed requirements for the project. To do this, the chapter will discuss how the protocol was tested to satisfy the initial use cases, the implementation size, followed by a comparison of the performance characteristics of the protocol and its implementation to other existing protocols / systems discussed in chapter \ref{cha:background}.
 
 
 \section{Testing} % (fold)
@@ -38,7 +38,7 @@ In figure \ref{fig:lighttest}, the controller is labelled as mote 2, and can be 
 
 \section{Implementation size} % (fold)
 \label{sec:implementation_size_and_performance}
-Creating a lightweight protocol is one of the primary requirements, thus ensuring that the protocol could be implemented on even the most constrained devices, such as the TelosB or Arduino. Because of this, each aspect in the protocol had to be made as low cost as possible, whilst still maintaining flexibility and upgradeability. With this in mind the TelosB implementation performs well in regards to consuming device resources, as show in figure \cite{size} when compared to a variety of other application.
+Creating a lightweight protocol is one of the primary requirements, thus ensuring that the protocol could be implemented on even the most constrained devices, such as the TelosB or Arduino. Because of this, each aspect in the protocol had to be made as low cost as possible, whilst still maintaining flexibility and upgradeability. With this in mind the TelosB implementation performs well in regards to consuming device resources, as show in figure \ref{tab:size} when compared to a variety of other application.
 
 To demonstrate the amount of ROM and RAM occupied, a simple hello world program was created, which upon receiving an event, output ``Hello world'' to serial. This provided the baseline from which to compare the implementation against; also included as another baseline is the same hello world program with uIP included, which shows how much is added to the binary without any additional code being written.
 
@@ -67,12 +67,6 @@ During runtime the amount stored in RAM due to the protocol should not change, b
 \caption{Table showing implementation sizes against stock Contiki}
 \label{tab:size}
 \end{figure}
-
-
-
-Discuss size of protocol implementation and general performance.
-
-currently frequencies limited to ints not floats, but could be upgraded to support finer time intervals without any problems.
 % section implementation_size_and_performance (end)
 
 \section{Comparison to other systems} % (fold)
@@ -150,7 +144,7 @@ In the situation where a single sensor or actuator in the network were to fail, 
 
 In the situation where a controller in the network fails, with the proposed protocol connected devices would try to ping the failed device to ensure it's not a transient failure and then remove the connection state related to that controller. Because the controller facilitates the co-operation between the sensors and actuators within the network, the relationship between these two devices is now lost. In the case of xAP, because it doesn't have the concept of a controller within the network, every device can contain some processing within it, further distributing the control around the network; but due to the connectionless architecture, devices don't understand when a recipient of their data fails, and in the case of a single recipient dying, the device can't know there is no device out there to receive its data, and so will continue to broadcast the data unnecessarily. Whereas in the case of JMS, when the central server fails, which facilitates the publishing and subscribing, the entire network of devices becomes inoperable because of their sole reliance on this server, with no way to communicate directly to one another.
 
-Whilst the proposed protocol does have the controller role, which if fails can cause a significant failure, the possibility of distributing the role of the controller among several devices is also available. By doing so controllers could be set up within different areas within the network, or even act as redundancy, detecting when the original controller fails and then taking over the connections with minimal network down time. When compared to xAP, whilst xAP provides robustness through absolute distribution of logic, it does so at the cost of excessive broadcasting; whereas the compromise observed within the proposed protocol ensures that the criticality of failures can be reduced without any significant costs to the network. 
+Whilst the proposed protocol does have the controller role, which if fails, can cause have significant impact on the network, the possibility of distributing the role of the controller among several devices is also available. By doing so, controllers could be set up within different areas across the network, or even act as redundancy, detecting when the original controller fails and then taking over the connections with minimal network down time. When compared to xAP, whilst xAP provides robustness through absolute distribution of logic, it does so at the cost of excessive broadcasting; whereas the compromise observed within the proposed protocol ensures that the criticality of failures can be reduced without any significant costs to the network. 
 % subsection jms_failure (end)
 
 % section comparison_to_other_systems (end)
