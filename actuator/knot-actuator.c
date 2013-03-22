@@ -65,7 +65,7 @@ void ping_callback(void * s){
 	}
 	else {
 		close_graceful(state);
-		remove_channel(state);
+		remove_channel(state->chan_num);
 		state->pingOUT = 0;
 	}
 }

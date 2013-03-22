@@ -59,13 +59,14 @@ static struct route_discovery_conn route_discovery;
 
 /* Connection for sending data packets to the next hop node: */
 static struct unicast_conn dataconn;
-static struct broadcast_conn broadcast_dataconn;
+/*ADDED by Fergus Leahy for broadcast support*/
+static struct broadcast_conn broadcast_dataconn; 
 
 /* Connection for sending gateway announcement message to the entire
    network: */
 static struct trickle_conn gateway_announce_conn;
 
-#define DEBUG 1
+#define DEBUG 0
 #if DEBUG
 #include <stdio.h>
 #define PRINTF(...) printf(__VA_ARGS__)
@@ -110,9 +111,10 @@ recv_data(struct unicast_conn *c, const rimeaddr_t *from)
   /*  uip_len = hc_inflate(&uip_buf[UIP_LLH_LEN], uip_len);*/
 
   PRINTF("uip-over-mesh: %d.%d: recv_data with len %d\n",
-	 rimeaddr_node_addr.u8[0], rimeaddr_node_addr.u8[1], uip_len);
+   rimeaddr_node_addr.u8[0], rimeaddr_node_addr.u8[1], uip_len);
   tcpip_input();
 }
+/* Added by Fergus Leahy for broadcast support */
 static void
 broadcast_recv(struct broadcast_conn *c, const rimeaddr_t *from)
 { 
@@ -139,9 +141,10 @@ broadcast_recv(struct broadcast_conn *c, const rimeaddr_t *from)
       route_refresh(e);
     }
   }
-  printf("broadcast message source %d.%d: '%s'\n",
+
+  PRINTF("broadcast message source %d.%d: '%s'\n",
          source.u8[0], source.u8[1], (char *)packetbuf_dataptr());
-  printf("broadcast message received from %d.%d: '%s'\n",
+  PRINTF("broadcast message received from %d.%d: '%s'\n",
          from->u8[0], from->u8[1], (char *)packetbuf_dataptr());
 
   tcpip_input();
@@ -152,10 +155,11 @@ static void
 send_data(rimeaddr_t *next)
 {
   PRINTF("uip-over-mesh: %d.%d: send_data with len %d\n",
-	 rimeaddr_node_addr.u8[0], rimeaddr_node_addr.u8[1],
-	 packetbuf_totlen());
+   rimeaddr_node_addr.u8[0], rimeaddr_node_addr.u8[1],
+   packetbuf_totlen());
   unicast_send(&dataconn, next);
 }
+/* Added by Fergus Leahy for broadcast support */
 static void
 broadcast_send_data()
 {
@@ -214,8 +218,8 @@ gateway_announce_recv(struct trickle_conn *c)
   struct gateway_msg *msg;
   msg = packetbuf_dataptr();
   PRINTF("%d.%d: gateway message: %d.%d\n",
-	 rimeaddr_node_addr.u8[0], rimeaddr_node_addr.u8[1],
-	 msg->gateway.u8[0], msg->gateway.u8[1]);
+   rimeaddr_node_addr.u8[0], rimeaddr_node_addr.u8[1],
+   msg->gateway.u8[0], msg->gateway.u8[1]);
 
   if(!is_gateway) {
     uip_over_mesh_set_gateway(&msg->gateway);
@@ -231,7 +235,7 @@ uip_over_mesh_make_announced_gateway(void)
      gateway. */
   if(!is_gateway) {
     PRINTF("%d.%d: making myself the gateway\n",
-	   rimeaddr_node_addr.u8[0], rimeaddr_node_addr.u8[1]);
+     rimeaddr_node_addr.u8[0], rimeaddr_node_addr.u8[1]);
     uip_over_mesh_set_gateway(&rimeaddr_node_addr);
     rimeaddr_copy(&(msg.gateway), &rimeaddr_node_addr);
     packetbuf_copyfrom(&msg, sizeof(struct gateway_msg));
@@ -246,16 +250,17 @@ uip_over_mesh_init(uint16_t channels)
 {
 
   PRINTF("Our address is %d.%d (%d.%d.%d.%d) %d\n",
-	 rimeaddr_node_addr.u8[0], rimeaddr_node_addr.u8[1],
-	 uip_hostaddr.u8[0], uip_hostaddr.u8[1],
-	 uip_hostaddr.u8[2], uip_hostaddr.u8[3],channels);
+   rimeaddr_node_addr.u8[0], rimeaddr_node_addr.u8[1],
+   uip_hostaddr.u8[0], uip_hostaddr.u8[1],
+   uip_hostaddr.u8[2], uip_hostaddr.u8[3],channels);
 
   unicast_open(&dataconn, channels, &data_callbacks);
-  broadcast_open(&broadcast_dataconn,channels+2,&broadcast_call);
+  /* Added by Fergus Leahy for broadcast support */
+  broadcast_open(&broadcast_dataconn,channels+1,&broadcast_call);
   route_discovery_open(&route_discovery, ROUTE_DISCOVERY_INTERVAL,
-		       channels + 1, &rdc);
+           channels + 1, &rdc);
   trickle_open(&gateway_announce_conn, ROUTE_TRICKLE_INTERVAL, channels + 3,
-	       &trickle_call);
+         &trickle_call);
 
   route_init();
   /* Set lifetime to 30 seconds for non-refreshed routes. */
@@ -267,6 +272,7 @@ uip_over_mesh_send(void)
 {
   rimeaddr_t receiver;
   struct route_entry *rt;
+  /* Added by Fergus Leahy for broadcast support */
   uip_ipaddr_t broad;
   uip_ipaddr(&broad,255,255,255,255);
 
@@ -278,6 +284,7 @@ uip_over_mesh_send(void)
   /* Packets destined to this network is sent using mesh, whereas
      packets destined to a network outside this network is sent towards
      the gateway node. */
+     /* Added by Fergus Leahy for broadcast support */
      if (uip_ipaddr_cmp(&BUF->destipaddr,&broad)){
        PRINTF("uip_over_mesh_send: Broadcast address\n");
       packetbuf_copyfrom(&uip_buf[UIP_LLH_LEN], uip_len);
@@ -289,9 +296,9 @@ uip_over_mesh_send(void)
   } else {
     if(rimeaddr_cmp(&gateway, &rimeaddr_node_addr)) {
       PRINTF("uip_over_mesh_send: I am gateway, packet to %d.%d.%d.%d to local interface\n",
-	     uip_ipaddr_to_quad(&BUF->destipaddr));
+       uip_ipaddr_to_quad(&BUF->destipaddr));
       if(gw_netif != NULL) {
-	return gw_netif->output();
+  return gw_netif->output();
       }
       return UIP_FW_DROPPED;
     } else if(rimeaddr_cmp(&gateway, &rimeaddr_null)) {
@@ -299,15 +306,15 @@ uip_over_mesh_send(void)
       return UIP_FW_OK;
     } else {
       PRINTF("uip_over_mesh_send: forwarding packet to %d.%d.%d.%d towards gateway %d.%d\n",
-	     uip_ipaddr_to_quad(&BUF->destipaddr),
-	     gateway.u8[0], gateway.u8[1]);
+       uip_ipaddr_to_quad(&BUF->destipaddr),
+       gateway.u8[0], gateway.u8[1]);
       rimeaddr_copy(&receiver, &gateway);
     }
   }
 
   PRINTF("uIP over mesh send to %d.%d with len %d\n",
-	 receiver.u8[0], receiver.u8[1],
-	 uip_len);
+   receiver.u8[0], receiver.u8[1],
+   uip_len);
   
   /*  uip_len = hc_compress(&uip_buf[UIP_LLH_LEN], uip_len);*/
   
@@ -333,7 +340,8 @@ uip_over_mesh_send(void)
       route_discovery_discover(&route_discovery, &receiver, ROUTE_TIMEOUT);
     }
   } else {
-    route_decay(rt);
+    //route_decay(rt);
+    route_refresh(rt); // want to keep the route alive for unreliable unicast
     send_data(&rt->nexthop);
   }
   return UIP_FW_OK;

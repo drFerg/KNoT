@@ -45,7 +45,6 @@ void init_home_channel(){
       KNOT_EVENT_CONNECT = process_alloc_event();
       KNOT_EVENT_COMMAND = process_alloc_event();
       KNOT_EVENT_CONNECTED_DEVICE = process_alloc_event();
-      printf("How many ticks in a sec: %d\n",CLOCK_CONF_SECOND );
 }
 
 void ping_callback(void * s){

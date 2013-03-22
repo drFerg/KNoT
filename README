@@ -10,3 +10,12 @@ The protocol considers three types of general devices:
 - Actuator 
 - Controller
 
+
+To run:
+- ensure uip-over-mesh.c is copied into Contiki/core/net/
+- cd into the appropriate device role
+- run make to compile
+- run make app-*ROLE*.upload to upload to a device
+
+To run using cooja:
+- Double click anyone of the cooja files (.csc)
