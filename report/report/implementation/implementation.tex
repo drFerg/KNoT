@@ -108,13 +108,6 @@ As shown in figure \ref{fig:protocol_architecture}, the implementation of the pr
 
 For communication between the protocol and the application, as discussed previously, events are used to pass information back to the application and commands are used to initiate actions, such as discovering devices, connecting to devices or closing connections.
 
-\begin{figure}[h!]
-\centering
-\includegraphics[scale=0.5]{implementation/img/protocol_architecture.1}
-\caption{Communication and threading architecture}
-\label{fig:protocol_architecture}
-\end{figure}
-
 Whilst the implementation adheres to the protocol design and specification proposed in chapter \ref{cha:design}, it does have some limitations in its current form. These include:
 \begin{itemize}
  	\item Channel table limited to 10 channels due to memory constraints.
@@ -127,15 +120,22 @@ Whilst the implementation adheres to the protocol design and specification propo
 \label{sub:testing_and_simulation}
 Throughout the implementation it was absolutely necessary to test the code as often as possible to ensure that it functioned correctly and as expected. Tests were performed both on real devices and within the provided simulator, Cooja, for the platform developed on, Contiki on TelosB motes. The Cooja simulator, shown in figure \ref{fig:simulator}, provided the ability to test scenarios which wouldn't be possible with the real devices, including testing with 10's of devices and with varying conditions such as radio strength and interference.
 
+To test the implementation, unit tests were performed on each component of the system as it was developed, this was done to ensure that that each component functioned correctly before being integrated into the rest of the system. After which, the system was tested to see if the new component functioned correctly and did not break the existing code base. Using the Cooja simulator made it extremely easy to perform these tests and see how any changes effected the operation, without the need to reprogram each mote individually. 
+
+
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=0.5]{implementation/img/protocol_architecture.1}
+\caption{Communication and threading architecture}
+\label{fig:protocol_architecture}
+\end{figure}
+
 \begin{figure}[h!]
 \centering
 \includegraphics[scale=0.5]{implementation/img/cooja.jpg}
 \caption{Cooja Simulator}
 \label{fig:simulator}
 \end{figure}
-
-To test the implementation, unit tests were performed on each component of the system as it was developed, this was done to ensure that that each component functioned correctly before being integrated into the rest of the system. After which, the system was tested to see if the new component functioned correctly and did not break the existing code base. Using the Cooja simulator made it extremely easy to perform these tests and see how any changes effected the operation, without the need to reprogram each mote individually. 
-
 
 % subsection testing_and_simulation (end)
 

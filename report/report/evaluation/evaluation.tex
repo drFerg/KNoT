@@ -9,7 +9,7 @@ To ensure the protocol worked throughout development, both the simulator and Tel
 In order to test the multiple channel support of devices, the scenario of sensor logging was set up; where one or more controllers search the network for available sensors and request data from them at regular intervals.
 To demonstrate this, the scenario was set up in the Cooja simulator, with one controller device, three light sensor devices and three actuators; the controller was set to locate and connect to three sensing devices which could sense light.
 
-In figure \ref{fig:logtest}, the controller is labelled as mote 1, and can be seen to receive messages from sensor motes 3, 5, 7. Motes 8, 9, 10 are actuators motes, listening for any broadcast queries which match their type. In the mote output box, each mote prints out its temperature locally, as designated by the Mote column, and sends it to the controller, where it also prints it.
+In figure \ref{fig:logtest}, the controller is labelled as mote 1, and can be seen to receive messages from sensor motes 3, 5, 7. Motes 8, 9, 10 are actuator motes, listening for any broadcast queries which match their type. In the Mote Output box, each mote prints out its temperature locally, as designated by the Mote column, and sends it to the controller, where it also prints it.
 
 \begin{figure}[h]
 \centering
@@ -24,7 +24,7 @@ In figure \ref{fig:logtest}, the controller is labelled as mote 1, and can be se
 In order to ensure multiple types of devices could be connected, so that a closed loop system could be created, a scenario involving a controller, light sensor and light switch was created. The controller attempts to locate and connect to a light sensor and light switch actuator on the network, using the readings from the light sensor to decide when to turn the light switch on and off. The purpose of such a scenario is to demonstrate the possibility of the ``Internet of Things'' sensing either, the presence of a user by obscuring a sensor, or the change in lighting conditions, which would require a light to be turned on to assist the user.
 To test and demonstrate this, the scenario was set up using both real motes and the simulator, with one controller device, one light sensor device and one light switch actuator device.
 
-In figure \ref{fig:lighttest}, the controller is labelled as mote 2, and can be seen to receive messages from sensor mote 1 and send messages to actuator mote 3. In the Mote output box, the various print outs can be seen, displaying sensor readings received, decisions based on the sensor readings and the commands sent and received. In the network view box, it's possible to see the LEDs on mote 3 alight, due to the recent command to turn on the lights.
+In figure \ref{fig:lighttest}, the controller is labelled as mote 2, and can be seen to receive messages from sensor mote 1 and send messages to actuator mote 3. In the Mote Output box, the various print outs can be seen, displaying sensor readings received, decisions based on the sensor readings and the commands sent and received. In the network view box, it's possible to see the LEDs on mote 3 alight, due to the recent command to turn on the lights.
 
 \begin{figure}[h]
 \centering
@@ -38,16 +38,16 @@ In figure \ref{fig:lighttest}, the controller is labelled as mote 2, and can be 
 
 \section{Implementation size} % (fold)
 \label{sec:implementation_size_and_performance}
-Creating a lightweight protocol is one of the primary requirements, thus ensuring that the protocol could be implemented on even the most constrained devices, such as the TelosB or Arduino. Because of this, each aspect in the protocol had to be made as low cost as possible, whilst still maintaining flexibility and upgradeability. With this in mind the TelosB implementation performs well in regards to consuming device resources, as show in figure \ref{tab:size} when compared to a variety of other application.
+Creating a lightweight protocol is one of the primary requirements, thus ensuring that the protocol could be implemented on even the most constrained devices, such as the TelosB or Arduino. Because of this, each aspect in the protocol had to be made as low cost as possible, whilst still maintaining flexibility and upgradeability. With this in mind, the TelosB implementation performs well in regards to consuming device resources when compared to a variety of other applications, as shown in figure \ref{tab:size}.
 
-To demonstrate the amount of ROM and RAM occupied, a simple hello world program was created, which upon receiving an event, output ``Hello world'' to serial. This provided the baseline from which to compare the implementation against; also included as another baseline is the same hello world program with uIP included, which shows how much is added to the binary without any additional code being written.
+To demonstrate the amount of ROM and RAM occupied, a simple hello world program was created, which upon receiving an event, output ``Hello world'' to a connected serial port. This provided the baseline from which to compare the implementation against; also included as another baseline is the same hello world program with uIP included, which shows how much is added to the binary when uIP is included, without any additional code being written.
 
 When comparing the Hello world app with the Hello world app with uIP included, a significant difference can be seen in the size of ROM consumed as well the RAM, leaving around 18,000 bytes ROM and around 3,300 bytes RAM left for an application and other libraries.
 
-Comparing the sensor implementation of the IoT protocol with uIP and a minimal sensor application to connect a sensor to the API and print out a message, consumes only an additional 2428 bytes ROM and 994 bytes RAM with 10 channels and 554 bytes RAM with 5 channels.
-Similarly the actuator implementation performs on par, only consuming a minimal amount more in both cases. Unlike the two other implementations, the controller implementation consumes a much higher, 3848 bytes of ROM but a minimal increase in RAM, due to the necessity to discover, communicate and connect to both of the other device roles.
+The sensor implementation of the IoT protocol with uIP and a minimal sensor application (used to connect a sensor to the API and print out a message), consumes only an additional 2428 bytes ROM and 994 bytes RAM with 10 channels and 554 bytes RAM with 5 channels.
+Similarly the actuator implementation performs on par, only consuming a minimal amount more in both cases. Unlike the two other implementations, the controller implementation consumes a much higher, 3848 bytes of ROM but with a minimal increase in RAM, due to the necessity to discover, communicate and connect to both of the other device roles.
 
-During runtime the amount stored in RAM due to the protocol should not change, because of the static allocation for all data structures made at compile time.
+During runtime, the amount stored in RAM due to the protocol should not change, because of the static allocation for all data structures made at compile time.
 \begin{figure}[h]
 \begin{center}
     \begin{tabular}{| l | c | c | c | l |}
@@ -71,15 +71,15 @@ During runtime the amount stored in RAM due to the protocol should not change, b
 
 \section{Comparison to other systems} % (fold)
 \label{sec:comparison_to_other_systems}
-To better demonstrate the lightweight and scalable nature of the protocol as well as the fault tolerance which it can provide, two comparisons are made, one on the number of packets received within the network and another on the case of resilience to failures in the network.
+To better demonstrate the lightweight and scalable nature of the protocol, as well as the fault tolerance which it can provide, two comparisons are made, one on the number of packets received within the network and another on the case of resilience to failures in the network.
 
 \subsection{xAP - Receiving packets} % (fold)
-\label{sub:xap}
-As described previously in chapter \ref{cha:background}, xAP is implemented on top of a multicast network; to enable a distributed, highly fault tolerant network. But as a consequence, the cost of all devices broadcasting packets has a great impact on devices on the network, especially as the number of devices increases. 
+\label{sub:xap-packets}
+As described previously in chapter \ref{cha:background}, xAP is implemented on top of a multicast network, to enable a distributed, highly fault tolerant network. But as a consequence, the cost of all devices broadcasting packets has a great impact on devices in the network, especially as the number of devices increases. 
 
 To contrast this against the proposed protocol, the graphs below show the number of messages received by different types of devices on the network on both the proposed protocol and xAP.
 
-xAP does not differentiate between different devices explicitly but to better understand the activity of each device both graphs display the messages received by controllers, actuators and sensors. Another key difference to take into consideration is that xAP does not implement reliability on any of the messages, but however does suggest the use of ``heartbeats'' to signify a device is still alive on the network, therefore ``heartbeats'' have been included as pings.
+xAP does not differentiate between different devices explicitly, but to better understand the activity of each device both graphs display the messages received by controllers, actuators and sensors. Another key difference to take into consideration is that xAP does not implement reliability on any of the messages, however does suggest the use of ``heartbeats'' to signify a device is still alive on the network, therefore ``heartbeats'' have been included as pings \cite{xAPHeartBeats}.
 
 To observe how both protocols performed as the network scaled, two scenarios are demonstrated:\vspace{-5mm} 
 \begin{itemize}
@@ -91,21 +91,21 @@ Whilst neither scenario demonstrates a large number of devices, both clearly sho
 To simulate a simple ``Internet of Things'', the following messages are sent within the network:\vspace{-5mm} 
 \begin{itemize}
     \item Sensors send sensor readings to the controller every one second.
-    \item Controllers send commands to actuators every 15 seconds.
-    \item In response to the commands actuators send acknowledgements to the controller every 4 seconds.
-    \item Sensors send a PING message to the controller as part of a liveness detector every 10 seconds, actuators don't need to send PING messages, when they are receiving messages from the controller and returning acknowledgements, unless they do not receive a message within an expected period of 10 seconds, like the sensor. 
+    \item Controllers send commands to actuators every 4 seconds.
+    \item In response to the commands, actuators send acknowledgements to the controller every 4 seconds.
+    \item Sensors send a PING message to the controller as part of a liveness detector every 10 seconds, actuators don't need to send PING messages when they are receiving messages from the controller and returning acknowledgements, unless they do not receive a message within an expected period of 10 seconds, like the sensor. 
 \end{itemize}
 
 \begin{figure}[h]
 \begin{center}
 \begin{minipage}{.5\textwidth}
 \input{evaluation/KNoT.tex}
-\caption{Packets received in 1 minute using IoT protocol}
+\caption{Messages received in 1 minute using IoT protocol}
 \label{graph:IoT1}
 \end{minipage}%
 \begin{minipage}{.5\textwidth}
 \input{evaluation/xap.tex}
-\caption{Packets received in 1 minute using xAP protocol}
+\caption{Messages received in 1 minute using xAP protocol}
 \label{graph:xAP1}
 \end{minipage}
 \end{center}
@@ -120,31 +120,31 @@ The second set of graphs, figures \ref{graph:IoT2} and \ref{graph:xAP2}, show ho
 \begin{center}
 \begin{minipage}{.5\textwidth}
 \input{evaluation/KNoT2.tex}
-\caption{Packets received in 1 minute using IoT protocol x 2}
+\caption{Messages received in 1 minute using IoT protocol x 2}
 \label{graph:IoT2}
 \end{minipage}%
 \begin{minipage}{.5\textwidth}
 \input{evaluation/xap2.tex}
-\caption{Packets received in 1 minute using xAP protocol x 2}
+\caption{Messages received in 1 minute using xAP protocol x 2}
 \label{graph:xAP2}
 \end{minipage}
 \end{center}
 \end{figure}
 
-In a network with a limited number of devices, devices can deal with the unnecessary messages received, but as soon as the network size starts to increase, devices will very quickly be swamped by unwanted data.
+In a network with a limited number of devices, devices can cope with the unnecessary messages received, but as soon as the network size starts to increase, devices will very quickly be swamped by unwanted data.
 
-In regards to the proposed protocol, devices received no unwanted messages, saving time and power for the devices, however it can be observed that the controller still received lots of messages as a result of the high frequency of messages from the sensors. Whilst in this implementation the controller is also implemented on the TelosB motes, a better solution would be to create a controller from perhaps a low-power ARM or x86 pc, such as the Raspberry Pi, which would be much better suited to receiving that amount of traffic. Another alternative, is to distribute the control around the network by creating multiple controllers which each control certain parts of the network, which also increases the fault tolerance of the network.
+In regards to the proposed protocol, devices received no unwanted messages, saving time and power for the devices, however it can be observed that the controller still received lots of messages as a result of the high frequency of messages from the sensors. Whilst in this implementation the controller is also implemented on the TelosB motes, a better solution would be to create a controller from perhaps a low-power ARM or x86 pc, such as the Raspberry Pi, which would be much better suited to receiving that amount of traffic. Another alternative, is to distribute the control around the network by creating multiple controllers, which each control certain parts of the network, in turn also increasing the fault tolerance of the network.
 % subsection xap (end)
 
 \subsection{JMS \& xAP - Failure} % (fold)
 \label{sub:jms_failure}
 As previously discussed, JMS provides adequate abstractions for implementing a centralised ``Internet of Things'' network, running on devices with no resource constraints. In contrast to this both xAP and the proposed protocol are designed around a distributed architecture in order to reduce the effects of a failure within the network.
 
-In the situation where a single sensor or actuator in the network were to fail, xAP would be least affected due to its connectionless set up; devices would not require any cleaning up of state upon realising the failure, because no state is kept for connections. However in the case of JMS and the proposed protocol, a device would need to ensure that when a device failure is detected, that it is in fact no longer available and isn't due to a transient network failure; once ensured, the device detecting the failure can then remove any state relating to the failed device, reducing the resources consumed.
+In the situation where a single sensor or actuator in the network were to fail, xAP would be least affected due to its connectionless set up; devices would not require any cleaning up of state upon realising the failure, because no state is kept for connections. However, in the case of JMS and the proposed protocol, a device would need to ensure that when a device failure is detected, that it is in fact no longer available and isn't due to a transient network failure; once ensured, the device detecting the failure can then remove any state relating to the failed device, reducing the resources consumed.
 
-In the situation where a controller in the network fails, with the proposed protocol connected devices would try to ping the failed device to ensure it's not a transient failure and then remove the connection state related to that controller. Because the controller facilitates the co-operation between the sensors and actuators within the network, the relationship between these two devices is now lost. In the case of xAP, because it doesn't have the concept of a controller within the network, every device can contain some processing within it, further distributing the control around the network; but due to the connectionless architecture, devices don't understand when a recipient of their data fails, and in the case of a single recipient dying, the device can't know there is no device out there to receive its data, and so will continue to broadcast the data unnecessarily. Whereas in the case of JMS, when the central server fails, which facilitates the publishing and subscribing, the entire network of devices becomes inoperable because of their sole reliance on this server, with no way to communicate directly to one another.
+In the situation where a controller in the network fails, with the proposed protocol, connected devices would try to ping the failed device to ensure it's not a transient failure and then remove the connection state related to that controller. Because the controller facilitates the co-operation between the sensors and actuators within the network, the relationship between these two devices is now lost. In the case of xAP, because it doesn't have the concept of a controller within the network, every device can contain some processing within it, further distributing the control around the network; but due to the connectionless architecture, devices don't understand when a recipient of their data fails, and in the case of the only recipient dying, the device can't know that there is no device out there to receive its data, and so will continue to broadcast the data unnecessarily. Whereas, in the case of JMS, when the central server fails, which facilitates the publishing and subscribing, the entire network of devices becomes inoperable because of their sole reliance on this server, with no way to communicate directly to one another.
 
-Whilst the proposed protocol does have the controller role, which if fails, can cause have significant impact on the network, the possibility of distributing the role of the controller among several devices is also available. By doing so, controllers could be set up within different areas across the network, or even act as redundancy, detecting when the original controller fails and then taking over the connections with minimal network down time. When compared to xAP, whilst xAP provides robustness through absolute distribution of logic, it does so at the cost of excessive broadcasting; whereas the compromise observed within the proposed protocol ensures that the criticality of failures can be reduced without any significant costs to the network. 
+Whilst the proposed protocol does have the controller role, which if fails, can have a significant impact on the network, the possibility of distributing the role of the controller among several devices is also available. By doing so, controllers could be set up within different areas across the network, or even act as redundancy, detecting when the original controller fails and then taking over the connections with minimal network down time. When compared to xAP, whilst xAP provides robustness through absolute distribution of logic, it does so at the cost of excessive broadcasting; whereas, the compromise observed within the proposed protocol, ensures that the criticality of failures can be reduced without any significant costs to the network. 
 % subsection jms_failure (end)
 
 % section comparison_to_other_systems (end)

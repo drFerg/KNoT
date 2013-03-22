@@ -196,7 +196,7 @@ Once a channel has been set up between two devices, one of the devices may decid
 % subsubsection close_channel (end)
 \begin{figure}[h!]
 \centering
-\includegraphics[scale=0.6]{design/img/sequence_diagram.1}
+\includegraphics[scale=0.5]{design/img/sequence_diagram.1}
 \caption{Controller - Sensor message diagram}
 \label{fig:sequence_diagram}
 \end{figure}
@@ -286,6 +286,15 @@ The protocol header contains 6 data fields:
 \caption{Protocol header format}
 \end{center}
 \end{figure}
+
+To further illustrate the different classes of messages and how they relate to the header, a packet class digram is shown in figure \ref{fig:packet}.
+
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.5]{design/img/PacketHierachy.1}
+\caption{Message hierarchy}
+\label{fig:packet}
+\end{figure}
 % subsection protocol_data_unit (end)
 
 \section{Payload Message Types and Formats} % (fold)
@@ -315,7 +324,7 @@ The QUERY message contains two data fields: the type of device the controller is
 \begin{bytefield}{32}
 \bitheader{0,8,16,24,31}\\
 \bitbox{8}{type} & \bitbox[lrt]{24}{}\\
-\wordbox[lrb]{1}{name}
+\wordbox[lrb]{1}{name = 16 bytes}
 \end{bytefield}
 \caption{QUERY message payload format}
 \end{center}
@@ -623,10 +632,7 @@ $\leftarrow$ text representation of source of the message\\
 In total, 87 bytes are used to represent a similar array of information to that contained within the designed system's header, which consumes 12 bytes. In contrast, xAP consumes almost 8 times more bytes. This has a large impact on the potential transmission cost and processing complexity if used on constrained devices, such as the TelosB mote.
 
 % subsubsection textual_packet_vs_encoded_packet (end)
-\subsubsection{``Thing'' vs network of ``Things''} % (fold)
-\label{ssub:_thing_vs_network_of_things_}
-DRAFT: Twine, idea of internet of thing, connecting device by itself and then connecting to other services, limited functionality. instead create a local internet of things which link up, providing much richer local experience with possibility to utilise online services etc.
-% subsubsection _thing_vs_network_of_things_ (end)
+
 
 \subsubsection{Reliable vs Unreliable} % (fold)
 \label{ssub:reliable_vs_unreliable}

@@ -251,7 +251,7 @@ JVM can be scaled down to lower power devices but still poses overhead to system
 \subsection{xAP} % (fold)
 \label{sub:xap}
 
-In the early 2000's, as an attempt to bring together a variety of technologies developed and used for Home Automation, an open source group decided to create a protocol to bridge the differences and create a unifying platform.\cite{xAP}
+In the early 2000's, as an attempt to bring together a variety of technologies developed and used for Home Automation, an open source group decided to create a protocol to bridge the differences and create a unifying platform.\cite{xAP,xAProtocol}
 
 xAP, eXtensible Automation Protocol is designed to be a minimalist, elegant and easy to implement protocol with very basic requirements for the hardware, operating system, network and language on which it can run.  
 The primary implementation is based on UDP/IP with a distributed architecture where no central controller co-ordinates the network. Instead, each device either transmits or listens for data on a broadcast channel. Their core justification for this is that the network becomes fault tolerant and can withstand devices disappearing off the network for one reason or another without having a detrimental effect on the whole network.
@@ -266,29 +266,19 @@ The protocol also defines a set schema for how packets should be formatted so th
 
 After the protocol's initial inception it has had limited success, even whilst it has been continuously developed over the years, it has done so in the shadows and not in an explicitly open and collaborative way, with no central repository for code collaboration/review and no single developer's forum for discussion. % POST LINK TO YAHOO FORUMS ETC
 
-\begin{comment}
-Core Idea is to build a distributed fault tolerant IoT protocol.
-total broadcasting protocol, every device just beams out its own services and any device on the network can read and interpret the data.
-Can be very inefficient for devices on battery(constant barrage) and doesn't scale well with 10's, 100's, 1000's of devices.
-Designed to be hardware and link agnostic and to co-exist with other protocols. Basic implementation over UDP without any care for reliability AT ALL.
-
-Purpose is that devices can hop on and off the network without breaking/severing the entire network.
-
-Nice concepts and goals
-BUT fails to deliver a system which can scale and do things efficiently
-\end{comment}
 % subsection xap (end)
-
-
-
 
 \subsection{Remote Procedure Call - RPC} % (fold)
 \label{sub:rpc}
+RPC whilst relatively old in comparison to the other systems described, it does provide an adequate abstraction for communication between devices in an ``Internet of Things'', via request/response style interactions. 
 
+The concept of creating a distributed system, whereby devices in the network request data and services from each on demand, with the relevant response being returned. This fits in well with the idea of an autonomous system sensing, processing and reacting to stimuli, with each device bringing its own services to the system.
+
+However, because of the fixed concept of every request requires a response, the number of packets sent is doubled, even when no response is necessary. In the environment of constrained devices, this increases the load per device and if battery powered, reduces the life of the device significantly.
 % subsection rpc (end)
 % section existing_systems_protocols (end)
 
-\section{Developing systems} % (fold)
+\section{Developing systems/protocols} % (fold)
 \label{sec:developing_systems}
 
 \subsection{OpenWSN} % (fold)
@@ -304,7 +294,7 @@ The OpenWSN ``Internet of Things'' stack consists of open source implementations
 
 
 \subsection{CoAP} % (fold)
-\label{ssub:coap}
+\label{sub:coap}
 CoAP, Constrained Application Protocol is currently a proposed IETF standard to create a request-response style web protocol, specifically designed to fit the limitations of constrained devices, such as micro-controllers, for use in machine-to-machine communication and the``Internet of Things''. The protocol is designed as an asynchronous RESTful protocol, to run on top of UDP, using a subset of the standard commands e.g., GET, PUT, DELETE. The reason is that due to the common commands, it allows for an easy transition to standard HTTP if necessary, whilst reducing the complexity of the protocol. Together with this, the protocol also provides support for service discovery and basic subscribing to other CoAP nodes.
 
 Because the protocol is designed to run on top of UDP, which is a connectionless, unreliable transport layer, CoAP provides both un-reliable and reliable support for requests; which is provided by marking a message as non-confirmable (unreliable) or confirmable (reliable). This allows nodes to send data which is essential, reliably, and to send data un-reliable when data is ephemeral, such as sensor readings.   
@@ -334,7 +324,10 @@ Currently, there is no information on how the underlying protocol for connecting
 
 \subsection{Qualcomm} % (fold)
 \label{sub:qualcomm}
-2013 CES Discussed bringing mobile platform hardware to IOT, but still creating a single device with internet as hub mainly 
+As an example of a major hardware manufacturer acknowledging the ``Internet of Things'', at CES 2013, Qualcomm announced a new platform for developing ``Things'', named the ``Internet of Everything'', based on their mobile chipsets, providing 3G network connectivity and utilising the Java Micro Edition runtime \cite{Qualcomm}. So far it seems the concept of connectivity is not dissimilar to existing devices, such as the Twine, where the device is essentially a single device connecting to the Internet, in contrast to a network of interconnected ``Things''.
+
+The platform has yet to be released at the time of writing, but will prove to be an interesting start to hopefully more manufacturers creating purposely designed hardware, enabling developers to create ``Internet of Things'' applications.
+
 % subsection qualcomm (end)
 % section developing_systems (end)
 

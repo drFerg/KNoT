@@ -4,9 +4,9 @@ The chapter ends discussing some future work which could follow on from the proj
 \section{Summary of Project}
 The original purpose of this project was to try and solve the problem of creating a lightweight protocol for the ``Internet of Things'', by designing and implementing a new protocol which could run on the most constrained devices, scale up to the more powerful devices we use everyday and scale out to 10's / 100's of devices within an environment such as the home or office.
 
-The design of the protocol was heavily influenced by existing systems currently available, and seeked to adapt their concepts to better fit the ``Internet of Things'', such as xAP's distributed broadcast architecture and TCP's reliability concepts. By doing so a protocol which could run efficiently on the most low-power devices, saving power and reducing the strain on the CPU, was created.
+The design of the protocol was heavily influenced by existing systems currently available, and seeked to adapt their concepts to better fit the ``Internet of Things'', such as xAP's distributed broadcast architecture and TCP's reliability concepts. By doing so, a protocol which could run efficiently on the most low-power devices, saving power and reducing the strain on the CPU, was created.
 
-Evaluating this against other implementations, the protocol proves its ability to scale across different network sizes, and withstand failures in a manageable fashion when they occur, with the possibility of distributing control across the network and even creating redundancy to further reduce the impact. The overall size of the protocol implementation shows that it has a minimal impact on the resources of the device, even whilst offering 5 to 10 connections per device, which on a small to medium network would prove sufficient for both the actuator and sensor roles. In the case of the controller, porting it across to a more powerful platform suits the role far better, given the quantity of connections and data it will usually handle and request.
+Evaluating this against other implementations, the protocol proves its ability to scale across different network sizes, and withstand failures in a manageable fashion when they occur, with the possibility of distributing control across the network and even creating redundancy to further reduce the impact. The overall size of the protocol implementation shows that it has a minimal impact on the resources of a device, even whilst offering 5 to 10 connections per device, which on a small to medium network would prove sufficient for both the actuator and sensor roles. In the case of the controller, porting it across to a more powerful platform suits the role far better, given the quantity of connections and data it will usually handle and request.
 
 However, given the development constraints, including both the limited time and availability of different platforms, further work developing the protocol would be necessary to improve, test, port and validate its applicability in a real heterogeneous ``Internet of Things'' environment.
 
@@ -21,11 +21,11 @@ This section describes some of the possible future work for developing this prot
 	\end{itemize}
 	\item Expanding the protocol
 	\begin{itemize}
-		\item In the current protocol, sensors and actuators were only observed to be very primitive single function devices, when in reality the possibility of a device being able to sense or perform more than one action is a possibility. Therefore the need to be able to somehow store, search and interpret a devices functions is necessary. Perhaps a further step after discovering a device could be to investigate its different functionality available to it.
+		\item In the current protocol, sensors and actuators were only observed to be very primitive, single function devices, when in reality the possibility of a device being able to sense or perform more than one action exists. Therefore the need to be able to somehow store, search and interpret a devices functions is necessary. Perhaps a further step after discovering a device could be used to investigate the different functionality available to it.
 	\end{itemize}
 	\item Further power saving techniques
 	\begin{itemize}
-		\item In the current protocol, by reducing the number of unnecessary packets sent and received the battery life of the constrained devices can be significantly improved. To further this approach, compacting several high frequency sensor readings or actuator commands into one packet, which is then sent a lower frequency, could reduce the power consumption further, whilst still maintaining the same granularity as before when timing is not an issue.
+		\item In the current protocol, by reducing the number of unnecessary packets sent and received, the battery life of the constrained devices is significantly improved. To further this approach, compacting several high frequency sensor readings or actuator commands into one packet, which is then sent a lower frequency, could reduce the power consumption further, whilst still maintaining the same granularity as before when timing is not an issue.
 	\end{itemize}
 	\item Security
 	\begin{itemize}
@@ -33,7 +33,7 @@ This section describes some of the possible future work for developing this prot
 	\end{itemize}
 	\item Porting to different platforms
 	\begin{itemize}
-		\item Just as with applications, the protocol needs to be ported across a variety of platforms to really test its ability to perform and meet the requirements. By porting to other platforms, the true heterogeneous nature of the ``Internet of Things'' can be realised and utilised to the full extent of its capabilities; allowing not only constrained devices to interact but also smart phones, tablets, home pcs and even Internet services, providing a much more dense and rich ``Internet of Things''.
+		\item Just as with applications, the protocol needs to be ported across a variety of platforms to really test its ability to perform and meet the requirements. By porting to other platforms, the true heterogeneous nature of the ``Internet of Things'' can be realised and utilised to the full extent of its capabilities; allowing not only constrained devices to interact, but also smart phones, tablets, home pcs and even Internet services, providing a much more dense and rich ``Internet of Things''.
 	\end{itemize}
 \end{itemize}
 

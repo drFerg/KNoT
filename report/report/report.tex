@@ -3,30 +3,45 @@
 \documentclass{l4proj}
 \usepackage{comment}
 \usepackage{graphicx}
-\usepackage{epstopdf}
 \usepackage{caption}
 \usepackage{url}
 \usepackage{bytefield}
 \usepackage{color}
 \usepackage{hyperref}
 \usepackage{gnuplot-lua-tikz}
-
+\usepackage[T1]{fontenc} 
 %
 % put any packages here
 %
 
 \DeclareGraphicsRule{.1}{mps}{*}{}
+
 \begin{document}
+
 \title{A lightweight protocol for constrained devices for use in the Internet of Things paradigm}
 \author{Fergus W. Leahy}
 \date{\today}
 \maketitle
 
 \begin{abstract}
-\textbf{PLACEHOLDER}
-A level 4 project which explores the current use of protocols for the Internet of things devices.
-\end{abstract}
+With the advent of cheap, low-power and small devices, it becomes possible to embed these devices within our everyday surroundings, to create an always connected, sensing and reacting ``Internet of Things'', with the purpose of not only simplifying our lives but also saving energy at the same time. 
 
+But in order to achieve devices of such size, the resources available is restricted. Because of this, current protocols for connecting traditional devices together simply don't cater for the constraints of such devices, therefore a new protocol which understands the constraints of these devices and is designed around this ``Internet of Things'' revolution is necessary.
+
+To design the protocol, a wide variety of existing/developing protocols and systems were reviewed, noting what worked well and what didn't; from this a new protocol which could not only run on constrained devices but also scale up to more powerful devices, whilst still taking into consideration reliability, fault tolerance and network scalability/performance.
+
+The new protocol was implemented on the TelosB motes, which provided a benchmark for constrained devices, proving it's possible to create an ``Internet of Things'' protocol which can suitably run on constrained devices, whilst still providing the functionality, reliability and scalability required. 
+
+\end{abstract}
+\begin{comment}
+    1) Motivation/problem statement: Why do we care about the problem? What practical, scientific, theoretical or artistic gap is your research filling?
+
+    2) Methods/procedure/approach: What did you actually do to get your results? (e.g. analyzed 3 novels, completed a series of 5 oil paintings, interviewed 17 students)
+
+    3) Results/findings/product: As a result of completing the above procedure, what did you learn/invent/create?
+
+    4) Conclusion/implications: What are the larger implications of your findings, especially for the problem/gap identified in step 1?
+\end{comment}
 \educationalconsent
 %
 %NOTE: if you include the educationalconsent (above) and your project is graded an A then
@@ -108,21 +123,6 @@ A level 4 project which explores the current use of protocols for the Internet o
 %              %
 %%%%%%%%%%%%%%%%
 \begin{appendices}
-\begin{verbatim}
-xap-header
-{
-v=12
-hop=1
-uid=FF123400
-class=xap-temp.notification
-source=ACME.thermostat.lounge
-}
-temp.current
-{
-temp=25
-units=C
-}
-\end{verbatim}
 
 \end{appendices}
 
