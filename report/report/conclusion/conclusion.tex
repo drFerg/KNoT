@@ -1,11 +1,43 @@
+This chapter concludes the report, reviewing the initial objectives, assessing the successes and contributions resulting from it.
+The chapter ends discussing some future works which could follow on from the project.
+
+\section{Summary of Project}
+The original purpose of this project was to try and solve the problem of creating a lightweight protocol for the ``Internet of Things'', by designing and implementing a new protocol which could run on the most constrained devices, scale up to the more powerful devices we use everyday and scale out to 10's and 100's of devices within an environment such as the home or office.
+
+%%%%
+referring back to the requirements, design and implementation meets them well,
+the conecpt of broadcasting and unicasting works well
+adequate reliability but needs to be tested thoroughly to fully understand if it's suitable in all cases or perhaps needs tweaking for selective reliability
+evaluation proves it scales well, its distributed nature offers many benefits and configurations and the overall size of the implementation is suitable and could possibly be improved with time due to learning curve with contiki
+%%%
 
 \section{Future Work}
+This section describes some of the possible future work for developing this protocol further, from improving its feature set to trying to maximise the use of available resources.
 
 \begin{itemize}
-	\item expanding the protocol to suit more complex sensors and actuators, query sensor/actuator specific abilities.
+	\item expanding the protocol to suit more complex sensors and actuators, query sensor/actuator specific abilities, deep queries
+	\begin{itemize}
+		\item Problem of limited devices available, cant possibly test or theorise about other devices unless known, but from further testing and device learning, new, better and more optimised payloads could be made
+	\end{itemize}
 	\item grouping packets into one, save on transmission,
+	\begin{itemize}
+		\item Idea of reducing the number of packets transmitted but still maintain the same granularity of data when timing may not be as important
+	\end{itemize}
 	\item add optional reliability for data
+	\begin{itemize}
+		\item Adding the previous point to this, builds upon idea of creating more reliable systems where data is in fact critical
+	\end{itemize}
 	\item adding security
+	\begin{itemize}
+		\item before being able to be deploy in an internet connected environment, security features need to be implemented to prevent attacks and keep data and resources safe	
+	\end{itemize}
 	\item providing functionality for controller to controller
+	\begin{itemize}
+		\item Allowing controller to co-operate, spread the load, provide redundancy
+	\end{itemize}
 	\item porting to other devices, threaded architecture, raspberry pi
+	\begin{itemize}
+		\item Spread the protocol to multiple platforms, diffrerent archtitectues to see how it perfroms
+	\end{itemize}
 \end{itemize}
+

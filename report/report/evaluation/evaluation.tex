@@ -46,6 +46,8 @@ When comparing the Hello world app with the Hello world app with uIP included, a
 
 Comparing the sensor implementation of the IoT protocol with uIP and a minimal sensor application to connect a sensor to the API and print out a message, consumes only an additional 2428 bytes ROM and 994 bytes RAM with 10 channels and 554 bytes RAM with 5 channels.
 Similarly the actuator implementation performs on par, only consuming a minimal amount more in both cases. Unlike the two other implementations, the controller implementation consumes a much higher, 3848 bytes of ROM but a minimal increase in RAM, due to the necessity to discover, communicate and connect to both of the other device roles.
+
+During runtime the amount stored in RAM due to the protocol should not change, because of the static allocation for all data structures made at compile time.
 \begin{figure}[h]
 \begin{center}
     \begin{tabular}{| l | c | c | c | l |}
@@ -142,7 +144,13 @@ In regards to the proposed protocol, devices received no unwanted messages, savi
 
 \subsection{JMS \& xAP - Failure} % (fold)
 \label{sub:jms_failure}
-Discuss how system can withstand failures in most cases, and how xAP trades robustness for spaaaaam
+As previously discussed, JMS provides adequate abstractions for implementing a centralised ``Internet of Things'' network, running on devices with no resource constraints. In contrast to this both xAP and the proposed protocol are designed around a distributed architecture in order to reduce the effects of a failure within the network.
+
+In the situation where a single sensor or actuator in the network were to fail, xAP would be least affected due to its connectionless set up; devices would not require any cleaning up of state upon realising the failure, because no state is kept for connections. However in the case of JMS and the proposed protocol, a device would need to ensure that when a device failure is detected, that it is in fact no longer available and isn't due to a transient network failure; once ensured, the device detecting the failure can then remove any state relating to the failed device, reducing the resources consumed.
+
+In the situation where a controller in the network fails, with the proposed protocol connected devices would try to ping the failed device to ensure it's not a transient failure and then remove the connection state related to that controller. Because the controller facilitates the co-operation between the sensors and actuators within the network, the relationship between these two devices is now lost. In the case of xAP, because it doesn't have the concept of a controller within the network, every device can contain some processing within it, further distributing the control around the network; but due to the connectionless architecture, devices don't understand when a recipient of their data fails, and in the case of a single recipient dying, the device can't know there is no device out there to receive its data, and so will continue to broadcast the data unnecessarily. Whereas in the case of JMS, when the central server fails, which facilitates the publishing and subscribing, the entire network of devices becomes inoperable because of their sole reliance on this server, with no way to communicate directly to one another.
+
+Whilst the proposed protocol does have the controller role, which if fails can cause a significant failure, the possibility of distributing the role of the controller among several devices is also available. By doing so controllers could be set up within different areas within the network, or even act as redundancy, detecting when the original controller fails and then taking over the connections with minimal network down time. When compared to xAP, whilst xAP provides robustness through absolute distribution of logic, it does so at the cost of excessive broadcasting; whereas the compromise observed within the proposed protocol ensures that the criticality of failures can be reduced without any significant costs to the network. 
 % subsection jms_failure (end)
 
 % section comparison_to_other_systems (end)

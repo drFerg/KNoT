@@ -54,7 +54,7 @@ This section discusses the design of the protocol based on the formal requiremen
 
 \subsection{Features} % (fold)
 \label{sub:features}
-The protocol is designed to fulfil several key requirements:
+The protocol is designed to fulfil several key requirements:\vspace{-5mm} 
 \begin{itemize}
 	\item Minimalistic protocol, reliability for critical data only, no fragmenting
 	\item Minimal header overhead, reduce transmission and receiving cost of data
@@ -76,7 +76,7 @@ In order to enable devices to communicate with more than one other device, a met
 
 Each device will contain at least two channels, one home channel (default) and one or more ephemeral channels. The purpose of the home channel is to enable devices to have a well known location at which they can be contacted; this will be used for device discovery and to request to start a connection on one of the ephemeral channels.
 
-In order to uniquely identify each connection, a triple of identifiers is required:
+In order to uniquely identify each connection, a triple of identifiers is required:\vspace{-5mm} 
 \begin{itemize}
 	\item transport layer address of each host the system is running on (IP address or Rime address).
 	\item transport layer multiplexing identifier associated with the running system process (UDP port or Rime channel).
@@ -138,7 +138,7 @@ If a controller receives no responses from the initial query, it could be a resu
 \subsubsection{Set up channel -- Controller $\rightarrow$ Sensors/Actuators} % (fold)
 \label{ssub:set_up_channel}
 In order to ensure that a channel is fully set up, it becomes necessary to introduce reliability, via acknowledgement messages. Similar to TCP, a three-way handshake is used to ensure the channel is fully opened on both sides.
-
+\vspace{-5mm} 
 \begin{itemize}
  	\item This covers most scenarios and allows for devices to recover from dropped packets during the exchange. For example, device A initiates setting up a channel,
  	\begin{itemize}
@@ -160,7 +160,7 @@ Without reliability, packets may be dropped, but because of the timeliness of th
 \subsubsection{Send command -- Controller $\rightarrow$ Actuator} % (fold)
 \label{ssub:send_command}
 Once a channel has been set up to an actuator, a controller needs to be able to send it commands to carry out. To ensure that an action is carried out, it becomes necessary to acknowledge each command. By using acknowledgements in combination with message sequence numbers, it is possible to ensure that a command is carried out exactly once per request.
-
+\vspace{-5mm} 
 \begin{itemize}
 	\item The following cases are covered via the use of acknowledgements and sequence numbers
 	\begin{itemize}
@@ -183,7 +183,7 @@ To test the channel a PING is sent from one device to the other, with the expect
 \subsubsection{Close channel -- All roles} % (fold)
 \label{ssub:close_channel}
 Once a channel has been set up between two devices, one of the devices may decide at a later time that it either no longer needs the services provided by the channel, or is unable to support it, perhaps due to limited power. Therefore, it becomes necessary to close the channel gracefully, ensuring the both ends understand the channel is closed and all associated state destroyed. In order to ensure the channel is closed on both sides correctly, an acknowledgement must be used to signify the other side received the command.
-
+\vspace{-5mm} 
 \begin{itemize}
 	\item The following cases are covered via the use of acknowledgements between devices A and B:
 	\begin{itemize}
@@ -265,7 +265,10 @@ The protocol header contains 6 data fields:
 	\item a sequence number field to detect duplicates and out of order packets,
 	\item a command field to distinguish what type the payload is,
 	\item a payload length field which contains the size of the payload, maximum size = 32 bytes
-	\item and a checksum to detect any errors within the whole packet that might have occurred during in transmission.  
+	\item and a checksum is computed over the entire packet to detect any errors that might have occurred during in transmission.
+	\begin{itemize}
+	 	\item When initially computed for the packet, the checksum field is filled with 0's and then filled with the result. Once received, the checksum can then be recomputed and the result should be 0 if the packet is correct.
+	 \end{itemize} 
 \end{itemize}    
 % subsection protocol_header (end)
 \begin{figure}[h!]
@@ -292,7 +295,7 @@ For each message type the payload format is described and illustrated.
 \subsection{QUERY} % (fold)
 \label{sub:query}
 Before a controller can connect to any devices, it must first try to discover any matching devices on the local network. To do this, the device's home channel sends a QUERY message to the home channel on every other device in the network.
-
+\vspace{-5mm} 
 \begin{itemize}
 	\item []The receiving state machine does the following on receipt of a QUERY message:
 	\begin{itemize}
@@ -322,7 +325,7 @@ The QUERY message contains two data fields: the type of device the controller is
 \subsection{QUERY Response} % (fold)
 \label{sub:query_response}
 After a device receives a QUERY message, it can decide whether or not to reply to it, based on a type match and if there are resources available, if so it replies with the QUERY Response message. 
-
+\vspace{-5mm} 
 \begin{itemize}
 	\item []The receiving state machine does the following on receipt of a QUERY Response message:
 	\begin{itemize}
@@ -347,7 +350,7 @@ The QUERY Response message contains 3 data fields: the type and name of the devi
 \subsection{CONNECT} % (fold)
 \label{sub:connect}
 Once a device has been located, either a priori or through querying, a controller needs to send a CONNECT message to start the process of creating a channel with the desired device. As shown in the message sequence diagrams, this uses a three-way handshake, of which this is the initial message. 
-
+\vspace{-5mm} 
 \begin{itemize}
 	\item []The receiving state machine does the following on receipt of a CONNECT message:
 	\begin{itemize}
@@ -380,7 +383,7 @@ The CONNECT message contains 2 data fields: the rate at which the controller wan
 \subsection{CONNECT ACK} % (fold)
 \label{sub:connect_ack}
 Once a device receives a CONNECT or CONNECT ACK message, unlike when receiving a QUERY message, it must respond with the second or third part of the three-way handshake with either a positive or negative acknowledgement in order to ensure the connection has been set-up fully. When responding to a CONNECT or CONNECT ACK message, the device can either accept the connection or decline it, which could be based on device being unable to match the demands from the controller or due to a lack of available resources needed to support the connection.
-
+\vspace{-5mm} 
 \begin{itemize}
 	\item []The receiving state machine does the following on receipt of a CONNECT ACK message:
 	\begin{itemize}
@@ -416,7 +419,7 @@ The CONNECT ACK message contains 2 data fields: accept, which declares whether o
 \subsection{RESPONSE} % (fold)
 \label{sub:response}
 Once a channel has been set up and is in the connected state, the sensor connected to the channel can then send RESPONSE messages containing its sensor readings at the previously agreed upon rate.
-
+\vspace{-5mm} 
 \begin{itemize}
 	\item []The receiving state machine does the following on receipt of a RESPONSE message:
 	\begin{itemize}
@@ -467,6 +470,7 @@ These is no payload specific data for the COMMAND message.
 \subsection{COMMAND ACK} % (fold)
 \label{sub:command_ack}
 The COMMAND ACK is the response to a COMMAND message, which must be sent upon receipt of the COMMAND message.
+\vspace{-5mm} 
 \begin{itemize}
 	\item [] The receiving state machine does the following on receipt of a COMMAND ACK message:
 	\begin{itemize}
@@ -486,7 +490,7 @@ These is no payload specific data for the COMMAND ACK message.
 \subsection{PING} % (fold)
 \label{sub:ping}
 Once a connection has been made between two devices, a channel is created within each device to handle this connection. Due to the nature of devices, especially those on wireless networks or battery powered, devices can disappear off the network without gracefully closing the connection. If this occurs, then the connected devices must be able to detect if the connection is still alive, if not then clean up after it. To do this PING and PING ACKs are used to create a failure detector.
-
+\vspace{-5mm} 
 \begin{itemize}
 	\item []The receiving state machine does the following on receipt of a PING message:
 	\begin{itemize}
@@ -502,7 +506,7 @@ These is no payload specific data for the PING message.
 \subsection{PING ACK} % (fold)
 \label{sub:ping_ack}
 The PING ACK is the response to a PING message for use in detecting failures in the network.
-
+\vspace{-5mm} 
 \begin{itemize}
 	\item []The receiving state machine does the following on receipt of a PING ACK message:
 	\begin{itemize}
@@ -518,7 +522,7 @@ There is no payload specific data for the PING ACK message.
 \subsection{DISCONNECT} % (fold)
 \label{sub:disconnect}
 When a device has already formed a connection to another device and wishes to disconnect, perhaps due to either power concerns, the device is no longer needed or otherwise, a method for gracefully disconnecting the two devices and cleaning up the channels is necessary.
-
+\vspace{-5mm} 
  \begin{itemize}
 	\item []The receiving state machine does the following on receipt of a DISCONNECT message:
 	\begin{itemize}
@@ -534,7 +538,7 @@ There is no payload specific data for the DISCONNECT message.
 \subsection{DISCONNECT ACK} % (fold)
 \label{sub:disconnect_ack}
 The DISCONNECT ACK is the response to the DISCONNECT message used to disconnect two devices gracefully.
-
+\vspace{-5mm} 
 \begin{itemize}
 	\item []The receiving state machine does the following on receipt of a DISCONNECT ACK message:
 	\begin{itemize}
