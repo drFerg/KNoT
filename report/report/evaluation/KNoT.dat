@@ -1,0 +1,4 @@
+#Device    Sense msg CMD Msg Sense PING CMD PING PACK
+Controller 60        0       6          0        15
+Actuator   0         15      0          0        0
+Sensor     0         0       0          0        6

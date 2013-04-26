@@ -1,0 +1,4 @@
+#Device    Sense msg CMD Msg  Sense PING ACT PING CTRL PING
+Controller 60        0        6          6        0
+Actuator   60        15       6          0        6
+Sensor     0         15       0          6        6
