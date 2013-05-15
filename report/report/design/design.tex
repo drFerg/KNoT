@@ -34,7 +34,7 @@ Actuators, like sensors, are a key component in the ``Internet of things'', perf
 
 By themselves actuators are primitive devices and are only able to perform context-less actions by themselves, e.g., turn on and off a light. In order to create meaningful actions, such as turning on a light when someone enters the room, actuators need to be able to offer their actions, or functions, as a service to other devices in the network whom are interested in performing such actions.
 
-Because of the on-demand semantics of performing an action, actuators need to be always available and ready to respond to incoming commands at any time. 
+Because of the on-demand semantics of performing an action, actuators need to be always available and ready to respond to incoming commands at any time. In order to ensure that these commands are carried out successfully and not lost in transit, a reliable connection will need to be formed between the controller and actuator.
 % subsection actuator (end)
 
 \subsection{Controller} % (fold)
@@ -111,7 +111,7 @@ In order to ensure the connections between devices are kept alive, the liveness 
 	\item [Controller -] Because controllers actively keep track of actuators, actuators therefore implicitly know that the controller is still alive. However, this is not the case for sensors, which are only liveness checked passively unless there is packet loss. Because of this, the sensor must therefore regularly send PINGs at an arbitrary frequency to check to see if the controller is still alive to receive the packets of data being transmitted. If this was not checked, then the sensor would be not only wasting its own resources by needlessly sending data, but it would also consume the resources of other devices if this was deployed on a low-power multi-hop mesh network, typical for ``Internet of Things'' networks.
 \end{itemize}
 
-In order to ensure the network does not become congested by the retransmission of PINGs within a short period of time, an exponential back-off will be used. This will ensure that if a device were to disappear of the network, the rest of the network would not suffer. In a large network where multiple devices could fail at once, perhaps due to a common link, the network could become heavily congested if exponential back-off were not used.
+In order to ensure the network does not become congested by the retransmission of PINGs within a short period of time, an exponential back-off will be used. This will ensure that if a device were to disappear off the network, the rest of the network would not suffer. In a large network where multiple devices could fail at once, perhaps due to a common link, the network could become heavily congested if exponential back-off were not used.
 
 If after an arbitrary number of PINGs, a PING ACK is not received, the connection is deemed dead and the associated channel closed.
 % subsection liveness_response (end)
@@ -358,7 +358,7 @@ The QUERY Response message contains 3 data fields: the type and name of the devi
 
 \subsection{CONNECT} % (fold)
 \label{sub:connect}
-Once a device has been located, either a priori or through querying, a controller needs to send a CONNECT message to start the process of creating a channel with the desired device. As shown in the message sequence diagrams, this uses a three-way handshake, of which this is the initial message. 
+Once a device has been located, either \textit{a priori} or through querying, a controller needs to send a CONNECT message to start the process of creating a channel with the desired device. As shown in the message sequence diagrams, this uses a three-way handshake, of which this is the initial message. 
 \vspace{-5mm} 
 \begin{itemize}
 	\item []The receiving state machine does the following on receipt of a CONNECT message:
@@ -591,9 +591,9 @@ Another problem with the broadcast-only network approach is the issue of reliabi
 
 \subsubsection{Cloud vs Local} % (fold)
 \label{ssub:cloud_vs_local}
-SmartThings, unlike the proposed design, chose a cloud-first approach in connecting the different devices on the network together. In comparison the the proposed design it does pose some benefits, such as instant and easy connectivity to other cloud services and making the devices accessible from anywhere with an Internet connection. But as previously discussed, this also poses several risks as well, these include security risks of the data both in transit and storage (who has control and access to the data or control devices, is it being intercepted?) and reliability risks (what happens if the cloud fails? Will all the doors unlock and the sprinklers not stop?). In regards to both risks, there have been various failures in the industry relating to both the security of data,\cite{Playstation}, and the reliability of cloud services / online services \cite{Amazon, Google}. 
+SmartThings, unlike the proposed design, chose a cloud-first approach in connecting the different devices on the network together. In comparison to the proposed design, it does pose some benefits, such as instant and easy connectivity to other cloud services and making the devices accessible from anywhere with an Internet connection. But as previously discussed, this also poses several risks as well, these include security risks of the data both in transit and storage (who has control and access to the data or control devices, is it being intercepted?) and reliability risks (what happens if the cloud fails? Will all the doors unlock and the sprinklers not stop?). In regards to both risks, there have been various failures in the industry relating to both the security of data,\cite{Playstation}, and the reliability of cloud services / online services \cite{Amazon, Google}. 
 
-Adopting the alternative, the proposed system uses a local-first approach, which gives the user complete control and access to the data, enables the system to function without Internet connectivity and if desirted can be expanded by connecting to an Internet connection. This provides the safety and assurance of a local system without compromising the possibility of upgrading it to support the cloud based features which SmartThings benefits from.
+Adopting the alternative, the proposed system uses a local-first approach, which gives the user complete control and access to the data, enables the system to function without Internet connectivity and if desired can be expanded by connecting to an Internet connection. This provides the safety and assurance of a local system without compromising the possibility of upgrading it to support the cloud based features which SmartThings benefits from.
 
 % subsubsection cloud_vs_local (end)
 
@@ -638,7 +638,7 @@ In total, 87 bytes are used to represent a similar array of information to that 
 \label{ssub:reliable_vs_unreliable}
 The proposed protocol is designed to run on top of an unreliable link (e.g. UDP), enforcing reliability itself, but only when absolutely necessary. The reasons for this are related to power consumption, where reducing the number of packets both sent and received can have a significant impact on the overall battery life of constrained devices. 
 
-The reasons for not implementing the protocol on top of a reliable link, like TCP, is such that TCP requires an acknowledgement for each packet sent, therefore doubling the total packets sent and received. Not only this, but if packets are lost and resent, they will be received out of sequence; in the ``Internet of Things'' environment where most data sent is ephemeral, receiving packets late and out of sequence is pointless, as the interest in most cases is the present moment and not the past. 
+The reasons for not implementing the protocol on top of a reliable link, like TCP, is that TCP requires an acknowledgement for each packet sent, therefore doubling the total packets sent and received. Not only this, but if packets are lost and resent, they will be received out of sequence; in the ``Internet of Things'' environment where most data sent is ephemeral, receiving packets late and out of sequence is pointless, as the interest in most cases is the present moment and not the past. 
 
 Therefore the choice to use an unreliable link, such as UDP, combined with building reliability on top for only absolutely necessary messages, such as connection handling, ensures that the overall sending and receiving of packets is reduced, reducing the overall power consumption, but without compromising the operation of the protocol.
 
@@ -650,7 +650,7 @@ Comparing the proposed protocol to the aforementioned CoAP, currently in develop
 
 One of the significant differences between the two, is that CoAP is designed around generic, non-specific devices; whereas the proposed protocol classifies devices into the three main roles, sensors, actuators and controllers. Because of this, CoAP doesn't impose certain functions on devices, in the same way that the proposed protocol enforces that a sensor must transmit data at a set rate to its connected devices. However, CoAP does support the possibility of such functionality; devices can subscribe to one another, by doing so they will be informed by the subscribed device when an event has occurred, after which the subscriber can then decide to pull the event data from the subscribed device. This functionality works similar to a controller and sensor forming a connection and sending data, however because of the additional step of notifying the subscriber, additional packets must be sent and received by both devices. 
 
-Lastly, One of the core goals of CoAP is to ensure that constrained devices can easily transition into the World Wide Web, which is enabled by the RESTful style protocol, where commands (GET, PUT, etc) are used that are very much like those used in HTTP. This ensures minimal translation of packets needs to be performed. However, this is not the case in the proposed protocol, whereby instead an application would need to be built on top of the protocol to support WWW integration, due to the unrelated packet format.
+Lastly, one of the core goals of CoAP is to ensure that constrained devices can easily transition into the World Wide Web, which is enabled by the RESTful style protocol, where commands (GET, PUT, etc) are used that are very much like those used in HTTP. This ensures minimal translation of packets needs to be performed. However, this is not the case in the proposed protocol, whereby instead an application would need to be built on top of the protocol to support WWW integration, due to the unrelated packet format.
 
 
 % subsubsection coap (end)

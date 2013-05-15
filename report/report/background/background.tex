@@ -9,7 +9,7 @@ This section describes the concept of the ``Internet of Things'', its slow devel
 The standard model of how we use computers and the Internet today revolves around the idea of an interconnected network of servers, routers and data centres around which users connect using their personal computers to access, input, manipulate and retrieve data. 
 
 This model heavily relies upon the users to provide the data by which the Internet is powered. Without this data the Internet would be a barren place, with nothing to search for, sell, buy, share, watch, listen to, play, analyse or learn from.
-Users from all around the world have contributed to make the Internet \textit{the} single biggest resource in the world by snapping photos, capturing videos, writing blogs, creating websites, commenting, discussing, reviewing, buying, selling and inputting data. So much data in fact that the estimated size of the Internet in 2009 was 500 exabytes (that's 500 BILLION gigabytes), of which 70\% was contributed to by users.\cite{Size}   
+Users from all around the world have contributed to make the Internet \textit{the} single biggest resource in the world by snapping photos, capturing videos, writing blogs, creating websites, commenting, discussing, reviewing, buying, selling and inputting data. So much data in fact that the estimated size of the Internet in 2009 was 500 exabytes (that's 500 BILLION gigabytes), of which 70\% was contributed by users.\cite{Size}   
 
 % INSERT DIAGRAM HERE
 Within this model there exists two significant problems posed by users; time and accuracy. In terms of time, users only have so many hours in a day to input data; which can only be so accurate, as all users are prone to error through one means or another.
@@ -137,7 +137,7 @@ The main device which was created and has remained much the same since, is based
 
 But the key to the Arduino Platform is not the micro-controller itself but instead the design, software and support provided by the creators and other developers. The other major factor to its success is that the device, along with the documentation and support, are all open source, thus allowing anyone to learn from, replicate and expand upon the platform in any way they wish.
 
-An example of how these factors have had a hugely positive effect is something which Arduino calls ``Shields''. These shields plug in on top of the Arduino board and contain standard components which can add additional features such as WI-FI, Ethernet, sound, motor control etc. Rather than users being required to find, purchase and solder the required components to add such features, these pre-built shields provide it in simple and readily available package, made by a variety of manufacturers.
+An example of how these factors have had a hugely positive effect is something which Arduino calls ``Shields''. These shields plug in on top of the Arduino board and contain standard components which can add additional features such as WI-FI, Ethernet, sound, motor control etc. Rather than users being required to find, purchase and solder the required components to add such features, these pre-built shields provide it in a simple and readily available package, made by a variety of manufacturers.
 
 Since its creation, the Arduino platform has created a range of Arduino named devices and shields resulting in a following of over 300,000 users\cite{ArduinoNumbers} and support from many manufacturers and distributors worldwide. 
 
@@ -167,7 +167,7 @@ Similar to the Arduino Platform, most of the hardware and software for the devic
 
 The Raspberry Pi itself is a moderately well powered, single-board computer capable of running a wide variety of Linux-based operating systems. It's host to a 700MHz ARM CPU, 512MB RAM and a variety of inputs/outputs including an Ethernet port. These features, along with some additional GPIO\footnote{General Purpose Input Output} pins, just like the Arduino, allow it to sense and control the world around it, thus making it a perfect ``Thing''.
 
-Because of the extremely low price point for such hardware, the Raspberry Pi was a huge success selling, over 500,000 units in the first 8 months, only limited by their production speed.\cite{RaspberryPiSold}
+Because of the extremely low price point for such hardware, the Raspberry Pi was a huge success, selling over 500,000 units in the first 8 months, only limited by their production speed.\cite{RaspberryPiSold}
 
 Even before it's release, the community support and ideas were non-stop, everything from home-media centres\cite{Raspbmc} to Lego super computers\footnote{Even within the School of Computing Science, UoG}\cite{LegoSuperComputer} were designed and created from Raspberry Pis.
 
@@ -257,7 +257,7 @@ xAP, eXtensible Automation Protocol is designed to be a minimalist, elegant and 
 The primary implementation is based on UDP/IP with a distributed architecture where no central controller co-ordinates the network. Instead, each device either transmits or listens for data on a broadcast channel. Their core justification for this is that the network becomes fault tolerant and can withstand devices disappearing off the network for one reason or another without having a detrimental effect on the whole network.
 
 In this design there are two key classes of devices, senders and receivers, of which a device can be either or both. 
-The receiver simply attaches to the network and listens for any incoming packets, it then chooses which ones are relevant to it and processes them.
+The receiver simply attaches to the network and listens for any incoming packets; it then chooses which ones are relevant to it and processes them.
 The sender attaches to the network and broadcasts packets with payloads containing data relating to its service i.e., sensor data, incoming caller ID, etc. These packets only contain enough information to uniquely identify the source and the payload it wishes to send. There is no constraint on whether or not the packet must have a destination.
 
 This design feature makes it very simple for new devices to attach to the network and start interacting without having to go through the process of setting up connections to other devices. It also makes it very easy to implement certain types of devices like loggers or informational displays which can collect data from all senders with relative ease. However, this also creates a huge strain on the devices attached to the network which all have to receive and process any broadcasted data, especially for those devices with limited power resources. This becomes an increasing problem as more and more connected devices invade the home, from which the network will very quickly deteriorate as the volume of traffic being broadcast increases. The efficient sending of data, by either avoiding broadcast or limiting its use is an ongoing research topic within the Wireless Sensor Networks domain, due to the costly nature of broadcast and the constrained power resources of the WSN devices.\cite{RumourRouting}\cite{DirectedDiffusion}
@@ -270,9 +270,9 @@ After the protocol's initial inception it has had limited success, even whilst i
 
 \subsection{Remote Procedure Call - RPC} % (fold)
 \label{sub:rpc}
-RPC whilst relatively old in comparison to the other systems described, it does provide an adequate abstraction for communication between devices in an ``Internet of Things'', via request/response style interactions. 
+RPC, whilst relatively old in comparison to the other systems described, does provide an adequate abstraction for communication between devices in an ``Internet of Things'', via request/response style interactions. 
 
-The concept of creating a distributed system, whereby devices in the network request data and services from each on demand, with the relevant response being returned. This fits in well with the idea of an autonomous system sensing, processing and reacting to stimuli, with each device bringing its own services to the system.
+The concept is to create a distributed system, whereby devices in the network request data and services from each on demand, with the relevant response being returned. This fits in well with the idea of an autonomous system sensing, processing and reacting to stimuli, with each device bringing its own services to the system.
 
 However, because of the fixed concept of every request requires a response, the number of packets sent is doubled, even when no response is necessary. In the environment of constrained devices, this increases the load per device and if battery powered, reduces the life of the device significantly.
 % subsection rpc (end)
@@ -285,17 +285,17 @@ However, because of the fixed concept of every request requires a response, the 
 \label{sub:owsn_berkeley}
 Currently being developed at the University of California, Berkeley, the Open Wireless Sensor Network project is collection of open-source implementations of protocol stacks implemented against to-be-finalised ``Internet of Things'' standards, for a range of different software and hardware platforms.
 
-The driving force behind such a project is to create an open source implementation protocols, which academia and industry can use to conduct further research, develop standardised products and contribute to an eco-system of ``Internet of Things'' devices, rather than researching and developing proprietary devices. In the long run this can also benefit consumers, increasing their choice of devices across many different and compatible brands/manufacturers.
+The driving force behind such a project is to create an open source archive of implementation protocols, which academia and industry can use to conduct further research, develop standardised products and contribute to an eco-system of ``Internet of Things'' devices, rather than researching and developing proprietary devices. In the long run this can also benefit consumers, increasing their choice of devices across many different and compatible brands/manufacturers.
 
 Whilst the OpenWSN project doesn't actually propose any new research or developments by itself, it does pursue the same idea as this very project, trying to create an open source method in which heterogeneous devices can communicate with one another to form and ``Internet of Things''.
 
-The OpenWSN ``Internet of Things'' stack consists of open source implementations of the proposed communications stack, ranging from the physical layer (IEEE802.15.4-2006), to the adaptation of IPv6 (IETF 6LoWPAN) all the way up to the application layer, of which is of most interest. The application layer implements not only HTTP, but also a currently in progress standard called Constrained Application Protocol, with the purpose of bringing RESTful communication to constrained devices.
+The OpenWSN ``Internet of Things'' stack consists of open source implementations of the proposed communications stack, ranging from the physical layer (IEEE802.15.4-2006), to the adaptation of IPv6 (IETF 6LoWPAN) all the way up to the application layer, which is of most interest. The application layer implements not only HTTP, but also a currently in progress standard called Constrained Application Protocol, with the purpose of bringing RESTful communication to constrained devices.
 
 
 
 \subsection{CoAP} % (fold)
 \label{sub:coap}
-CoAP, Constrained Application Protocol is currently a proposed IETF standard to create a request-response style web protocol, specifically designed to fit the limitations of constrained devices, such as micro-controllers, for use in machine-to-machine communication and the``Internet of Things''. The protocol is designed as an asynchronous RESTful protocol, to run on top of UDP, using a subset of the standard commands e.g., GET, PUT, DELETE. The reason is that due to the common commands, it allows for an easy transition to standard HTTP if necessary, whilst reducing the complexity of the protocol. Together with this, the protocol also provides support for service discovery and basic subscribing to other CoAP nodes.
+CoAP, Constrained Application Protocol, is currently a proposed IETF standard to create a request-response style web protocol, specifically designed to fit the limitations of constrained devices, such as micro-controllers, for use in machine-to-machine communication and the``Internet of Things''. The protocol is designed as an asynchronous RESTful protocol, to run on top of UDP, using a subset of the standard commands e.g., GET, PUT, DELETE. The reason is that due to the common commands, it allows for an easy transition to standard HTTP, if necessary, whilst reducing the complexity of the protocol. Together with this, the protocol also provides support for service discovery and basic subscribing to other CoAP nodes.
 
 Because the protocol is designed to run on top of UDP, which is a connectionless, unreliable transport layer, CoAP provides both un-reliable and reliable support for requests; which is provided by marking a message as non-confirmable (unreliable) or confirmable (reliable). This allows nodes to send data which is essential, reliably, and to send data un-reliable when data is ephemeral, such as sensor readings.   
 
